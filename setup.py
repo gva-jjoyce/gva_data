@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
    name='gva.data',
-   version='0.0.1',
+   version='0.0.2',
    description='gva.data',
    long_description=long_description,
    long_description_content_type="text/markdown",
@@ -13,5 +13,11 @@ setup(
    author_email='justin.joyce@lloydsbanking.com',
    packages=find_packages(),
    url="https://github.com/gva-jjoyce/gva_data",
-   install_requires=[]
+   install_requires=[
+        'google_cloud_storage',
+        'xmltodict',
+        'ujson',
+        'git+https://github.com/gva-jjoyce/gva_logging',
+        'git+https://github.com/gva-jjoyce/gva_data_validator'
+   ]
 )
