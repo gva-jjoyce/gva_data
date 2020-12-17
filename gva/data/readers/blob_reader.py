@@ -6,7 +6,7 @@ import lzma
 import datetime
 from ..helpers.blob_paths import BlobPaths
 from typing import Tuple, Union, Optional
-import gva.logging  # type:ignore
+from ...logging import get_logger
 
 
 def blob_reader(

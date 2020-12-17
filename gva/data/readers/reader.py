@@ -20,12 +20,12 @@ into Pandas dataframe, or the dictset helper library can perform some
 activities on the set in a more memory efficient manner.
 """
 from typing import Callable, Tuple, Optional
-from ..dictset import select_all, select_record_fields
+from ..formats.dictset import select_all, select_record_fields
 from .blob_reader import blob_reader
 import xmltodict  # type:ignore
-import logging
 import datetime
-import json
+import ujson as json
+from ...logging import get_logger
 json_parser: Callable = json.loads
 json_dumper: Callable = json.dumps
 try:
@@ -40,7 +40,7 @@ try:
 except ImportError:
     pass
 
-logger = logging.getLogger("GVA")
+
 
 FORMATTERS = {
     "json": json_parser,
@@ -90,6 +90,7 @@ class Reader():
         self.where: Callable = where
         self.limit: int = limit
 
+        logger = get_logger()
         logger.debug(F"Reader(reader={reader.__name__}, from_path='{from_path}', date_range={date_range})")
 
     """
