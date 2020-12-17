@@ -2,7 +2,7 @@ import datetime
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from orwell.helpers import BlobPaths
+from gva.data.helpers import BlobPaths
 
 
 def test_blob_paths_split_filename():

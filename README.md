@@ -1,4 +1,4 @@
-# orwell
+# Data Reader/Writer
 
 ## What Is It?
 A data reader and writer helper library.
@@ -30,9 +30,9 @@ writer.append({"server": "files", "error_level": "debug", "message", "power on"}
 
 ## How Do I Get It?
 ~~~
-pip install --upgrade git+https://github.com/joocer/orwell
+pip install --upgrade git+https://github.com/gva-jjoyce/gva_data
 ~~~
 or in your requirements.txt
 ~~~
-git+https://github.com/joocer/orwell
+git+https://github.com/gva-jjoyce/gva_data
 ~~~

@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-   name='orwell',
-   version='0.0.16',
-   description='Orwell',
+   name='gva.data',
+   version='0.0.1',
+   description='gva.data',
    long_description=long_description,
    long_description_content_type="text/markdown",
-   author='joocer',
-   author_email='justin.joyce@joocer.com',
+   author='390516',
+   author_email='justin.joyce@lloydsbanking.com',
    packages=find_packages(),
-   url="https://github.com/joocer/orwell",
+   url="https://github.com/gva-jjoyce/gva_data",
    install_requires=[]
 )
