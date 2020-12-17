@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
    name='gva.data',
-   version='0.0.2',
+   version='0.0.3',
    description='gva.data',
    long_description=long_description,
    long_description_content_type="text/markdown",
@@ -17,7 +17,7 @@ setup(
         'google_cloud_storage',
         'xmltodict',
         'ujson',
-        'git+https://github.com/gva-jjoyce/gva_logging',
-        'git+https://github.com/gva-jjoyce/gva_data_validator'
+        'gva_logging',
+        'gva_data_validator'
    ]
 )
