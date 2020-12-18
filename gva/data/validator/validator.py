@@ -52,7 +52,6 @@ class _is_numeric():
             return False
         except TypeError:
             return False
-        print(self.min, n, self.max)
         return (n >= self.min) and (n <= self.max)
 
 
