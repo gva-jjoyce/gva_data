@@ -1,0 +1,12 @@
+# {{ table_name }}
+
+Description: {{ description }}
+
+## Fields
+
+| Field           | Type         | Description               |
+|-----------------|--------------|---------------------------|
+{% for field in fields %}| {{ field.name }}  | {{ field.type }} | {{ field.description }} |
+{% endfor %}
+
+_this file has been automatically generated - changes may be overridden_
