@@ -1,14 +1,10 @@
 # gva.data.flows
- 
-![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  
-Forked from [joocer/newidydd](https://github.com/joocer/newidydd) 
 
 ## What Is It?
 
 A set of modules to define and execute data flows.
 
 Data Flows are designed to process Python dictionaries through a series of ordered steps such as validation, transformation and storage. These steps are called _operations_ implemented by _operators_. A series of _operators_ are referred to as _flows_.
-
 
 ## What Is In It?
 
@@ -47,3 +43,5 @@ flow = DoubleOperator() > PrintOperator() > EndOperator()
 flow.go(data="22")
 ~~~
 
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  
+Forked from [joocer/newidydd](https://github.com/joocer/newidydd) 

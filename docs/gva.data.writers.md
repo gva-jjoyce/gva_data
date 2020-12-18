@@ -1,8 +1,5 @@
 # gva.data.writer
 
-![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  
-Forked from [joocer/orwell](https://github.com/joocer/orwell) 
-
 ## What Is It?
 
 A data writer helper library.
@@ -17,3 +14,6 @@ writer = Writer(
 )
 writer.append({"server": "files", "error_level": "debug", "message", "power on"})
 ~~~
+
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  
+Forked from [joocer/orwell](https://github.com/joocer/orwell) 

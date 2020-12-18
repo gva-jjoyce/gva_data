@@ -1,8 +1,5 @@
 # gva.data.validator
 
-![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  
-Forked from [joocer/typhaon](https://github.com/joocer/typhaon) 
-
 ## What Is It?
 
 Tests a dictionary for conformity against a schema.
@@ -54,3 +51,6 @@ is_valid = schema.validate(data)
 if not is_valid:
     print(schema.last_error)
 ~~~
+
+![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  
+Forked from [joocer/typhaon](https://github.com/joocer/typhaon) 
