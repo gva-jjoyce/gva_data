@@ -43,6 +43,8 @@ The _null_ checker is valid if the field is _None_ or is a [Python False](https:
 
 ### Example Code
 ~~~python
+from gva.data.validator import Schema
+
 schema = Schema({"fields": [{"name": "string_field", "type": "string"}]})
 data = {"name":"validator"}
 

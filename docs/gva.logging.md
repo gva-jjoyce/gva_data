@@ -12,6 +12,7 @@ A logging helper library using Python's logging module
 
 ~~~python
 from gva.logging import get_logger
+
 logger = get_logger()
 logger.debug("this is a debug message")
 ~~~

@@ -9,6 +9,8 @@ The reader can read across multiple blobs in a GCS bucket with filter, select an
 ## How Do I Use It?
 
 ~~~python
+from gva.data import Reader
+
 critical_errors = Reader(
         select=['server', 'error_level'],
         from_path="error_logs/year_%Y/month_%m/day_%d/",

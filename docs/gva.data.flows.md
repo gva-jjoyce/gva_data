@@ -26,6 +26,8 @@ Chain those operations together
 run data through the flow.
 
 ~~~python
+from gva.data.flows import BaseOperator
+
 # Define the operations
 class DoubleOperator(BaseOperator)
   def execute(data, context):
@@ -40,7 +42,7 @@ class PrintOperator(BaseOperator)
 flow = DoubleOperator() > PrintOperator() > EndOperator()
 
 # Run data through the flow
-flow.go(data="22")
+flow.run(data="22")
 ~~~
 
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  

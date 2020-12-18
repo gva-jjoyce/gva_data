@@ -150,7 +150,7 @@ def create_index(
     return index
 
 
-def select_from_dictset(
+def select_from(
         dictset: Iterator[dict],
         columns: List[str] = ['*'],
         condition: Callable = select_all) -> Iterator[dict]:
@@ -256,12 +256,16 @@ def dictsets_match(
     return _hash_set(dictset_1) == _hash_set(dictset_2)
 
 
-def generator_chunker(
-        generator: Iterator,
-        chunk_size: int) -> Iterator:
+def page_dictset(
+        dictset: Iterator[dict],
+        page_size: int) -> Iterator:
+    """
+    Enables paging through a dictset by returning a page
+    of records at a time.
+    """
     chunk: list = []
-    for item in generator:
-        if len(chunk) >= chunk_size:
+    for item in dictset:
+        if len(chunk) >= page_size:
             yield chunk
             chunk = [item]
         else:

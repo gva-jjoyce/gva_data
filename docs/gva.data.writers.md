@@ -9,6 +9,8 @@ The writer writes to buckets, with tempfile caching, and data validation functio
 ## How Do I Use It?
 
 ~~~python
+from gva.data import Writer
+
 writer = Writer(
         to_path="error_logs/"
 )
