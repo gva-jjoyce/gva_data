@@ -149,12 +149,16 @@ class Writer():
             self.file_writer.finalize()
         # save the file to it's destination
         if self.file_name:
-            self.writer(
-                source_file_name=self.file_name,
-                target_path=self.to_path,
-                add_extention='.lzma' if self.compress else '',
-                date=self.date,
-                **self.kwargs)
+            self.thread = threading.Thread(
+                    target=self.writer,
+                    kwargs={
+                        'source_file_name': self.file_name,
+                        'target_path': self.to_path,
+                        'add_extention': '.lzma' if self.compress else '',
+                        'date': self.date,
+                        **self.kwargs})
+            self.thread.daemon = False
+            self.thread.start()
         try:
             os.remove(self.file_name)
         except (OSError, TypeError):

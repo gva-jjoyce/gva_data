@@ -5,7 +5,7 @@ import os
 
 def build_readme(metadata):
     templateLoader = jinja2.FileSystemLoader("./")
-    templateEnv = jinja2.Environment(loader=templateLoader)
+    templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
     template_file = './tools/readme_builder/README.jinja2'
     template = templateEnv.get_template(template_file)
     instance = template.render(metadata)

@@ -26,10 +26,6 @@ values, however this may cause problems if the list is large.
 
 Example usage:
 
-# open two jsonl files
-list1 = open_dictset_file('list1.jsonl')
-list2 = open_dictset_file('list2.jsonl')
-
 # filter the two lists
 filtered_list1 = select_from_dictset(list1, ['id', 'name'], lambda x: x['height'] > 2)
 filtered_list2 = select_from_dictset(list2, ['id', 'last_seen'])
