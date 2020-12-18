@@ -3,30 +3,25 @@ Data Writer
 
 Writes records to a data set partitioned by write time.
 
-Default behaviour is to create a folder structure for year, month
-and day, and partitioning data into files of 50,000 records or
-are written continuously without a 60 second gap.
+Default behaviour is to create a folder structure for year, month and day, and
+partitioning data into files of 16Mb or are written continuously without a 60
+second gap.
 
-When a partition is written a method is called (on_partition_closed),
-this provides a mechanism for users to perform an action on the 
-recently closed partition file, such as save to a permanent store.
-
-Records can be validated against a schema and records can be 
-committed to disk after every write. Schema validation helps 
-enforce format for the data and commit after every write reduces
-the probability of data loss but both come with a cost; results will
-differ depending on exact data but as an approximation (from and 11
-field test data set):
+Records can be validated against a schema and records can be committed to disk
+after every write. Schema validation helps enforce format for the data and
+commit after every write reduces the probability of data loss but both come
+with a cost; results will differ depending on exact data but as an
+approximation (from and 11 field, 1m row test data set):
 
 - cache commits and no validation      = ~100% speed
 - commit every write and validation    = ~40% speed
 - commit every write but no validation = ~66% speed
 - cache commits and no validation      = ~50% speed
 
-Paths for the data writer can contain datetime string formatting,
-the string will be formatted before being created into folders. The
-changing of dates is handled by the worker thread, this may lag a 
-second before it forces the folder to change.
+Paths for the data writer can contain datetime string formatting, the string
+will be formatted before being created into folders. The changing of dates is
+handled by the worker thread, this may lag a second before it forces the folder
+to change.
 """
 import lzma
 import time
@@ -49,7 +44,7 @@ class Writer():
         self,
         writer: Callable = blob_writer,
         to_path: str = 'year_%Y/month_%m/day_%d',
-        partition_size: int = 8*1024*1024,
+        partition_size: int = 16*1024*1024,
         schema: Schema = None,
         commit_on_write: bool = False,
         compress: bool = False,
@@ -214,7 +209,7 @@ def _worker_thread(data_writer: Writer):
     - when the day changes, it closes the existing partition so a new one is
       opened with today's date
     - close partitions when new records haven't been recieved for a period of
-      time (default 300 seconds)
+      time (default 60 seconds)
     - attempt to flush writes to disk regularly
 
     These are done in a separate thread so the 'append' method doesn't need to
