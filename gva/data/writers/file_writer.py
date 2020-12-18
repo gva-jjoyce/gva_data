@@ -11,6 +11,7 @@ def file_writer(
         target_path: str,
         date: Optional[datetime.date] = None,
         add_extention: str = '',
+        delete_on_write: bool = False,
         **kwargs):
     
     if date is None:
@@ -29,5 +30,11 @@ def file_writer(
     bucket, path, filename, ext = BlobPaths.get_parts(unique_filename)
     os.makedirs(bucket + '/' + path, exist_ok=True)
     
+    if delete_on_write:
+        try:
+            os.remove(source_file_name)
+        except (OSError, TypeError):
+            pass
+
     # save
     return shutil.copy(source_file_name, unique_filename)

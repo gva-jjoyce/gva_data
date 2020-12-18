@@ -1,4 +1,5 @@
 import datetime
+import os
 from ..helpers import BlobPaths
 try:
     from google.cloud import storage  # type:ignore
@@ -12,6 +13,7 @@ def blob_writer(
         target_path: str,
         date: Optional[datetime.date] = None,
         add_extention: str = '',
+        delete_on_write: bool = False,
         **kwargs):
 
     # default the date to today
@@ -42,5 +44,11 @@ def blob_writer(
 
     # save the blob
     blob.upload_from_filename(source_file_name)
+
+    if delete_on_write:
+        try:
+            os.remove(source_file_name)
+        except (OSError, TypeError):
+            pass
 
     return maybe_colliding_filename

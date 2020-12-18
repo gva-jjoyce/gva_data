@@ -156,13 +156,10 @@ class Writer():
                         'target_path': self.to_path,
                         'add_extention': '.lzma' if self.compress else '',
                         'date': self.date,
+                        'delete_on_write': True,
                         **self.kwargs})
             self.thread.daemon = False
             self.thread.start()
-        try:
-            os.remove(self.file_name)
-        except (OSError, TypeError):
-            pass
         self.file_writer = None
         self.file_name = None
 
