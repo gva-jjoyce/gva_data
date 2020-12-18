@@ -60,7 +60,6 @@ class SaveToBucketOperator(BaseOperator):
         self.writer.finalize()
 
     def __del__(self):
-        super().__del__()
         try:
             self.writer.finalize()
         except Exception:  # nosec - if this fails, it should be ignored here

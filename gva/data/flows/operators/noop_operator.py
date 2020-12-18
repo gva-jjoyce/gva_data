@@ -3,8 +3,8 @@ No Operation Operator
 
 This does nothing - without error, for testing.
 
-It optionally prints the class name - intended to show the Operation
-was run.
+It optionally prints the class name - intended to determine when and that
+the Operation was run - for testing.
 """
 from .base_operator import BaseOperator
 

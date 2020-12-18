@@ -5,14 +5,15 @@ Checks a dictionary against a schema.
 """
 from .base_operator import BaseOperator
 from gva.data.validator import Schema   # type:ignore
+from typing import Any
 
 
 class ValidatorOperator(BaseOperator):
 
-    def __init__(self, schema={}, *args, **kwargs):
+    def __init__(self, schema: Any):
         self.validator = Schema(schema)
         self.invalid_records = 0
-        super().__init__(*args, **kwargs)
+        super().__init__()
 
     def execute(self, data={}, context={}):
         valid = self.validator(subject=data)

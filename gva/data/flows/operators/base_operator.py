@@ -14,12 +14,12 @@ import inspect
 import functools
 import hashlib
 import time
-import json
+import ujson as json
 import datetime
 import types
 import traceback
 import networkx as nx   # type:ignore
-from gva.logging import get_logger   # type:ignore
+from ....logging import get_logger  # type:ignore
 from ..utils.runner import go, finalize, attach_writer
 from typing import Union, List
 
@@ -38,9 +38,8 @@ class BaseOperator(abc.ABC):
         return a tuple of (data, context), or a generator/list of (data,
         context).
 
-        The __call__ and version methods should not be overriden, steps are
-        taken to help ensure it isn't, but the developer can bypass these if
-        they try - they shouldn't.
+        The '__call__' and 'version' methods should not be overriden, steps
+        are taken to help ensure they aren't.
 
         - retry_count: the number of times to attempt an operation before
           aborting, this defaults to 2 and is limited between 1 and 5
@@ -189,7 +188,7 @@ class BaseOperator(abc.ABC):
 
         Op1 > Op2 > Op3
 
-        This is just sugar, it makes it easier to do this task.
+        The builder adds support functions to the resulting 'flow' object.
         """
         # make sure the next_operator is iterable
         if not isinstance(next_operators, list):
