@@ -117,9 +117,7 @@ SIMPLE_VALIDATORS = {
 
 def get_validators(
         type_descriptor: Union[List[str], str],
-        symbols: Union[None, list] = None,
-        min: int = -9223372036854775808,
-        max: int = 9223372036854775807) -> list:
+        **kwargs):
     """
     For a given type definition (the ["string", "nullable"] bit), return
     the matching validator functions (the _is_x ones) as a list.
@@ -129,9 +127,12 @@ def get_validators(
     validators: List[Callable] = []
     for descriptor in type_descriptor:
         if descriptor == 'enum':
+            symbols = kwargs.get('symbols', [])
             validators.append(_is_valid_enum(symbols)) # type:ignore
         elif descriptor in ['int', 'numeric']:
-            validators.append(_is_numeric(min=min, max=max))
+            min_ = kwargs.get('min',  -9223372036854775808)
+            max_ = kwargs.get('max', 9223372036854775807)
+            validators.append(_is_numeric(min=min_, max=max_))
         else:
             validators.append(SIMPLE_VALIDATORS[descriptor]) # type:ignore
     return validators
@@ -167,9 +168,9 @@ class Schema():
             self._validators = {
                 item.get('name'): get_validators(
                         item['type'], 
-                        item.get('symbols'), 
-                        item.get('min', -9223372036854775808), # 64bit signed (not a limit, just a default)
-                        item.get('max', 9223372036854775807))  # 64bit signed (not a limit, just a default)
+                        symbols=item.get('symbols'), 
+                        min=item.get('min', -9223372036854775808), # 64bit signed (not a limit, just a default)
+                        max=item.get('max', 9223372036854775807))  # 64bit signed (not a limit, just a default)
                 for item in definition.get('fields', [])  #type:ignore
             }
         except KeyError:
@@ -188,7 +189,7 @@ class Schema():
                 for v in value:
                     if not v(value):
                         self.last_error += f"'{key}' ({subject.get(key)}) did not pass validator {str(v)}.\n"
-                        print(f"'{key}' ({subject.get(key)}) did not pass validator {str(v)}.\n")
+                        #print(f"'{key}' ({subject.get(key)}) did not pass validator {str(v)}.\n")
         if raise_exception and not result:
             raise ValueError(F"Record does not conform to schema - {self.last_error}. ")
         return result

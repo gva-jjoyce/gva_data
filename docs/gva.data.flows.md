@@ -15,8 +15,10 @@ The library contains the following set of operators:
 **FilterOperator** - Uses a function to filter the _data_ payload    
 **NoOpOperator** - No Operation, does nothing  
 **PrintOperator** - Prints the _data_ payload to the screen  
-**SaveToBucketOperator** - Save the _data_ payload to a json lines file  
+**SaveToBucketOperator** - Save the _data_ payload to a json lines blob on GCS  
+**SaveToDiskOperator** - Save the _data_ payload to a json lines file
 **ValidatorOperator** - Tests the _data_ payload for conformity to a Schema  
+**SplitTextOperator** - Splits a text payload to _data_ into multiple messages
 **EndOperator** - Flow end marker  
 
 ## How Do I Write My Own Operator?
