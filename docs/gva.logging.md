@@ -6,9 +6,9 @@ A logging helper library using Python's logging module
 
 ## How Do I Use It?
 
-1 - Import library  
-2 - Fetch the logger  
-3 - Start Logging
+1) Import library  
+2) Fetch the logger  
+3) Start Logging
 
 ~~~python
 from gva.logging import get_logger

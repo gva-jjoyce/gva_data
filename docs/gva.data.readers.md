@@ -20,5 +20,6 @@ critical_errors = Reader(
 critical_errors.to_pandas()
 ~~~
 
+---
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  
 Forked from [joocer/orwell](https://github.com/joocer/orwell) 

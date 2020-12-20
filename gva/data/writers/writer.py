@@ -46,7 +46,6 @@ class Writer():
         to_path: str = 'year_%Y/month_%m/day_%d',
         partition_size: int = 16*1024*1024,
         schema: Schema = None,
-        commit_on_write: bool = False,
         compress: bool = False,
         use_worker_thread: bool = True,
         idle_timeout_seconds: int = 60,
@@ -58,8 +57,6 @@ class Writer():
         Parameters:
         - path: the path to save records to, this is a folder name
         - partition_size: the number of records per partition (-1) is unbounded
-        - commit_on_write: commit rather than cache writes - is slower but less
-          chance of loss of data
         - schema: Schema object - if set records are validated before being
           written
         - use_worker_thread: creates a thread which performs regular checks
@@ -72,7 +69,6 @@ class Writer():
         self.partition_size = partition_size
         self.bytes_left_to_write_in_partition = partition_size
         self.schema = schema
-        self.commit_on_write = commit_on_write
         self.file_writer: Optional[_PartFileWriter] = None
         self.last_write = time.time_ns()
         self.idle_timeout_seconds = idle_timeout_seconds
@@ -128,7 +124,6 @@ class Writer():
                 self.file_name = self._get_temp_file_name()
                 self.file_writer = _PartFileWriter(
                         file_name=self.file_name,  # type:ignore
-                        commit_on_write=self.commit_on_write,
                         compress=self.compress)
                 self.bytes_left_to_write_in_partition = self.partition_size
 
@@ -149,17 +144,16 @@ class Writer():
             self.file_writer.finalize()
         # save the file to it's destination
         if self.file_name:
-            self.thread = threading.Thread(
-                    target=self.writer,
-                    kwargs={
-                        'source_file_name': self.file_name,
-                        'target_path': self.to_path,
-                        'add_extention': '.lzma' if self.compress else '',
-                        'date': self.date,
-                        'delete_on_write': True,
-                        **self.kwargs})
-            self.thread.daemon = False
-            self.thread.start()
+            self.writer(
+                    source_file_name=self.file_name,
+                    target_path=self.to_path,
+                    add_extention='.lzma' if self.compress else '',
+                    date=self.date,
+                    **self.kwargs)
+            try:
+                os.remove(self.file_name)
+            except ValueError:
+                pass
         self.file_writer = None
         self.file_name = None
 
@@ -174,23 +168,17 @@ class Writer():
 
 class _PartFileWriter():
     """ simple wrapper for file writing to a temp file """
+    __slots__ = ['file']
     def __init__(
             self,
             file_name: str,  # type:ignore
-            commit_on_write: bool = False,
             compress: bool = False):
         self.file: Any = open(file_name, mode='wb')
         if compress:
             self.file = lzma.open(self.file, mode='wb')
-        self.commit_on_write = commit_on_write
 
     def append(self, record: str = ""):
         self.file.write(record.encode())
-        if self.commit_on_write:
-            try:
-                self.file.flush()
-            except ValueError:
-                pass
 
     def finalize(self):
         try:
@@ -224,10 +212,4 @@ def _worker_thread(data_writer: Writer):
 #        if not data_writer.formatted_path == datetime.datetime.today().strftime(data_writer.path):
 #            change_partition = True
 
-        # try flushing writes
-        try:
-            if data_writer.file_writer:
-                data_writer.file_writer.file.flush()
-        except ValueError:  # nosec - if it fails, it doesn't /really/ matter
-            pass
         time.sleep(1)

@@ -22,6 +22,7 @@ import networkx as nx   # type:ignore
 from ....logging import get_logger  # type:ignore
 from ..utils.runner import go, finalize, attach_writer
 from typing import Union, List
+from ....errors import RenderErrorStack
 
 
 # inheriting ABC is part of ensuring that this class only ever
@@ -112,14 +113,17 @@ class BaseOperator(abc.ABC):
                     time.sleep(self.retry_wait)
                 else:
                     try:
-                        error_payload = (F"timestamp: {datetime.datetime.today().isoformat()}\n"
-                                F"operator: {self.__class__.__name__}\n"
-                                F"error: {type(err).__name__}\n"
-                                F"error_details : {err}\n"
-                                F"{traceback.format_exc()}\n"
-                                F"\n{context}"
-                                "\n"
-                                F"\n{data}")
+                        error_payload = (
+                                F"timestamp : {datetime.datetime.today().isoformat()}\n"
+                                F"operator  : {self.__class__.__name__}\n"
+                                F"error     : {type(err).__name__}\n"
+                                F"details   : {err}\n"
+                                F"{RenderErrorStack()}\n"
+                                "───────────────────────────────────  context  ──────────────────────────────────\n"
+                                F"{context}\n"
+                                "────────────────────────────────────  data  ────────────────────────────────────\n"
+                                F"{data}\n"
+                                "────────────────────────────────────────────────────────────────────────────────\n")
                         self.error_writer(error_payload)  # type:ignore
                     except Exception as err:
                         self.logger.error(F"Problem writing to the error bin, a record has been lost. {type(err).__name__} - {err}")

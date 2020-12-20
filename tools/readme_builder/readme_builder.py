@@ -3,6 +3,7 @@ import json
 import glob
 import os
 
+
 def build_readme(metadata):
     templateLoader = jinja2.FileSystemLoader("./")
     templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
@@ -14,11 +15,14 @@ def build_readme(metadata):
 paths = glob.glob('../../**/*.metadata', recursive=True)
 
 for path in paths:
-    metadata = json.loads(open(path, 'r').read())
+    with open(path, 'r') as file:
+        file_contents = file.read()
+    metadata = json.loads(file_contents)
     readme = build_readme(metadata)
 
     path, filename = os.path.split(path)
     readme_path = os.path.join(path, "README.MD")
     print(F'Wrote {readme_path}')
 
-    open(readme_path, 'w').write(readme)
+    with open(readme_path, 'w') as file:
+        file.write(readme)

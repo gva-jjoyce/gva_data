@@ -38,10 +38,13 @@ def select_nodes_by_type(graph, node_filter = [], remove = False):
     Returns a filtered graph.
     """
     if remove:
-        result_nodes = filter(lambda x: (x[1].get('node_type') or '-NONE-') in node_filter, graph.nodes(data=True))
+        #result_nodes = filter(lambda x: (x[1].get('node_type') or '-NONE-') in node_filter, graph.nodes(data=True))
+        result_nodes = [node for node in graph.nodes(data=True) if (node[1].get('node_type') or '-NONE-') in node_filter]
     else:
-        result_nodes = filter(lambda x: (x[1].get('node_type') or '-NONE-') not in node_filter, graph.nodes(data=True))
-    result_nodeids = map(lambda x: x[0], result_nodes)    
+        #result_nodes = filter(lambda x: (x[1].get('node_type') or '-NONE-') not in node_filter, graph.nodes(data=True))
+        result_nodes = [node for node in graph.nodes(data=True) if (node[1].get('node_type') or '-NONE-') not in node_filter]
+#    result_nodeids = map(lambda x: x[0], result_nodes)
+    result_nodeids = [x[0] for x in result_nodes]  
     working_graph = graph.copy()
     working_graph.remove_nodes_from(result_nodeids)
     return working_graph
@@ -180,7 +183,7 @@ def hierarchy_pos(G, root=None, width=1.5, vert_gap = 1., vert_loc = 0, xcenter 
 
     if root is None:
         if isinstance(G, nx.DiGraph):
-            root = next(iter(nx.topological_sort(G)))  #allows back compatibility with nx version 1.11
+            root = next(iter(nx.topological_sort(G)), None)  #allows back compatibility with nx version 1.11
         else:
             root = random.choice(list(G.nodes)) #nosec - CYBASIMP-156
 

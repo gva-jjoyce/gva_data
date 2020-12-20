@@ -139,7 +139,8 @@ def test_validator_loaders():
     TEST_SCHEMA_STRING = json.dumps(TEST_SCHEMA_DICT)
     TEST_SCHEMA_FILE = 'temp'
 
-    open(TEST_SCHEMA_FILE, 'w').write(TEST_SCHEMA_STRING)
+    with open(TEST_SCHEMA_FILE, 'w') as file:
+        file.write(TEST_SCHEMA_STRING)
 
     failed = False
     try:
@@ -196,8 +197,8 @@ def test_validator_number_ranges():
     TEST_SCHEMA = {"fields": [{"name": "number", "type": "numeric", "min": 250, "max": 750}]}
 
     test = Schema(TEST_SCHEMA)
-    #assert (not test.validate(OVER_TEST_DATA))
-    #assert (not test.validate(UNDER_TEST_DATA))
+    assert (not test.validate(OVER_TEST_DATA))
+    assert (not test.validate(UNDER_TEST_DATA))
     assert (test.validate(IN_TEST_DATA))
 
     TEST_SCHEMA_MIN = {"fields": [{"name": "number", "type": "numeric", "min": 250}]}

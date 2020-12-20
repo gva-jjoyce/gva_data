@@ -1,3 +1,8 @@
+"""
+Tests for BlobPaths to ensure the split and join methods
+of BlobPaths return the expected values for various
+stimulus.
+"""
 import datetime
 import sys
 import os

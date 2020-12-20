@@ -5,6 +5,7 @@ from inspect import getframeinfo, stack
 import sys
 import re
 import os
+import time
 
 def verbose_logger(_func=None):
     def log_decorator_info(func):
@@ -33,8 +34,10 @@ def verbose_logger(_func=None):
             """ Before to the function execution, log function details."""
             logger.debug(f"Call: {func.__name__}({formatted_arguments}) - {os.path.basename(py_file_caller.filename)}")
             try:
+                start = time.process_time_ns()
                 """ log return value from the function """
                 value = func(*args, **kwargs)
+                execution_time = (time.process_time_ns() - start) / 1e9
                 try:
                     display = str(repr(value))
                     display = display.replace('\n', '')
@@ -43,8 +46,7 @@ def verbose_logger(_func=None):
                     display = display[0:100]
                 except:
                     display = "[NON-PRINTABLE]"
-                logger.debug(f"Return: {func.__name__}() - {display}")
-                print(f"Return: {func.__name__}() - {display}")
+                logger.debug(f"Return after {execution_time}s: {func.__name__}() - {display}")
             except Exception as e:
                 """log exception if occurs in function"""
                 logger.error(f"Exception: {func.__name__}() - {str(sys.exc_info()[1])} {e.__class__.__name__} - {e.args[0]}")

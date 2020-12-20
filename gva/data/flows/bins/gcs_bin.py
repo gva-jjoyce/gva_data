@@ -13,12 +13,16 @@ Two bins are supported initially:
 
 This Bin is written to support only writing to Google Cloud Storage.
 """
-from google.cloud import storage  # type:ignore
+try:
+    from google.cloud import storage  # type:ignore
+except ImportError:
+    pass
 import time
 import random
+from .base_bin import BaseBin
 
 
-class GoogleCloudStorageBin():
+class GoogleCloudStorageBin(BaseBin):
 
     def __init__(
             self,
@@ -43,7 +47,3 @@ class GoogleCloudStorageBin():
         blob_name = F"{self.path}/{time.time_ns()}-{random.randrange(0,9999):04d}.txt"  # nosec - not crypto
         blob = self.bucket.blob(blob_name)
         blob.upload_from_string(record)
-
-    def __ror__(self, flow):
-        # set a attribute on the flow which calls this class
-        setattr(flow, str(self), self)

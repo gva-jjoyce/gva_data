@@ -5,13 +5,12 @@ with open("README.md", "r") as fh:
 
 setup(
    name='gva.data',
-   version='0.1.4',
-   description='GVA Data',
+   version='0.1.5',
+   description='GVA Data Libraries',
    long_description=long_description,
    long_description_content_type="text/markdown",
-   author='390516',
-   author_email='justin.joyce@lloydsbanking.com',
-   packages=find_packages(),
+   maintainer='The GVA Engineering Team',
+   packages=find_packages(include=['gva', 'gva.*']),
    url="https://github.com/gva-jjoyce/gva_data",
    install_requires=[
         'google_cloud_storage',

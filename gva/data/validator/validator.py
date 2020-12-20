@@ -53,6 +53,15 @@ class _is_numeric():
         except TypeError:
             return False
         return (n >= self.min) and (n <= self.max)
+    def __str__(self):
+        if self.min == -9223372036854775808 and self.max == 9223372036854775807:
+            return 'numeric'
+        if not self.min == -9223372036854775808 and not self.max == 9223372036854775807:
+            return f'numeric ({self.min} - {self.max})'
+        if not self.min == -9223372036854775808 and self.max == 9223372036854775807:
+            return f'numeric ({self.min} - infinity)'
+        if self.min == -9223372036854775808 and not self.max == 9223372036854775807:
+            return f'numeric (infinity - {self.max})'
 
 
 def _is_date(value: Any) -> bool:
@@ -87,6 +96,8 @@ class _is_valid_enum():
         self.symbols = symbols
     def __call__(self, value: Any) -> bool:
         return value in self.symbols
+    def __str__(self):
+        return f'enum {self.symbols}'
 
 """
 Create a dictionary of the validator functions
@@ -167,18 +178,17 @@ class Schema():
             raise ValueError("Invalid schema specification")
 
     def validate(self, subject: dict = {}, raise_exception=False) -> bool:
-        # check the test subject against all of the fields in the validator
-        result = all(
-            [field_validator(subject.get(key), self._validators.get(key, [_other_validator]))
-                for key, value
-                in self._validators.items()]
-        )
-        if not result:
-            self.last_error = ''
-            # the validator is fast, but it discards the failures, rerun to get the errors
-            for key, value in self._validators.items():
-                if not field_validator(subject.get(key), self._validators.get(key, [_other_validator])):
-                    self.last_error += f"'{key}' did not pass validator"
+
+        result = True
+        self.last_error = ''
+ 
+        for key, value in self._validators.items():
+            if not field_validator(subject.get(key), self._validators.get(key, [_other_validator])):
+                result = False
+                for v in value:
+                    if not v(value):
+                        self.last_error += f"'{key}' ({subject.get(key)}) did not pass validator {str(v)}.\n"
+                        print(f"'{key}' ({subject.get(key)}) did not pass validator {str(v)}.\n")
         if raise_exception and not result:
             raise ValueError(F"Record does not conform to schema - {self.last_error}. ")
         return result

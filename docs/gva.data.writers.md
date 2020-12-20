@@ -17,5 +17,15 @@ writer = Writer(
 writer.append({"server": "files", "error_level": "debug", "message", "power on"})
 ~~~
 
+## Usage Recommendations
+
+**Compression**  
+Compression reduces filesizes to approximately 25% of their original size, but is very expensive (between 
+4 and 20 times longer to write). On smaller data sets this is unlikely to be a problem but can increase a
+job which tool a few minutes to over an hour for larger datasets. It's recommended in this scenario that
+compression be deferred.
+
+
+---
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  
-Forked from [joocer/orwell](https://github.com/joocer/orwell) 
+Forked from [joocer/orwell](https://github.com/joocer/orwell)  

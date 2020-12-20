@@ -1,3 +1,7 @@
+"""
+Test the gva logger, this extends the Python logging logger.
+We test that the trace method and decorators raise no errors.
+"""
 import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))

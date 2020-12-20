@@ -1,3 +1,9 @@
+"""
+These for the flow builder, the flow builder is the code 
+which build flows from operators using the greater than
+mathematical operator (>). The resultant flow is a 
+networkx DiGraph with some methods monkey patched.
+"""
 import os
 import sys
 import networkx
@@ -6,10 +12,10 @@ from gva.logging import get_logger
 from gva.data.flows.operators import FilterOperator, EndOperator, NoOpOperator
 
 
-def test_dag_builder():
+def test_flow_builder():
     """
-    Test the DAG builder
-    The DAG builder creates a networkx graph and adds some methods to it
+    Test the flow builder
+    The flow builder creates a networkx graph and adds some methods to it
     """
     e = EndOperator()
     f = FilterOperator()
@@ -26,25 +32,6 @@ def test_dag_builder():
     assert hasattr(flow, 'finalize')
 
 
-def test_dag_runner():
-    """
-    Run a basic flow
-    """
-    e = EndOperator()
-    n = NoOpOperator()
-    flow = n > e
-
-    errored = False
-    try:
-        flow.run(data="payload")
-        flow.finalize()
-    except Exception:
-        errored = True
-
-    assert not errored
-
-
 if __name__ == "__main__":
 
-    test_dag_builder()
-    test_dag_runner()
+    test_flow_builder()
