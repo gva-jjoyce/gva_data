@@ -114,7 +114,7 @@ class Writer():
         with threading.Lock():
             # if this write would exceed the partition
             self.bytes_left_to_write_in_partition -= len_serial
-            if self.bytes_left_to_write_in_partition <= 0:
+            if self.bytes_left_to_write_in_partition < 0:
                 if len_serial > self.partition_size:
                     raise ValueError('Record size is larger than partition.')
                 self.on_partition_closed()
