@@ -139,6 +139,10 @@ class BaseOperator(abc.ABC):
             context['execution_trace'].add_block(data_hash=data_hash,
                                                  operator=self.__class__.__name__,
                                                  version=self.version())
+            try:
+                self.trace_writer(context['execution_trace'].blocks[-1])  # type:ignore
+            except:
+                pass # nosec
 
         # if there is a high failure rate, abort
         if sum(self.last_few_results) < (len(self.last_few_results) / 2):
