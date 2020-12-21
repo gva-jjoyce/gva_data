@@ -19,10 +19,10 @@ import datetime
 import types
 import traceback
 import networkx as nx   # type:ignore
-from ....logging import get_logger  # type:ignore
-from ..utils.runner import go, finalize, attach_writer
+from ...logging import get_logger  # type:ignore
+from ..runner import go, finalize, attach_writer
 from typing import Union, List
-from ....errors import RenderErrorStack
+from ...errors import RenderErrorStack
 
 
 # inheriting ABC is part of ensuring that this class only ever

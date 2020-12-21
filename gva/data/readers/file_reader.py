@@ -8,7 +8,7 @@ of the files in those folders and present the content back, line by line.
 """
 from typing import Iterator, Tuple, Optional, List
 import datetime
-from ..helpers.blob_paths import BlobPaths
+from ...utils import BlobPaths 
 import lzma
 
 

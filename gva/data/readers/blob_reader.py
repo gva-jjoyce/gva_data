@@ -4,7 +4,7 @@ except ImportError:
     pass
 import lzma
 import datetime
-from ..helpers.blob_paths import BlobPaths
+from ...utils import BlobPaths
 from typing import Tuple, Union, Optional
 from ...logging import get_logger
 

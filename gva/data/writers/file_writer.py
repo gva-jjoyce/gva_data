@@ -1,4 +1,4 @@
-from ..helpers import BlobPaths
+from ...utils import BlobPaths
 from os.path import exists
 import os
 import shutil

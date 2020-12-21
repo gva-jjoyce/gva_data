@@ -6,7 +6,13 @@ import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.logging import LEVELS, get_logger, error_trap, verbose_logger
+try:
+    from rich import traceback
+    traceback.install()
+except ImportError:
+    pass
 
+  
 def test_smoke_test():
   """
   This is just a smoke test, it exercises most of the logging functionality

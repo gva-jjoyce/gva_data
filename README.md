@@ -6,7 +6,7 @@ A set of modules for handling data.
 
 ## What Is In It?
 
-[gva.data.flows](docs/gva.data.flows.md)  
+[gva.flows](docs/gva.flows.md)  
 [gva.data.formats](docs/gva.data.formats.md)  
 [gva.data.readers](docs/gva.data.readers.md)  
 [gva.data.validator](docs/gva.data.validator.md)  

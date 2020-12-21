@@ -7,7 +7,12 @@ import sys
 import networkx
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.logging import get_logger
-from gva.data.flows.operators import EndOperator, NoOpOperator, UndefinedOperator
+from gva.flows.operators import EndOperator, NoOpOperator, UndefinedOperator
+try:
+    from rich import traceback
+    traceback.install()
+except ImportError:
+    pass
 
 
 def test_flow_runner():

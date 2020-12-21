@@ -4,7 +4,12 @@ Test Split Text Operator
 import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from gva.data.flows.operators import SplitTextOperator
+from gva.flows.operators import SplitTextOperator
+try:
+    from rich import traceback
+    traceback.install()
+except ImportError:
+    pass
 
 
 def test_split_text_default():

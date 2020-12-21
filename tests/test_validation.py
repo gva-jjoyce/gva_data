@@ -6,6 +6,11 @@ import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.data.validator import Schema
+try:
+    from rich import traceback
+    traceback.install()
+except ImportError:
+    pass
 
 
 def test_validator_all_valid_values():
@@ -27,7 +32,7 @@ def test_validator_all_valid_values():
             {"name": "boolean_field",  "type": "boolean"},
             {"name": "date_field",     "type": "date"},
             {"name": "other_field",    "type": "other"},
-            {"name": "nullable_field", "type": "null"},
+            {"name": "nullable_field", "type": "nullable"},
             {"name": "list_field",     "type": "list"},
             {"name": "enum_field",     "type": "enum",   "symbols": ['RED', 'GREEN', 'BLUE']}
         ]
@@ -79,7 +84,7 @@ def test_validator_multiple_types():
     TEST_DATA_1 = { "multi": "True" }
     TEST_DATA_2 = { "multi": True }
     TEST_DATA_3 = { "multi": None }
-    TEST_SCHEMA = { "fields": [ { "name": "multi", "type": ["string", "boolean", "null"] } ] }
+    TEST_SCHEMA = { "fields": [ { "name": "multi", "type": ["string", "boolean", "nullable"] } ] }
 
     test = Schema(TEST_SCHEMA)
     assert (test.validate(TEST_DATA_1))
@@ -100,7 +105,7 @@ def test_validator_nonnative_types():
             { "name": "integer_field",  "type": "numeric" },
             { "name": "boolean_field",  "type": "boolean" },
             { "name": "date_field",     "type": "date"    },
-            { "name": "nullable_field", "type": "null"    }
+            { "name": "nullable_field", "type": "nullable"}
         ]
     }
 
@@ -210,6 +215,18 @@ def test_validator_number_ranges():
     assert (test.validate(UNDER_TEST_DATA))
 
 
+def test_validator_string_format():
+
+    
+    INVALID_TEST_DATA = {"cve": "eternalblue"}
+    VALID_TEST_DATA = {"cve": "CVE-2017-0144"}
+    TEST_SCHEMA = {"fields": [{"name": "cve", "type": "string", "format": r"(?i)CVE-\d{4}-\d{4,7}"}]}
+
+    test = Schema(TEST_SCHEMA)
+    assert (not test.validate(INVALID_TEST_DATA))
+    assert (test.validate(VALID_TEST_DATA))
+
+
 if __name__ == "__main__":
     test_validator_all_valid_values()
     test_validator_invalid_string()
@@ -223,3 +240,4 @@ if __name__ == "__main__":
     test_validator_list()
     test_validator_enum()
     test_validator_number_ranges()
+    test_validator_string_format()

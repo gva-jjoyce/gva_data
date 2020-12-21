@@ -5,7 +5,7 @@ This handles the logic for moving data through a pipeline.
 """
 import uuid
 import random
-from .trace_blocks import TraceBlocks
+from ..utils import TraceBlocks
 import gva.logging  # type:ignore
 import networkx  # type:ignore
 from typing import List, Union  # type:ignore
@@ -46,21 +46,13 @@ def go(
         flow: networkx.DiGraph,
         data: dict = {},
         context: dict = {},
-        trace_sample_rate: float = 0.001,
-        bins: List = []) -> Union[List[dict], None]:
+        trace_sample_rate: float = 0.001) -> Union[List[dict], None]:
     """
     Execute a flow by discovering starting nodes and then
     calling a recursive function to walk the flow
 
     returns block trace for the execution
     """
-
-    # bins provide places for data to be written that isn't part of the main
-    # flow of data, two common bins are the error_bin - where messages that
-    # can't progress through the flow are written - and the trace_bin - where
-    # trace data is written.
-    for bin in bins:
-        flow | bin
 
     # create a copy of the context
     my_context = context.copy()

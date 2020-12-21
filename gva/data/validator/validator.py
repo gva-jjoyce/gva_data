@@ -6,20 +6,25 @@ Schema definition is similar to - but not the same as - avro schemas
 
 Supported Types:
     - string - a character sequence
+        - format
     - numeric - a number
-    - int - alias for numeric
+        - min:
+        - max
     - date - a datetime.date or an iso format date or time
     - boolean - a boolean or a binary value (true/false, on/off, yes/no)
+        - symbols
     - other - not one of the above, but a required field
-    - null - Python Falsy (None, 0, Empty String, etc)
+    - nullable - Python Falsy (None, 0, Empty String, etc)
+    - enum - 
+        - symbols
 
 Example Schema:
 {
  "name": "Table Name",
  "fields": [
      {"name": "id", "type": "string"},
-     {"name": "country",  "type": ["string", "null"]},
-     {"name": "followers", "type": ["string", "null"]}
+     {"name": "country",  "type": ["string", "nullable"]},
+     {"name": "followers", "type": ["string", "nullable"]}
  ]
 }
 """
@@ -27,24 +32,70 @@ import datetime
 import json
 from typing import List, Any, Union, Callable
 import os
-
+import re
 
 VALID_BOOLEAN_VALUES = ("true", "false", "on", "off", "yes", "no", "0", "1")
+DEFAULT_MIN = -9223372036854775808
+DEFAULT_MAX = 9223372036854775807
 
 
-def _is_string(value: Any) -> bool:
-    return type(value).__name__ == "str"
+class is_string():
+    __slots__ = ['pattern', 'regex']
+    def __init__(self, **kwargs):
+        self.regex = None
+        self.pattern = kwargs.get('format')
+        if self.pattern:
+            self.regex = re.compile(self.pattern)
+    def __call__(self, value: Any) -> bool:
+        if self.pattern:
+            return self.regex.match(str(value))
+        else:
+            return type(value).__name__ == "str"
+    def __str__(self):
+        if self.pattern:
+            return f'string {self.pattern}'
+        else:
+            return 'string'
+
+class is_valid_enum():
+    __slots__ = ['symbols']
+    def __init__(self, **kwargs):
+        """
+        -> "type": "enum", "symbols": ["up", "down"]
+        
+        symbols: list of allowed values (case sensitive)
+        """
+        self.symbols = kwargs.get('symbols', ())
+    def __call__(self, value: Any) -> bool:
+        return value and value in self.symbols
+    def __str__(self):
+        return f'enum {self.symbols}'
 
 
-def _is_boolean(value: Any) -> bool:
-    return str(value).lower() in VALID_BOOLEAN_VALUES
+class is_boolean(is_valid_enum):
+    def __init__(self, **kwargs):
+        """
+        is_boolean is a special implementation of is_valid_enum
+        - it defaults to a set of true/false values
+        - the check is case insensitive
+        """
+        super().__init__()
+        self.symbols = VALID_BOOLEAN_VALUES
+    def __call__(self, value: Any) -> bool:
+        return super().__call__(str(value).lower())
 
 
-class _is_numeric():
+class is_numeric():
     __slots__ = ['min', 'max']
-    def __init__(self, min: int, max: int):
-        self.min = min
-        self.max = max
+    def __init__(self, **kwargs):
+        """
+        -> "type": "numeric", "min": 0, "max": 100
+        
+        min: low end of valid range
+        max: high end of valid range
+        """
+        self.min = kwargs.get('min', DEFAULT_MIN)
+        self.max = kwargs.get('max', DEFAULT_MAX)
     def __call__(self, value: Any) -> bool:
         try:
             n = float(value)
@@ -54,17 +105,17 @@ class _is_numeric():
             return False
         return (n >= self.min) and (n <= self.max)
     def __str__(self):
-        if self.min == -9223372036854775808 and self.max == 9223372036854775807:
+        if self.min == DEFAULT_MIN and self.max == DEFAULT_MAX:
             return 'numeric'
-        if not self.min == -9223372036854775808 and not self.max == 9223372036854775807:
+        if not self.min == DEFAULT_MIN and not self.max == DEFAULT_MAX:
             return f'numeric ({self.min} - {self.max})'
-        if not self.min == -9223372036854775808 and self.max == 9223372036854775807:
+        if not self.min == DEFAULT_MIN and self.max == DEFAULT_MAX:
             return f'numeric ({self.min} - infinity)'
-        if self.min == -9223372036854775808 and not self.max == 9223372036854775807:
+        if self.min == DEFAULT_MIN and not self.max == DEFAULT_MAX:
             return f'numeric (infinity - {self.max})'
 
 
-def _is_date(value: Any) -> bool:
+def is_date(value: Any) -> bool:
     try:
         if type(value).__name__ in ["datetime", "date", "time"]:
             return True
@@ -74,44 +125,39 @@ def _is_date(value: Any) -> bool:
         return False
 
 
-def _is_null(value: Any) -> bool:
+def is_null(value: Any) -> bool:
     return not value
 
 
-def _other_validator(value: Any) -> bool:
+def other_validator(value: Any) -> bool:
     return True
 
 
-def _not_valid(value: Any) -> bool:
+def not_valid(value: Any) -> bool:
     return False
 
 
-def _is_list(value: Any) -> bool:
+def is_list(value: Any) -> bool:
     return isinstance(value, list)
 
-
-class _is_valid_enum():
-    __slots__ = ['symbols']
-    def __init__(self, symbols: List[str]):
-        self.symbols = symbols
-    def __call__(self, value: Any) -> bool:
-        return value in self.symbols
-    def __str__(self):
-        return f'enum {self.symbols}'
 
 """
 Create a dictionary of the validator functions
 """
 SIMPLE_VALIDATORS = {
-    "string": _is_string,
-    "date": _is_date,
-    "boolean": _is_boolean,
-    "null": _is_null,
-    "nullable": _is_null,   # alias
-    "not_specified": _not_valid,
-    "other": _other_validator,
-    "list": _is_list,
-    "array": _is_list,
+    "date": is_date,
+    "nullable": is_null,   # alias
+    "not_specified": not_valid,
+    "other": other_validator,
+    "list": is_list,
+    "array": is_list,
+}
+
+COMPLEX_VALIDATORS = {
+    "enum": is_valid_enum,
+    "numeric": is_numeric,
+    "string": is_string,
+    "boolean": is_boolean
 }
 
 
@@ -124,17 +170,12 @@ def get_validators(
     """
     if not type(type_descriptor).__name__ == 'list':
         type_descriptor = [type_descriptor]  # type:ignore
-    validators: List[Callable] = []
+    validators: List[Any] = []
     for descriptor in type_descriptor:
-        if descriptor == 'enum':
-            symbols = kwargs.get('symbols', [])
-            validators.append(_is_valid_enum(symbols)) # type:ignore
-        elif descriptor in ['int', 'numeric']:
-            min_ = kwargs.get('min',  -9223372036854775808)
-            max_ = kwargs.get('max', 9223372036854775807)
-            validators.append(_is_numeric(min=min_, max=max_))
+        if descriptor in COMPLEX_VALIDATORS:
+            validators.append(COMPLEX_VALIDATORS[descriptor](**kwargs))
         else:
-            validators.append(SIMPLE_VALIDATORS[descriptor]) # type:ignore
+            validators.append(SIMPLE_VALIDATORS[descriptor])
     return validators
 
 
@@ -169,12 +210,13 @@ class Schema():
                 item.get('name'): get_validators(
                         item['type'], 
                         symbols=item.get('symbols'), 
-                        min=item.get('min', -9223372036854775808), # 64bit signed (not a limit, just a default)
-                        max=item.get('max', 9223372036854775807))  # 64bit signed (not a limit, just a default)
+                        min=item.get('min', DEFAULT_MIN), # 64bit signed (not a limit, just a default)
+                        max=item.get('max', DEFAULT_MAX),  # 64bit signed (not a limit, just a default)
+                        format=item.get('format'))
                 for item in definition.get('fields', [])  #type:ignore
             }
         except KeyError:
-            raise ValueError("Invalid type specified in schema - valid types are: string, numeric, date, boolean, null, list, enum")
+            raise ValueError("Invalid type specified in schema - valid types are: string, numeric, date, boolean, nullable, list, enum")
         if len(self._validators) == 0:
             raise ValueError("Invalid schema specification")
 
@@ -184,12 +226,10 @@ class Schema():
         self.last_error = ''
  
         for key, value in self._validators.items():
-            if not field_validator(subject.get(key), self._validators.get(key, [_other_validator])):
+            if not field_validator(subject.get(key), self._validators.get(key, [other_validator])):
                 result = False
                 for v in value:
-                    if not v(value):
-                        self.last_error += f"'{key}' ({subject.get(key)}) did not pass validator {str(v)}.\n"
-                        #print(f"'{key}' ({subject.get(key)}) did not pass validator {str(v)}.\n")
+                    self.last_error += f"'{key}' ({subject.get(key)}) did not pass validator {str(v)}.\n"
         if raise_exception and not result:
             raise ValueError(F"Record does not conform to schema - {self.last_error}. ")
         return result

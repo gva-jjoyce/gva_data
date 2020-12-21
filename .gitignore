@@ -133,4 +133,4 @@ sample_data/**
 **.lzma
 **.jsonl
 temp
-.DS_Store
+**/.DS_Store

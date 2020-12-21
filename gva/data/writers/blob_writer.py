@@ -1,6 +1,6 @@
 import datetime
 import os
-from ..helpers import BlobPaths
+from ...utils import BlobPaths
 try:
     from google.cloud import storage  # type:ignore
 except ImportError:
