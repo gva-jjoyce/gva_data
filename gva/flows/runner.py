@@ -11,7 +11,6 @@ import networkx  # type:ignore
 from typing import List, Union  # type:ignore
 
 
-@gva.logging.error_trap()
 def _inner_runner(
         flow: networkx.DiGraph,
         node: str = None,
