@@ -106,7 +106,7 @@ def _build_error_stack():
 
 def _render_locals(locals):
     if locals:
-        yield ('─' * 35) + '  locals  ' + ('─' * 35)
+        yield ('-' * 45) + '  locals  ' + ('-' * 45)
 
     max_label_len = 0
     for key, value in locals.items():
@@ -127,7 +127,7 @@ def _read_from_code(
         lines = code.splitlines()
         start_line = max(line - extend_by, 0)
         end_line = min(line + extend_by, len(lines)+1)
-        yield ('─' * 36) + '  code  ' + ('─' * 36)
+        yield ('-' * 46) + '  code  ' + ('-' * 46)
         for line_number in range(start_line, end_line):
             prefix = '❱' if line_number == line else ' '
             yield F"{prefix}{line_number:4d} {lines[line_number-1]}"
@@ -149,7 +149,7 @@ def _render_error_stack():
                     line=frame.lineno,
                     extend_by=3)
         
-            yield '─' * 80
+            yield '-' * 100
             yield ''
 
 
