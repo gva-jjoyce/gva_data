@@ -141,7 +141,7 @@ class BaseOperator(abc.ABC):
                                                  version=self.version())
             try:
                 self.trace_writer(context['execution_trace'].blocks[-1])  # type:ignore
-            except:
+            except:  # nosec
                 pass # nosec
 
         # if there is a high failure rate, abort
