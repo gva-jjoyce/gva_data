@@ -15,6 +15,8 @@ def build_readme(metadata):
 paths = glob.glob('../../**/*.metadata', recursive=True)
 
 for path in paths:
+    print(path)
+    
     with open(path, 'r') as file:
         file_contents = file.read()
     metadata = json.loads(file_contents)
