@@ -48,7 +48,7 @@ class Writer():
         schema: Schema = None,
         compress: bool = False,
         use_worker_thread: bool = True,
-        idle_timeout_seconds: int = 60,
+        idle_timeout_seconds: int = 30,
         date: Optional[datetime.date] = None,
         **kwargs):
         """
@@ -198,7 +198,7 @@ def _worker_thread(data_writer: Writer):
     - when the day changes, it closes the existing partition so a new one is
       opened with today's date
     - close partitions when new records haven't been recieved for a period of
-      time (default 60 seconds)
+      time (default 30 seconds)
     - attempt to flush writes to disk regularly
 
     These are done in a separate thread so the 'append' method doesn't need to
@@ -206,10 +206,11 @@ def _worker_thread(data_writer: Writer):
     handled and focus on writes
     """
     while data_writer.use_worker_thread:
-        if (time.time_ns() - data_writer.last_write) > (data_writer.idle_timeout_seconds * 1e9):
-            with threading.Lock():
-                data_writer.on_partition_closed()
-#        if not data_writer.formatted_path == datetime.datetime.today().strftime(data_writer.path):
-#            change_partition = True
+        if data_writer.file_name:
+            if (time.time_ns() - data_writer.last_write) > (data_writer.idle_timeout_seconds * 1e9):
+                with threading.Lock():
+                    data_writer.on_partition_closed()
+    #        if not data_writer.formatted_path == datetime.datetime.today().strftime(data_writer.path):
+    #            change_partition = True
 
         time.sleep(1)

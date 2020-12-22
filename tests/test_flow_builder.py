@@ -17,7 +17,7 @@ except ImportError:
     pass
 
 
-def test_flow_builder():
+def test_flow_builder_valid():
     """
     Test the flow builder
     The flow builder creates a networkx graph and adds some methods to it
@@ -25,7 +25,7 @@ def test_flow_builder():
     e = EndOperator()
     f = FilterOperator()
     n = NoOpOperator()
-    flow = e > f > n
+    flow = f > n > e
 
     assert isinstance(flow, networkx.DiGraph)
     assert F"EndOperator-{id(e)}" in flow.nodes()
@@ -37,6 +37,40 @@ def test_flow_builder():
     assert hasattr(flow, 'finalize')
 
 
+def test_flow_builder_invalid_uninstantiated():
+    """
+    Test the flow builder doesn't succeed with an invalid Operator
+    """
+    e = EndOperator      # <- this should fail
+    n = NoOpOperator()
+
+    failed = False
+    try:
+        flow = n > e
+    except TypeError:
+        failed = True
+
+    assert failed
+
+
+def test_flow_builder_invalid_wrong_type():
+    """
+    Test the flow builder doesn't succeed with an invalid Operator
+    """
+    e = get_logger()      # <- this should fail
+    n = NoOpOperator()
+
+    failed = False
+    try:
+        flow = n > e
+    except TypeError:
+        failed = True
+
+    assert failed
+
+
 if __name__ == "__main__":
 
-    test_flow_builder()
+    test_flow_builder_valid()
+    test_flow_builder_invalid_uninstantiated()
+    test_flow_builder_invalid_wrong_type()

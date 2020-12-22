@@ -25,7 +25,7 @@ def _inner_runner(
     """
     func = flow.nodes()[node].get("function")
     if not func:
-        raise Exception("Invalid Flow - node is missing a 'fhunction' attribute")
+        raise Exception("Invalid Flow - node is missing a 'function' attribute")
     if not hasattr(func, "error_writer") and hasattr(flow, "error_writer"):
         func.error_writer = flow.error_writer
     next_nodes = flow.out_edges(node, default=[])

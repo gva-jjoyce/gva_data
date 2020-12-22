@@ -218,12 +218,17 @@ class BaseOperator(abc.ABC):
                     F"{self.__class__.__name__}-{id(self)}",
                     [node for node in operator.nodes() if len(graph.in_edges(node)) == 0][0],
                 )
-            else:
+            elif issubclass(type(operator), BaseOperator):
                 # otherwise add the node and edge and set the graph further
                 # down the line
                 graph.add_node(F"{operator.__class__.__name__}-{id(operator)}", function=operator)
                 graph.add_edge(F"{self.__class__.__name__}-{id(self)}", F"{operator.__class__.__name__}-{id(operator)}")
                 operator.graph = graph
+            else:
+                label = type(operator).__name__
+                if hasattr(operator, '__name__'):
+                    label = operator.__name__
+                raise TypeError(F"Operator {label} must inherit BaseOperator, this error also occurs when the Operator has not been correctly instantiated.")
         # this variable only exists to build the graph, we don't need it
         # anymore so destroy it
         self.graph = None
