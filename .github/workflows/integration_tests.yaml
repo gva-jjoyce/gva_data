@@ -14,10 +14,10 @@ jobs:
         with:
           python-version: '3.8' 
           
-      - name: install pytest 
-        run:  pip install pytest, coverage
+      - name: install pytest and coverage
+        run:  pip install pytest coverage
         
-      - name: install requirements
+      - name: install gva requirements
         run:  pip install -r $GITHUB_WORKSPACE/requirements.txt
 
       - name: run regression tests
