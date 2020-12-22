@@ -189,6 +189,14 @@ class BaseOperator(abc.ABC):
         # do nothing - prevents errors if someone calls super().__del__
         pass
 
+    def trace_writer(self, record):
+        # this is a stub to be overridden
+        pass
+
+    def error_writer(self, record):
+        # this is a stub to be overridden
+        pass
+
     def __gt__(self, next_operators: Union[List[nx.DiGraph], nx.DiGraph]):
         """
         Smart flow/DAG builder. This allows simple flows to be defined using

@@ -52,8 +52,8 @@ class BlobPaths(object):
         else:
             path_string = path
 
-        path_string = path_string.replace('%date', '%Y-%m-%d')
         path_string = path_string.replace('%datefolders', 'year_%Y/month_%m/day_%d')
+        path_string = path_string.replace('%date', '%Y-%m-%d')
         path_string = path_string.replace('%time', '%H%M%S')
 
         path_string = date.strftime(path_string)
