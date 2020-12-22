@@ -10,10 +10,10 @@ processes on the dataset, row at a time.
 
 Methods provide a limited approximation of SQL functionality:
 
-SELECT   - select_from_dictset
-UNION    - union_dictsets
-WHERE    - select_from_dictset
-JOIN     - join_dictsets
+SELECT   - select_from
+UNION    - union
+WHERE    - select_from
+JOIN     - join
 DISTINCT - disctinct
 LIMIT    - limit
 
@@ -73,15 +73,15 @@ def select_record_fields(
     return {k: record.get(k, None) for k in fields}
 
 
-def order(record: Union[dict, list]) -> Union[dict, list]:
+def order(record: dict) -> dict:
     if isinstance(record, dict):
         return dict(sorted(record.items()))
-    if isinstance(record, list):
-        return sorted((order(x) for x in record), key=lambda item: '' if not item else item)
+    else:
+        raise TypeError('dictset.order requires a dict')
     return record
 
 
-def join_dictsets(
+def join(
         left: Iterator[dict],
         right: Iterator[dict],
         column: str,
@@ -107,16 +107,14 @@ def join_dictsets(
     """
     index = create_index(right, column)
     for record in left:
-        value = record.get('QID')
+        value = record.get(column)
         if index.get(value):
             yield {**record, **index[value]}
         elif join_type == JOINS.LEFT_JOIN:
             yield record
 
 
-def union_dictsets(
-        dictset_1: Iterator[dict],
-        dictset_2: List[dict]) -> Iterator[dict]:
+def union(*args) -> Iterator[dict]:
     """
     Append the records from a set of lists together, doesn't ensure columns
     align.
@@ -127,10 +125,9 @@ def union_dictsets(
     UNION
     SELECT * FROM dictset_2
     """
-    for record in dictset_1:
-        yield record
-    for record in dictset_2:
-        yield record
+    for dictset in args:
+        for record in dictset:
+            yield record
 
 
 def create_index(
@@ -192,27 +189,13 @@ def set_value(
     return record
 
 
-def distinct(
-        dictset: Iterator[dict],
-        columns: List[str] = ['*']):
+def distinct(dictset: Iterator[dict]):
     """
     Removes duplicate records from a dictset
     """
-
-    def _noop(x):
-        return x
-    
-    def _filter(x):
-        return {k: x.get(k, '') for k in columns}
-
     seen_hashes: dict = {}
-    selector = _noop
-    if columns != ['*']:
-        selector = _filter
-
     for record in dictset:
-        entry = selector(record)
-        entry = json_dumper(entry)
+        entry = json_dumper(record)
         _hash = hash(entry)
         if seen_hashes.get(_hash):
             continue

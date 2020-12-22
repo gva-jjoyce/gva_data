@@ -81,11 +81,19 @@ class Reader():
 
         It's the data is automatically partitioned by date.
         """
-        self.reader = reader(path=from_path, date_range=date_range, **kwargs)
+        if not isinstance(select, list):
+            raise TypeError("Reader 'select' parameter must be a list")
+        if not hasattr(where, '__call__'):
+            raise TypeError("Reader 'where' parameter must be Callable")
+        if not isinstance(date_range, tuple):
+            raise TypeError("Reader 'date_range' parameter must be a tuple")
+
         self.format = data_format
         self.formatter = FORMATTERS.get(self.format.lower())
         if not self.formatter:
             raise TypeError(F"data format unsupported: {self.format}.")
+
+        self.reader = reader(path=from_path, date_range=date_range, **kwargs)
         self.select = select.copy()
         self.where: Callable = where
         self.limit: int = limit

@@ -30,3 +30,4 @@ Pull requests should pass:
 - bandit (secure coding practices)
 - mypy (type hints)
 - pytest (regression tests)
+- test coverage should not be reduced (currently 60%)

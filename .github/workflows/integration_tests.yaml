@@ -15,13 +15,16 @@ jobs:
           python-version: '3.8' 
           
       - name: install pytest 
-        run:  pip install pytest
+        run:  pip install pytest, coverage
         
       - name: install requirements
         run:  pip install -r $GITHUB_WORKSPACE/requirements.txt
 
-      - name: run test
-        run: pytest 
+      - name: run regression tests
+        run: coverage run -m pytest 
+
+      - name: report on coverage
+        run: coverage report --include=gva* --fail-under=60 
 
   bandit:
     runs-on: ubuntu-latest
