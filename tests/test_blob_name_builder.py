@@ -11,7 +11,7 @@ from gva.utils import BlobPaths
 try:
     from rich import traceback
     traceback.install()
-except ImportError:
+except ImportError:   # pragma: no cover
     pass
 
 

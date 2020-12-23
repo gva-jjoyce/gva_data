@@ -43,12 +43,12 @@ try:
     import orjson
     json_parser = orjson.loads
     json_dumper = orjson.dumps
-except ImportError:
-    pass
+except ImportError:  # pragma: no cover
+    pass  # 
 try:
     import ujson
     json_parser = ujson.loads
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 
@@ -74,11 +74,7 @@ def select_record_fields(
 
 
 def order(record: dict) -> dict:
-    if isinstance(record, dict):
-        return dict(sorted(record.items()))
-    else:
-        raise TypeError('dictset.order requires a dict')
-    return record
+    return dict(sorted(record.items()))
 
 
 def join(
@@ -189,17 +185,23 @@ def set_value(
     return record
 
 
-def distinct(dictset: Iterator[dict]):
+def distinct(
+        dictset: Iterator[dict],
+        cache_size: int = 10000):
     """
     Removes duplicate records from a dictset
+
+    Parameters:
+    - dictset: an iterator of dictionaries
+    - cache_size: the number of records to remember (optional, default 10,000)
     """
-    seen_hashes: dict = {}
+    from ...utils import LRU_Index
+    lru = LRU_Index(size=cache_size)
+
     for record in dictset:
         entry = json_dumper(record)
-        _hash = hash(entry)
-        if seen_hashes.get(_hash):
+        if lru(entry):
             continue
-        seen_hashes[_hash] = 1
         yield record
 
 
@@ -207,7 +209,11 @@ def limit(
         dictset: Iterator[dict],
         limit: int):
     """
-    Returns up to 'limit' number of records
+    Returns up to 'limit' number of records.
+
+    Paramters:
+    - dictset: an iterator of dictionaries
+    - limit: the maximum number of records to return
     """
     counter = limit
     for record in dictset:

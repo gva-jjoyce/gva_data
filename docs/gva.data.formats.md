@@ -6,7 +6,7 @@ A set of methods for handling complex data types.
 
 ## What Is In It?
 
-**dictset** for handling lists or generators of dictionaries  
+[**dictset**](gva.data.formats.dictset.md) for handling lists or generators of dictionaries  
 **graphs** for handling networkx graphs
 
 ## How Do I Use It?

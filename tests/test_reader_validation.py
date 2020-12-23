@@ -19,6 +19,7 @@ def test_reader_all_good():
         reader = Reader(
                 project='',
                 select=['a', 'b'],
+                # deepcode ignore CopyPasteError/test: Test Code
                 where=lambda x: x == x,
                 date_range=(datetime.datetime.now(), datetime.datetime.now()),
                 data_format='json')
@@ -34,6 +35,7 @@ def test_reader_select_not_list():
         reader = Reader(
                 project='',
                 select='everything',
+                # deepcode ignore CopyPasteError/test: Test Code
                 where=lambda x: x == x,
                 date_range=(datetime.datetime.now(), datetime.datetime.now()),
                 data_format='json')
@@ -64,6 +66,7 @@ def test_dates_not_tuple():
         reader = Reader(
                 project='',
                 select=['a', 'b'],
+                # deepcode ignore CopyPasteError/test: Test Code
                 where=lambda x: x == x,
                 date_range=datetime.datetime.now(),
                 data_format='json')
@@ -79,6 +82,7 @@ def test_format_not_known():
         reader = Reader(
                 project='',
                 select=['a', 'b'],
+                # deepcode ignore CopyPasteError/test: Test Code
                 where=lambda x: x == x,
                 date_range=datetime.datetime.now(),
                 data_format='excel')

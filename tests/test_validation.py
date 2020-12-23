@@ -9,7 +9,7 @@ from gva.data.validator import Schema
 try:
     from rich import traceback
     traceback.install()
-except ImportError:
+except ImportError:   # pragma: no cover
     pass
 
 

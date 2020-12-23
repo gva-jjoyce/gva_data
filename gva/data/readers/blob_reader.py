@@ -1,6 +1,6 @@
 try:
     from google.cloud import storage  # type:ignore
-except ImportError:
+except ImportError:   # pragma: no cover
     pass
 import lzma
 import datetime
@@ -10,8 +10,8 @@ from ...logging import get_logger
 
 
 def blob_reader(
-        path: str,
-        project: str,
+        path: str = None,
+        project: str = None,
         date_range: Tuple[Optional[datetime.date], Optional[datetime.date]] = (None, None),
         chunk_size=16*1024*1024,
         **kwargs):
@@ -20,9 +20,9 @@ def blob_reader(
     Blob reader, will iterate over as set of blobs in a path.
     """
     # validate request
-    if not project:
+    if project is None:
         raise ValueError('Blob Reader requires Project to be set')
-    if not path:
+    if path is None:
         raise ValueError('Blob Reader requires Path to be set')
 
     # if dates aren't provided, use today

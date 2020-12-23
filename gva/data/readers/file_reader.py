@@ -50,7 +50,7 @@ def _inner_compressed_file_reader(file_name: str):
 
 def file_reader(
         path: str = "",
-        chunk_size: int = 8*1024*1024,  # 8Mb
+        chunk_size: int = 16*1024*1024,  # 16Mb
         date_range: Tuple[Optional[datetime.date], Optional[datetime.date]] = (None, None),
         extention: str = '.jsonl',
         delimiter: str = "\n") -> Iterator:

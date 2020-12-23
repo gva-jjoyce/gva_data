@@ -35,6 +35,12 @@ critical_errors = Reader(
 critical_errors.to_pandas()
 ~~~
 
+## Available Readers
+
+**blob_reader** - the default reader  
+**file_reader** - read from files and folders on the filesystem  
+**mongodb_reader** - read from a mongo db  
+
 ## Usage Recommendations
 
 **Date Filtering**  

@@ -134,3 +134,4 @@ sample_data/**
 **.jsonl
 temp
 **/.DS_Store
+.DS_Store

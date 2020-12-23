@@ -13,7 +13,7 @@ from gva.flows.operators import FilterOperator, EndOperator, NoOpOperator
 try:
     from rich import traceback
     traceback.install()
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 

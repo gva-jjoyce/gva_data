@@ -11,7 +11,7 @@ from gva.data.formats import dictset
 try:
     from rich import traceback
     traceback.install()
-except ImportError:
+except ImportError:   # pragma: no cover
     pass
 
 
@@ -53,7 +53,7 @@ def test_join_left():
     assert left[0].get('plus_one') == 'two'
     assert left[1].get('key') == 2
     assert left[1].get('value') == 'two'
-    assert left[1].get('plus_one') == None 
+    assert left[1].get('plus_one') is None 
 
 
 def test_union():
@@ -94,7 +94,7 @@ def test_select_from():
     assert selected[0].get('value') is not None
 
 
-def test_set_column():
+def test_set_column_func():
     ds = [
         {'key': 1, 'value': 'one', 'plus1': 2},
         {'key': 2, 'value': 'two', 'plus1': 3},
@@ -107,6 +107,21 @@ def test_set_column():
     for row in updated:
         assert row.get('key') is not None
         assert row.get('plus2') == row.get('key') + 2
+
+
+def test_set_column_const():
+    ds = [
+        {'key': 1, 'value': 'one', 'plus1': 2},
+        {'key': 2, 'value': 'two', 'plus1': 3},
+        {'key': 3, 'value': 'three', 'plus1': 4},
+        {'key': 4, 'value': 'four', 'plus1': 5}
+    ]
+    updated = list(dictset.set_column(ds, 'plus2', 2))
+
+    assert len(updated) == len(ds)
+    for row in updated:
+        assert row.get('key') is not None
+        assert row.get('plus2') == 2
 
 
 def test_distinct():
@@ -170,7 +185,11 @@ def test_paging():
     for index, page in enumerate(dictset.page_dictset(ds, page_size)):
         assert len(page) <= page_size
         assert page==ds[index*page_size:(index+1)*page_size]
-        
+
+
+def test_select_all():
+    assert dictset.select_all(1)
+
 
 if __name__ == "__main__":
     test_select_record_fields()
@@ -180,8 +199,10 @@ if __name__ == "__main__":
     test_union()
     test_create_index()
     test_select_from()
-    test_set_column()
+    test_set_column_func()
+    test_set_column_const()
     test_distinct()
     test_limit()
     test_match()
     test_paging()
+    test_select_all()
