@@ -17,6 +17,7 @@ import time
 import orjson as json
 import datetime
 import types
+import sys
 import traceback
 import networkx as nx   # type:ignore
 from ...logging import get_logger  # type:ignore
@@ -108,10 +109,11 @@ class BaseOperator(abc.ABC):
             except Exception as err:
                 self.errors += 1
                 attempts_to_go -= 1
-                self.logger.error(F"{self.__class__.__name__} - {type(err).__name__} - {err}")
                 if attempts_to_go:
+                    self.logger.error(F"{self.__class__.__name__} - {type(err).__name__} - {err} - retry in {self.retry_wait} seconds")
                     time.sleep(self.retry_wait)
                 else:
+                    self.logger.error(F"{self.__class__.__name__} - {type(err).__name__} - {err} - retried {self.retry_count} times before aborting")
                     try:
                         error_payload = (
                                 F"timestamp : {datetime.datetime.today().isoformat()}\n"
@@ -126,7 +128,7 @@ class BaseOperator(abc.ABC):
                                 "----------------------------------------------------------------------------------------------------\n")
                         self.error_writer(error_payload)  # type:ignore
                     except Exception as err:
-                        self.logger.error(F"Problem writing to the error bin, a record has been lost. {type(err).__name__} - {err}")
+                        self.logger.error(F"Problem writing to the error bin, a record has been lost. {type(err).__name__} - {err} - {context.get('uuid')}")
                     outcome = None
                     # add a failure to the last_few_results list
                     self.last_few_results.append(0)
@@ -147,7 +149,7 @@ class BaseOperator(abc.ABC):
         # if there is a high failure rate, abort
         if sum(self.last_few_results) < (len(self.last_few_results) / 2):
             self.logger.critical(F"Failure Rate for {self.__class__.__name__} over last {len(self.last_few_results)} executions is over 50%, aborting.")
-            quit()
+            sys.exit(1)
 
         return outcome
 
