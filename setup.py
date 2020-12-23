@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
    name='gva.data',
-   version='0.1.15',
+   version='0.1.16',
    description='GVA Data Libraries',
    long_description=long_description,
    long_description_content_type="text/markdown",
