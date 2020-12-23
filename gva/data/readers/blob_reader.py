@@ -19,9 +19,6 @@ def blob_reader(
     """
     Blob reader, will iterate over as set of blobs in a path.
     """
-
-    print('project')
-
     # validate request
     if project is None:
         raise ValueError('Blob Reader requires Project to be set')

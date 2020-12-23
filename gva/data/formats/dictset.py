@@ -55,8 +55,8 @@ def select_record_fields(
         record: dict,
         fields: List[str]) -> dict:
     """
-    Selects a subset of fields from a dictionary. If the field
-    is not present in the dictionary it defaults to None.
+    Selects a subset of fields from a dictionary. If the field is not present
+    in the dictionary it defaults to None.
 
     Parameters:
     - dictset: an iterable of dictionaries
@@ -67,10 +67,10 @@ def select_record_fields(
 
 def order(record: dict) -> dict:
     """
-    Sort a dictionary by it's keys.
+    Sort a dictionary by its keys.
 
     Parameters:
-    - records: a 
+    - record: a record 
     """
     return dict(sorted(record.items()))
 
@@ -80,7 +80,9 @@ def join(
         column: str,
         join_type=JOINS.INNER_JOIN) -> Iterator[dict]:
     """
-    Iterates over the left table, matching records fron the right table.
+    Iterates over the left dictset, matching records fron the right dictset.
+
+    Dictsets provided to this method are expected to be bounded.
 
     INNER_JOIN, the default, will discard records unless they appear in both
     tables, LEFT_JOIN will keep all the records fron the left table and add
@@ -94,8 +96,13 @@ def join(
     - resultant records may have inconsistent columns (same as 
       source lists)
 
-    Approximate SQL:
+    Parameters:
+    - left: the 'left' dictset
+    - right: the 'right' dictset
+    - column: the column shared by both dictsets to join on
+    - join_type: the type of join, INNER or LEFT
 
+    Approximate SQL:
     SELECT * FROM left JOIN right ON left.column = right.column
     """
     index = create_index(right, column)
@@ -111,6 +118,9 @@ def union(*args) -> Iterator[dict]:
     """
     Append the records from a set of lists together, doesn't ensure columns
     align.
+
+    Parameters:
+    - Any number of dictsets
 
     Approximate SQL:
 
@@ -128,6 +138,11 @@ def create_index(
         index_column: str) -> dict:
     """
     Create an index of a file to speed up look-ups.
+
+    Parameters:
+    - dictset: an iterable of dictionaries
+    - index_column: the column in the dictset to index on, it is expected to be
+      unique but this is not enforced.
     """
     index = {}
     for record in dictset:
@@ -143,10 +158,12 @@ def select_from(
     """
     Scan a dictset, filtering rows and selecting columns.
 
-    Basic implementation of SQL SELECT statement for a single table
+    Parameters:
+    - dictset: an iterable of dictionaries
+    - columns: a list of column names to return
+    - condition: a function to apply to filter records (keep rows that evaluate to True)
 
     Approximate SQL:
-
     SELECT columns FROM dictset WHERE condition
     """
     for record in dictset:
@@ -161,7 +178,12 @@ def set_column(
         column_name: str,
         setter: Callable) -> Iterator[dict]:
     """
-    Performs set_value on each row in a set
+    Performs set_value on each row in a set.
+
+    Parameters:
+    - dictset: an iterable of dictionaries
+    - column_name: the column to create or update
+    - setter: a method or constant to update the column
     """
     for record in dictset:
         yield set_value(record, column_name, setter)
@@ -172,8 +194,16 @@ def set_value(
         column_name: str,
         setter: Callable) -> dict:
     """
-    Sets the value of a column to either a fixed value or as the
-    result of a function which recieves the row as a parameter
+    Sets the value of a column to either a fixed value or as the result of a
+    function which recieves the row as a parameter.
+
+    This method is of limited use by itself, it is used internally by
+    `set_column`.
+
+    Paramters:
+    - record: a record
+    - column_name: the name of the field
+    - setter: a method or constant to update the field
     """
     if callable(setter):
         record[column_name] = setter(record)
@@ -224,7 +254,13 @@ def dictsets_match(
         dictset_1: Iterator[dict],
         dictset_2: Iterator[dict]):
     """
-    Tests if two sets match - this terminates generators
+    Tests if two dictsets match.
+    
+    Note that this will exhaust a generator.
+
+    Parameter:
+    - dictset_1: the first dictset
+    - dictset_2: the second dictset
     """
     def _hash_set(dictset: Iterator[dict]):
         xor = 0
@@ -242,8 +278,11 @@ def page_dictset(
         dictset: Iterator[dict],
         page_size: int) -> Iterator:
     """
-    Enables paging through a dictset by returning a page
-    of records at a time.
+    Enables paging through a dictset by returning a page of records at a time.
+
+    Parameters:
+    - dictset: an iterable of dictionaries
+    - page_size: the number of records per page
     """
     chunk: list = []
     for item in dictset:
