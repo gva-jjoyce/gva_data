@@ -15,7 +15,7 @@ setup(
    install_requires=[
         'google_cloud_storage',
         'xmltodict',
-        'ujson',
+        'orjson',
         'networkx'
    ]
 )

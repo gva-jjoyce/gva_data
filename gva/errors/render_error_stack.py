@@ -45,6 +45,10 @@ class Stack:
 def _build_error_stack():
     exc_type, exc_value, traceback = sys.exc_info()
 
+    # if there was no error, just return
+    if exc_type is None:
+        return []
+
     stacks = []
     is_cause = False
 

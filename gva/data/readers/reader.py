@@ -24,26 +24,12 @@ from ..formats.dictset import select_all, select_record_fields
 from .blob_reader import blob_reader
 import xmltodict  # type:ignore
 import datetime
-import ujson as json
 from ...logging import get_logger
-json_parser: Callable = json.loads
-json_dumper: Callable = json.dumps
-try:
-    import orjson
-    json_parser = orjson.loads
-    json_dumper = orjson.dumps
-except ImportError:
-    pass
-try:
-    import ujson
-    json_parser = ujson.loads
-except ImportError:
-    pass
-
+import orjson as json
 
 
 FORMATTERS = {
-    "json": json_parser,
+    "json": json.loads,
     "text": lambda x: x,
     "xml": lambda x: xmltodict.parse(x)
 }

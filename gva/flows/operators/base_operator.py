@@ -14,7 +14,7 @@ import inspect
 import functools
 import hashlib
 import time
-import ujson as json
+import orjson as json
 import datetime
 import types
 import traceback

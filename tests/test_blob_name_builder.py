@@ -76,3 +76,5 @@ if __name__ == "__main__":
     test_blob_paths_split_filename()
     test_blob_paths_get_paths()
     test_blob_paths_builder()
+
+    print('okay')

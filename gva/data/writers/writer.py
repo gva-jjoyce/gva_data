@@ -32,10 +32,7 @@ import datetime
 from .blob_writer import blob_writer
 from typing import Callable, Optional, Any, Union
 from gva.data.validator import Schema  # type:ignore
-try:
-    import ujson as json
-except ImportError:
-    import json  # type:ignore
+import orjson as json
 
 
 class Writer():
@@ -108,7 +105,7 @@ class Writer():
         self.last_write = time.time_ns()
 
         # serialize the record
-        serialized = json.dumps(record) + '\n'
+        serialized = json.dumps(record).decode() + '\n'
         len_serial = len(serialized)
 
         with threading.Lock():

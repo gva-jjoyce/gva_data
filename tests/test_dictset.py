@@ -206,3 +206,5 @@ if __name__ == "__main__":
     test_match()
     test_paging()
     test_select_all()
+    
+    print('okay')

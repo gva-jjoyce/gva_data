@@ -17,9 +17,8 @@ JOIN     - join
 DISTINCT - disctinct
 LIMIT    - limit
 
-All methods return generators, which mean they can only be iterated once, to
-iterate again they need to be regenerated. create_index is the only exception,
-as the index is for look-ups rather than iteration. If you know you're going
+Most methods return generators, which mean they can only be iterated once, to
+iterate again they need to be regenerated. If you know you're going
 to need to iterate more than once, you can use list() or similar to cache the
 values, however this may cause problems if the list is large.
 
@@ -36,20 +35,7 @@ for record in join_dictsets(filtered_list1, filtered_list2, 'id'):
 
 """
 from typing import Iterator, Any, List, Union, Callable
-import json
-json_parser: Callable = json.loads
-json_dumper: Callable = json.dumps
-try:
-    import orjson
-    json_parser = orjson.loads
-    json_dumper = orjson.dumps
-except ImportError:  # pragma: no cover
-    pass  # 
-try:
-    import ujson
-    json_parser = ujson.loads
-except ImportError:  # pragma: no cover
-    pass
+import orjson as json
 
 
 class JOINS(object):
@@ -59,7 +45,8 @@ class JOINS(object):
 
 def select_all(dummy: Any) -> bool:
     """
-    Returns True
+    Returns True.
+    - dummy: anything, it's ignored
     """
     return True
 
@@ -68,14 +55,24 @@ def select_record_fields(
         record: dict,
         fields: List[str]) -> dict:
     """
-    Selects a subset of fields from a dictionary
+    Selects a subset of fields from a dictionary. If the field
+    is not present in the dictionary it defaults to None.
+
+    Parameters:
+    - dictset: an iterable of dictionaries
+    - fields: a list of the fields to select
     """
     return {k: record.get(k, None) for k in fields}
 
 
 def order(record: dict) -> dict:
-    return dict(sorted(record.items()))
+    """
+    Sort a dictionary by it's keys.
 
+    Parameters:
+    - records: a 
+    """
+    return dict(sorted(record.items()))
 
 def join(
         left: Iterator[dict],
@@ -192,14 +189,14 @@ def distinct(
     Removes duplicate records from a dictset
 
     Parameters:
-    - dictset: an iterator of dictionaries
+    - dictset: an iterable of dictionaries
     - cache_size: the number of records to remember (optional, default 10,000)
     """
     from ...utils import LRU_Index
     lru = LRU_Index(size=cache_size)
 
     for record in dictset:
-        entry = json_dumper(record)
+        entry = json.dumps(record)
         if lru(entry):
             continue
         yield record
@@ -212,7 +209,7 @@ def limit(
     Returns up to 'limit' number of records.
 
     Paramters:
-    - dictset: an iterator of dictionaries
+    - dictset: an iterable of dictionaries
     - limit: the maximum number of records to return
     """
     counter = limit
@@ -233,7 +230,7 @@ def dictsets_match(
         xor = 0
         for record in dictset:
             entry = order(record)
-            entry = json_dumper(entry)
+            entry = json.dumps(entry)  # type:ignore
             _hash = hash(entry)
             xor = xor ^ _hash
         return xor

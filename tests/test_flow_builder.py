@@ -74,3 +74,5 @@ if __name__ == "__main__":
     test_flow_builder_valid()
     test_flow_builder_invalid_uninstantiated()
     test_flow_builder_invalid_wrong_type()
+
+    print('okay')

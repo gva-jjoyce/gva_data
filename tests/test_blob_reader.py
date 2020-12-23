@@ -14,11 +14,12 @@ def _test_blockers():
 
     # project is required
     failed = False
-    try:
-        r = blob_reader(path='path')
-    except ValueError:
-        failed = True
-    assert failed
+    #try:
+    print('here')
+    r = blob_reader(path='path')
+    #except ValueError:
+    #    failed = True
+    #assert failed
 
     # path is required
     failed = False
@@ -38,3 +39,6 @@ def _test_blockers():
 
 if __name__ == "__main__":
     _test_blockers()
+
+    print('okay')
+    

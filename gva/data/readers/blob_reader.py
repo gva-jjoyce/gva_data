@@ -10,8 +10,8 @@ from ...logging import get_logger
 
 
 def blob_reader(
-        path: str = None,
-        project: str = None,
+        path: str,
+        project: str,
         date_range: Tuple[Optional[datetime.date], Optional[datetime.date]] = (None, None),
         chunk_size=16*1024*1024,
         **kwargs):
@@ -19,6 +19,9 @@ def blob_reader(
     """
     Blob reader, will iterate over as set of blobs in a path.
     """
+
+    print('project')
+
     # validate request
     if project is None:
         raise ValueError('Blob Reader requires Project to be set')

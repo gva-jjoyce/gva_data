@@ -29,7 +29,7 @@ Example Schema:
 }
 """
 import datetime
-import json
+import orjson as json
 from typing import List, Any, Union, Callable
 import os
 import re
@@ -133,10 +133,6 @@ def other_validator(value: Any) -> bool:
     return True
 
 
-def not_valid(value: Any) -> bool:
-    return False
-
-
 def is_list(value: Any) -> bool:
     return isinstance(value, list)
 
@@ -146,8 +142,7 @@ Create a dictionary of the validator functions
 """
 SIMPLE_VALIDATORS = {
     "date": is_date,
-    "nullable": is_null,   # alias
-    "not_specified": not_valid,
+    "nullable": is_null,
     "other": other_validator,
     "list": is_list,
     "array": is_list,
