@@ -110,10 +110,10 @@ class BaseOperator(abc.ABC):
                 self.errors += 1
                 attempts_to_go -= 1
                 if attempts_to_go:
-                    self.logger.error(F"{self.__class__.__name__} - {type(err).__name__} - {err} - retry in {self.retry_wait} seconds")
+                    self.logger.error(F"{self.__class__.__name__} - {type(err).__name__} - {err} - retry in {self.retry_wait} seconds ({context.get('uuid')})")
                     time.sleep(self.retry_wait)
                 else:
-                    self.logger.error(F"{self.__class__.__name__} - {type(err).__name__} - {err} - retried {self.retry_count} times before aborting")
+                    self.logger.error(F"{self.__class__.__name__} - {type(err).__name__} - {err} - tried {self.retry_count} times before aborting ({context.get('uuid')})")
                     try:
                         error_payload = (
                                 F"timestamp : {datetime.datetime.today().isoformat()}\n"
@@ -193,11 +193,11 @@ class BaseOperator(abc.ABC):
 
     def trace_writer(self, record):
         # this is a stub to be overridden
-        pass
+        raise ValueError('no trace_writer attached')
 
     def error_writer(self, record):
         # this is a stub to be overridden
-        pass
+        raise ValueError('no error_writer attached')
 
     def __gt__(self, next_operators: Union[List[nx.DiGraph], nx.DiGraph]):
         """
