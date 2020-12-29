@@ -1,13 +1,13 @@
 """
-Tests for BlobPaths to ensure the split and join methods
-of BlobPaths return the expected values for various
+Tests for paths to ensure the split and join methods
+of paths return the expected values for various
 stimulus.
 """
 import datetime
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from gva.utils import BlobPaths
+from gva.utils import paths
 try:
     from rich import traceback
     traceback.install()
@@ -17,46 +17,46 @@ except ImportError:   # pragma: no cover
 
 def test_blob_paths_split_filename():
 
-    name, ext = BlobPaths.split_filename("one_extention.ext")
+    name, ext = paths.split_filename("one_extention.ext")
     assert name == 'one_extention', f"{name} {ext}"
     assert ext == '.ext', f"{name} {ext}"
 
-    name, ext = BlobPaths.split_filename("two_extention.ext.zip")
+    name, ext = paths.split_filename("two_extention.ext.zip")
     assert name == 'two_extention.ext', f"{name} {ext}"
     assert ext == '.zip', f"{name} {ext}"
 
-    name, ext = BlobPaths.split_filename("double_dot..zip")
+    name, ext = paths.split_filename("double_dot..zip")
     assert name == 'double_dot.', f"{name} {ext}"
     assert ext == '.zip', f"{name} {ext}"
 
-    name, ext = BlobPaths.split_filename("no_ext")
+    name, ext = paths.split_filename("no_ext")
     assert name == 'no_ext', f"{name} {ext}"
     assert ext == '', f"{name} {ext}"
 
-    name, ext = BlobPaths.split_filename(".all_ext")
+    name, ext = paths.split_filename(".all_ext")
     assert name == '.all_ext', f"{name} {ext}"
     assert ext == '', f"{name} {ext}"
 
-    name, ext = BlobPaths.split_filename(".dot_start.zip")
+    name, ext = paths.split_filename(".dot_start.zip")
     assert name == '.dot_start', f"{name} {ext}"
     assert ext == '.zip', f"{name} {ext}"
 
-    name, ext = BlobPaths.split_filename("")  # empty
+    name, ext = paths.split_filename("")  # empty
     assert len(name) == 0
     assert len(ext) == 0
 
-    name, ext = BlobPaths.split_filename("with/path/file.ext") 
+    name, ext = paths.split_filename("with/path/file.ext") 
     assert name == 'with/path/file', f"{name} {ext}"
     assert ext == '.ext', f"{name} {ext}"
 
-    name, ext = BlobPaths.split_filename("with/dot.in/path") 
+    name, ext = paths.split_filename("with/dot.in/path") 
     assert name == 'with/dot.in/path', f"{name} {ext}"
     assert ext == '', f"{name} {ext}"
 
 
 def test_blob_paths_get_paths():
 
-    bucket, path, name, ext = BlobPaths.get_parts("bucket/parent_folder/sub_folder/filename.ext")
+    bucket, path, name, ext = paths.get_parts("bucket/parent_folder/sub_folder/filename.ext")
 
     assert bucket == 'bucket'
     assert name == 'filename'
@@ -66,10 +66,15 @@ def test_blob_paths_get_paths():
 
 def test_blob_paths_builder():
 
-    template = '%datefolders/%Y/%date_%time.%f'
-    path = BlobPaths.build_path(template, datetime.datetime(2000, 9, 19, 1, 36, 42, 365))
+    # without trailing /, the / should be added
+    template = '%datefolders/%Y/%date_%time-%f'
+    path = paths.build_path(template, datetime.datetime(2000, 9, 19, 1, 36, 42, 365))
+    assert path == "year_2000/month_09/day_19/2000/2000-09-19_013642-000365/", path
 
-    assert path == "year_2000/month_09/day_19/2000/2000-09-19_013642.000365"
+    # with trailing /, the / should be retained
+    template = '%datefolders/%Y/%date_%time-%f/'
+    path = paths.build_path(template, datetime.datetime(2000, 9, 19, 1, 36, 42, 365))
+    assert path == "year_2000/month_09/day_19/2000/2000-09-19_013642-000365/", path
 
 
 if __name__ == "__main__":

@@ -12,6 +12,8 @@ try:
 except ImportError:
     pass
 
+def alert():
+  pass
   
 def test_smoke_test():
   """
@@ -41,5 +43,27 @@ def test_smoke_test():
   i_pass(key="invaluable")
 
 
+def test_logger_errors():
+
+  from gva.logging import add_level
+
+  add_level.add_logging_level('alert', 25)
+
+  failed = False
+  try:
+    add_level.add_logging_level('alert', 25)
+  except:
+    failed = True
+  assert failed
+
+  failed = False
+  try:
+    add_level.add_logging_level('none', 25, alert)
+  except:
+    failed = True
+  assert failed
+
+
 if __name__ == "__main__":
   test_smoke_test()
+  test_logger_errors()

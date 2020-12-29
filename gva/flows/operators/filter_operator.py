@@ -18,12 +18,10 @@ methods.
 """
 from .base_operator import BaseOperator
 
+def match_all(data):
+    return True
 
 class FilterOperator(BaseOperator):
-
-    @staticmethod
-    def match_all(data):
-        return True
 
     def __init__(self, condition=match_all):
         self.condition = condition

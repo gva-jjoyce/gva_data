@@ -2,6 +2,16 @@
 JSON parsing and serialization performance tests so a decision on 
 which library(s) to use can be made - previously the selection was
 inconsistent.
+
+Results (seconds to process 250,000 rows):
+
+ library | parsing | serialize  
+-------------------------------
+ json    |   2.286 |     3.082 
+ ujson   |   1.703 |     2.233
+ orjson  |   1.651 |     1.831   <- lower is better
+-------------------------------
+
 """
 import time
 
@@ -29,12 +39,12 @@ def _inner_file_reader(
 
 
 def test_parser(parser):
-    reader = _inner_file_reader('data.jsonl')
+    reader = _inner_file_reader('tweets.jsonl')
     for item in reader:
         parser(item)
 
 def test_serializer(serializer):
-    reader = _inner_file_reader('data.jsonl')
+    reader = _inner_file_reader('tweets.jsonl')
     for item in reader:
         dic = orjson.loads(item)
         serializer(dic)

@@ -1,4 +1,4 @@
-from ...utils import BlobPaths
+from ...utils import paths
 from os.path import exists
 import os
 import shutil
@@ -16,17 +16,19 @@ def file_writer(
     if date is None:
         date = datetime.datetime.today()
 
-    filename, extention = BlobPaths.split_filename(target_path)
+    filename, extention = paths.split_filename(target_path)
 
     # avoid collisions
     collision_tests = 0
-    maybe_colliding_filename = BlobPaths.build_path(f"{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+    maybe_colliding_filename = paths.date_format(f"{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+
     while exists(maybe_colliding_filename):
         collision_tests += 1
-        maybe_colliding_filename = BlobPaths.build_path(f"{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+        maybe_colliding_filename = paths.date_format(f"{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+
     unique_filename = maybe_colliding_filename
 
-    bucket, path, filename, ext = BlobPaths.get_parts(unique_filename)
+    bucket, path, filename, ext = paths.get_parts(unique_filename)
     os.makedirs(bucket + '/' + path, exist_ok=True)
 
     # save

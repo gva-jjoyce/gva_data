@@ -1,78 +1,72 @@
 """
-Filesystem Implementation of a reader.
-
-This is a simple implementation of a reader, created primarily to test the
-Reader class. It acts similarly to the blob_reader - it will iterate over
-a set of folders, defined by a template and a daterange, read through each
-of the files in those folders and present the content back, line by line.
+File System Reader, created for local development and testing. 
 """
 from typing import Iterator, Tuple, Optional, List
 import datetime
-from ...utils import BlobPaths 
+from ...utils import paths
 import lzma
+from ...utils import common
+from .base_reader import BaseReader
+import glob
+from os.path import isfile, exists
 
 
-def _find_files_at_path(path: str, extention: str) -> List[str]:
-    """ Helper function to get a list of files in a given path """
-    from os import listdir
-    from os.path import isfile, join, exists
-    if exists(path):  # skip non-existant folders
-        return [join(path, f) for f in listdir(path) if isfile(join(path, f)) and extention in f]
-    return []
+class FileReader(BaseReader):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.extention = kwargs.get('extention', '.jsonl')
+        self.chunk_size = kwargs.get('chunk_size', 16*1024*1024)
+        self.delimiter = kwargs.get('delimiter', '\n')
+        self.encoding = kwargs.get('encoding', 'utf8')
 
 
-def _inner_file_reader(
-        file_name: str,
-        chunk_size: int,
-        delimiter: str = "\n"):
-    """
-    This is the guts of the reader - it opens a file and reads through it
-    chunk by chunk. This allows huge files to be processed as only a chunk
-    at a time is in memory.
-    """
-    with open(file_name, 'r', encoding="utf8") as f:
-        carry_forward = ""
-        chunk = "INITIALIZED"
-        while len(chunk) > 0:
-            chunk = f.read(chunk_size)
-            augmented_chunk = carry_forward + chunk
-            lines = augmented_chunk.split(delimiter)
-            carry_forward = lines.pop()
-            yield from lines
-        if carry_forward:
-            yield carry_forward
+    def _inner_file_reader(self, file_name: str):
+        """
+        Read an uncompressed file in chunks
+        """
+        with open(file_name, 'r', encoding=self.encoding) as f:
+            carry_forward = ""
+            chunk = "INITIALIZED"
+            while len(chunk) > 0:
+                chunk = f.read(self.chunk_size)
+                augmented_chunk = carry_forward + chunk
+                lines = augmented_chunk.split(self.delimiter)
+                carry_forward = lines.pop()
+                yield from lines
+            if carry_forward:
+                yield carry_forward
 
 
-def _inner_compressed_file_reader(file_name: str):
-    with lzma.open(file_name, 'r') as f:
-        yield from f.readlines()
+    def _inner_compressed_file_reader(self, file_name: str):
+        """
+        Read an entire compressed file at once.
+        """
+        with lzma.open(file_name, 'r') as f:
+            yield from f.readlines()
 
 
-def file_reader(
-        path: str = "",
-        chunk_size: int = 16*1024*1024,  # 16Mb
-        date_range: Tuple[Optional[datetime.date], Optional[datetime.date]] = (None, None),
-        extention: str = '.jsonl',
-        delimiter: str = "\n") -> Iterator:
+    def list_of_sources(self):
+        # cycle through each day in the range
+        for cycle_date in common.date_range(self.start_date, self.end_date):
 
-    # if dates aren't provided, use today
-    start_date, end_date = date_range
-    if not end_date:
-        end_date = datetime.date.today()
-    if not start_date:
-        start_date = datetime.date.today()
+            # build the path name - it says 'blob' but works for filesystems
+            cycle_path = paths.build_path(path=self.from_path, date=cycle_date)
 
-    # cycle through each day in the range
-    for cycle in range(int((end_date - start_date).days) + 1):
-        cycle_date = start_date + datetime.timedelta(cycle)
-        # build the path name - it says 'blob' but works for filesystems
-        cycle_path = BlobPaths.build_path(path=path, date=cycle_date)
-        # get the list of files at that path
-        files_at_path = _find_files_at_path(path=cycle_path, extention=extention)
-        # for each file, read it and return the rows
-        for file in files_at_path:
-            if file.endswith('.lzma'):
-                reader = _inner_compressed_file_reader(file_name=file)
-            else:
-                reader = _inner_file_reader(file_name=file, chunk_size=chunk_size)
-            yield from reader
+            # get the list of files at that path
+            if exists(cycle_path):  # skip non-existant folders
+                files = glob.iglob(cycle_path + '**', recursive=True)
+                yield from [f.replace('\\', '/') 
+                        for f in files 
+                        if isfile(f) 
+                                and self.extention in f]
+
+
+    def read_from_source(self, file_name: str):
+
+        if file_name.endswith('.lzma'):
+            reader = self._inner_compressed_file_reader(file_name=file_name)
+        else:
+            reader = self._inner_file_reader(file_name=file_name)
+        yield from reader

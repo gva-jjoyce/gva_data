@@ -1,6 +1,6 @@
 """
-Tests for BlobPaths to ensure the split and join methods
-of BlobPaths return the expected values for various
+Tests for paths to ensure the split and join methods
+of paths return the expected values for various
 stimulus.
 """
 import datetime
@@ -187,6 +187,26 @@ def test_paging():
         assert page==ds[index*page_size:(index+1)*page_size]
 
 
+def test_sort():
+    ds = [
+        {'key': 6},
+        {'key': 10},
+        {'key': 3},
+        {'key': 9},
+        {'key': 8},
+        {'key': 4},
+        {'key': 7},
+        {'key': 5},
+        {'key': 2},
+        {'key': 1}
+    ]
+    s = list(dictset.sort(ds, 'key', 4))
+    
+    # are the items ordered correctly
+    for i, r in enumerate(s):
+        assert 10-i == r.get('key')
+
+
 def test_select_all():
     assert dictset.select_all(1)
 
@@ -206,5 +226,6 @@ if __name__ == "__main__":
     test_match()
     test_paging()
     test_select_all()
+    test_sort()
     
     print('okay')

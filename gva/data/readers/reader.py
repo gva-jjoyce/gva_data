@@ -21,11 +21,13 @@ activities on the set in a more memory efficient manner.
 """
 from typing import Callable, Tuple, Optional
 from ..formats.dictset import select_all, select_record_fields
-from .blob_reader import blob_reader
 import xmltodict  # type:ignore
 import datetime
 from ...logging import get_logger
 import orjson as json
+from .base_reader import BaseReader
+from .gcs_reader import GoogleCloudStorageReader
+from .experimental_threaded_reader import threaded_reader
 
 
 FORMATTERS = {
@@ -42,11 +44,9 @@ class Reader():
         select: list = ['*'],
         from_path: str = None,
         where: Callable = select_all,
-        limit: int = -1,
-        reader: Callable = blob_reader,
+        reader: BaseReader = GoogleCloudStorageReader,   # type:ignore
         data_format: str = "json",
-        date_range: Tuple[Optional[datetime.date], Optional[datetime.date]] = (None, None),
-        cursor: str = '',  # __
+        thread_count: int = 0,
         **kwargs):
         """
         Reader accepts a method which iterates over a data source and provides
@@ -65,27 +65,32 @@ class Reader():
             limit=1
         )
 
-        It's the data is automatically partitioned by date.
+        Data are automatically partitioned by date.
         """
         if not isinstance(select, list):
             raise TypeError("Reader 'select' parameter must be a list")
         if not hasattr(where, '__call__'):
             raise TypeError("Reader 'where' parameter must be Callable")
-        if not isinstance(date_range, tuple):
-            raise TypeError("Reader 'date_range' parameter must be a tuple")
+
 
         self.format = data_format
         self.formatter = FORMATTERS.get(self.format.lower())
-        if not self.formatter:
+        if self.formatter is None:
             raise TypeError(F"data format unsupported: {self.format}.")
 
-        self.reader = reader(path=from_path, date_range=date_range, **kwargs)
+        self.reader_class = reader(from_path=from_path, **kwargs)  # type:ignore
+        self.thread_count = thread_count
+        if thread_count > 0:
+            get_logger().warning("THREADED READER IS EXPERIMENTAL, USE IN SYSEMS IS NOT RECOMMENDED")
+
         self.select = select.copy()
         self.where: Callable = where
-        self.limit: int = limit
+
+        # initialize the reader
+        self._inner_line_reader = None
 
         logger = get_logger()
-        logger.debug(F"Reader(reader={reader.__name__}, from_path='{from_path}', date_range={date_range})")
+        logger.debug(F"Reader(reader={reader.__name__}, from_path='{from_path}')")  # type:ignore
 
     """
     Iterable
@@ -95,25 +100,35 @@ class Reader():
         for line in Reader("file"):
             print(line)
     """
+    def new_raw_lines_reader(self):
+        if self.thread_count > 0:
+            sources = list(self.reader_class.list_of_sources())
+            yield from threaded_reader(sources, self.reader_class, self.thread_count)
+        else:
+            for partition in self.reader_class.list_of_sources():
+                yield from self.reader_class.read_from_source(partition)
+
+
     def __iter__(self):
-        self.seen_hashs = {}
+        self._inner_line_reader = None
         return self
+
 
     def __next__(self):
         """
         This wraps the primary filter and select logic
         """
-        if self.limit == 0:
-            raise StopIteration()
-        self.limit -= 1
+        if self._inner_line_reader is None:
+            self._inner_line_reader = self.new_raw_lines_reader()
         while True:
-            record = self.reader.__next__()
+            record = self._inner_line_reader.__next__()
             record = self.formatter(record)
             if not self.where(record):
                 continue
             if self.select != ['*']:
                 record = select_record_fields(record, self.select)
             return record
+
 
     """
     Context Manager
@@ -125,6 +140,7 @@ class Reader():
             while line:
                 print(line)
     """
+    
     def __enter__(self):
         return self
 
@@ -149,18 +165,3 @@ class Reader():
         except ImportError:
             raise ImportError("Pandas must be installed to use 'to_pandas'")
         return pd.DataFrame(self)
-
-        """
-        cursor = {
-            select: list = ['*'],
-            from_path: str = None,
-            where: Callable = select_all,
-            limit: int = -1,
-            reader: Callable = blob_reader,
-            data_format: str = "json",
-            date_range: Tuple[datetime.date] = (None, None),
-
-            current_file:
-            current_index:
-        }
-        """

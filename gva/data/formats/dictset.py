@@ -216,7 +216,12 @@ def distinct(
         dictset: Iterator[dict],
         cache_size: int = 10000):
     """
-    Removes duplicate records from a dictset
+    THIS MAY NOT DO WHAT YOU EXPECT IT TO.
+
+    Removes duplicate records from a dictset, as it able to run against
+    an unbounded (infinite) set, it may not fully deduplicate a set. The
+    larger the cache_size the more likely the duplication will be correct
+    however, this is at the expense of memory.
 
     Parameters:
     - dictset: an iterable of dictionaries
@@ -293,3 +298,53 @@ def page_dictset(
             chunk.append(item)
     if chunk:
         yield chunk
+
+
+def sort(
+        dictset: Iterator[dict],
+        column: str,
+        cache_size: int,
+        descending: bool = True):
+    """
+    THIS MAY NOT DO WHAT YOU EXPECT IT TO.
+
+    Sorts a dictset by a column. As it able to run an unbounded dataset it
+    may not correctly order a set completely. The larger the cache_size the
+    more likely the set will be ordered correctly, at the cost of memory.
+
+    Parameters:
+    - dictset: an iterable of dictionaries
+    - column: the field to order by
+    - cache_size: the number of records to cache to order
+
+    This method works best with partially sorted data, for randomized data
+    and a small cache, the effect of sorting is poor; for partially sorted
+    data, and/or a large cache, the performance is better.
+
+    Note that running this multiple times is not memory efficient as each
+    run is concurrent. You are better off doubling the cache size rather 
+    than running this function twice.
+
+    Also note that if this method is placed in a pipeline, it will need
+    to collect cache_size number of records before it will emit any records.
+    """
+    # cache_size is the high water mark, 3/4 is the low water mark. 
+    # We fill the cache to the high water mark, sort it and yield 
+    # the top 1/4 before filling again.
+    # This reduces the number of times we execute the sorted function
+    # which is the slowest part of this method.
+    # A cache_size of 1000 has a neglible impact on performance, a 
+    # cache_size of 50000 introduces a performance hit of about 15%.
+    quarter_cache = cache_size // 4
+    cache = []
+    for item in dictset:
+        cache.append(item)
+        if len(cache) > cache_size:
+            cache = sorted(cache, key=lambda x: x[column], reverse=descending) 
+            if descending:
+                yield from reversed(cache[:quarter_cache])
+            else:
+                yield from cache[:quarter_cache]
+            del cache[:quarter_cache]
+    cache = sorted(cache, key=lambda x: x[column], reverse=descending) 
+    yield from cache

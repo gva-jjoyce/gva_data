@@ -1,12 +1,20 @@
 import glob
 import orjson as json
 import datetime
+from typing import Optional
 
 
 
-def date_range(start_date: datetime.date, end_date: datetime.date):
+def date_range(start_date: Optional[datetime.date], end_date: Optional[datetime.date]):
+    # if dates aren't provided, use today
+    if not end_date:
+        end_date = datetime.date.today()
+    if not start_date:
+        start_date = datetime.date.today()
+
     if end_date < start_date:
         raise ValueError("date_range: end_date must be the same or later than the start_date ")
+
     for n in range(int((end_date - start_date).days) + 1):
         yield start_date + datetime.timedelta(n)
 

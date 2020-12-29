@@ -31,3 +31,5 @@ schema = []
 for k, v in values.items():
     row = { 'name': k, 'type': 'enum', 'symbols': v }
     schema.append(row)
+
+print(json.dumps(schema, sort_keys=False, indent=4))

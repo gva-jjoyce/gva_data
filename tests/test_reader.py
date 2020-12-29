@@ -1,0 +1,61 @@
+import datetime
+import os
+import sys
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
+from gva.data.readers import Reader, FileReader
+try:
+    from rich import traceback
+    traceback.install()
+except ImportError:   # pragma: no cover
+    pass
+
+
+def test_reader_can_read():
+    r = Reader(
+        reader=FileReader,
+        from_path='tests/data/tweets'
+    )
+    assert len(list(r)) == 50
+
+
+def test_unknown_format():
+    failed = False
+
+    try:
+        r = Reader(
+            reader=FileReader,
+            from_path='tests/data/tweets',
+            data_format='csv'
+        )
+    except TypeError:
+        failed = True
+
+    assert failed
+
+
+def test_reader_context():
+    counter = 0
+    with Reader(reader=FileReader, from_path='tests/data/tweets') as r:
+        n = r.read_line()
+        while n:
+            counter += 1
+            n = r.read_line()
+
+    assert counter == 50
+
+
+def test_reader_to_pandas():
+    r = Reader(reader=FileReader, from_path='tests/data/tweets')
+    df = r.to_pandas()
+
+    assert len(df) == 50
+
+
+if __name__ == "__main__":
+    test_reader_can_read()
+    test_unknown_format()
+    test_reader_context()
+    test_reader_to_pandas()
+
+    print('okay')
+    

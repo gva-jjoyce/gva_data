@@ -7,16 +7,20 @@ Default behaviour is to create a folder structure for year, month and day, and
 partitioning data into files of 16Mb or are written continuously without a 60
 second gap.
 
-Records can be validated against a schema and records can be committed to disk
-after every write. Schema validation helps enforce format for the data and
-commit after every write reduces the probability of data loss but both come
-with a cost; results will differ depending on exact data but as an
-approximation (from and 11 field, 1m row test data set):
+Records can be validated against a schema and data can be automatically 
+compressed; schema validation ensures correctness and compression can
+save storage requirements, but both come with a cost; results will differ
+depending on exact data but as an approximation.
 
-- cache commits and no validation      = ~100% speed
-- commit every write and validation    = ~40% speed
-- commit every write but no validation = ~66% speed
-- cache commits and no validation      = ~50% speed
+Tests were run using a 8 field, 250k row data set:
+
+- no compression, no validation - 100%
+- no compression, validation    - 57%
+- compression, no validation    - 8%
+- compression, validation       - 7%
+
+Your results will vary, but clearly compression has a significant impact on
+performance.
 
 Paths for the data writer can contain datetime string formatting, the string
 will be formatted before being created into folders. The changing of dates is
@@ -31,7 +35,8 @@ import tempfile
 import datetime
 from .blob_writer import blob_writer
 from typing import Callable, Optional, Any, Union
-from gva.data.validator import Schema  # type:ignore
+from ..validator import Schema  # type:ignore
+from ...errors import ValidationError
 import orjson as json
 
 
@@ -39,8 +44,9 @@ class Writer():
 
     def __init__(
         self,
+        *,
         writer: Callable = blob_writer,
-        to_path: str = 'year_%Y/month_%m/day_%d',
+        to_path: str = '%datefolders',
         partition_size: int = 16*1024*1024,
         schema: Schema = None,
         compress: bool = False,
@@ -52,8 +58,8 @@ class Writer():
         DataWriter
 
         Parameters:
-        - path: the path to save records to, this is a folder name
-        - partition_size: the number of records per partition (-1) is unbounded
+        - to_path: the path to save records to, this is a folder name
+        - partition_size: the number of bytes per partition (16Mb default)
         - schema: Schema object - if set records are validated before being
           written
         - use_worker_thread: creates a thread which performs regular checks
@@ -74,14 +80,23 @@ class Writer():
         self.kwargs = kwargs
         self.compress = compress
         self.file_name: Optional[str] = None
+        self.fixed_date = False
         self.date = date
-
+        if date:
+            self.fixed_date = True
         if use_worker_thread:
             self.thread = threading.Thread(target=_worker_thread, args=(self,))
             self.thread.daemon = True
             self.thread.start()
 
+
     def _get_temp_file_name(self):
+        """
+        Create a tempfile, get the name and then deletes the tempfile.
+
+        The behaviour of tempfiles is inconsisten between operating systems,
+        this helps to ensure consistent behaviour.
+        """
         file = tempfile.NamedTemporaryFile(prefix='gva-', delete=True)
         file_name = file.name
         file.close()
@@ -91,16 +106,15 @@ class Writer():
             pass
         return file_name
 
+
     def append(self, record: dict = {}):
         """
         Saves new entries to the partition; creating a new partition
         if one isn't active.
         """
-        # this is a killer - check the new record conforms to the
-        # schema before bothering with anything else
-        if self.schema and not self.schema.validate(subject=record, raise_exception=True):
-            print(F'Validation Failed ({self.schema.last_error}):', record)
-            return False
+        # Check the new record conforms to the schema before continuing
+        if self.schema and not self.schema.validate(subject=record):
+            raise ValidationError(F'Validation Failed ({self.schema.last_error})')
 
         self.last_write = time.time_ns()
 
@@ -118,6 +132,9 @@ class Writer():
 
             # if we don't have a current file to write to, create one
             if not self.file_writer:
+                if not self.fixed_date:
+                    self.date = datetime.date.today()
+
                 self.file_name = self._get_temp_file_name()
                 self.file_writer = _PartFileWriter(
                         file_name=self.file_name,  # type:ignore
@@ -129,34 +146,40 @@ class Writer():
 
         return True
 
+
     def __enter__(self):
         return self
+
 
     def __exit__(self, type, value, traceback):
         self.on_partition_closed()
 
+
     def on_partition_closed(self):
-        # finalize the writer
-        if self.file_writer:
-            self.file_writer.finalize()
-        # save the file to it's destination
-        if self.file_name:
-            self.writer(
-                    source_file_name=self.file_name,
-                    target_path=self.to_path,
-                    add_extention='.lzma' if self.compress else '',
-                    date=self.date,
-                    **self.kwargs)
-            try:
-                os.remove(self.file_name)
-            except ValueError:
-                pass
-        self.file_writer = None
-        self.file_name = None
+        with threading.Lock():
+            # finalize the writer
+            if self.file_writer:
+                self.file_writer.finalize()
+            # save the file to it's destination
+            if self.file_name:
+                self.writer(
+                        source_file_name=self.file_name,
+                        target_path=self.to_path,
+                        add_extention='.lzma' if self.compress else '',
+                        date=self.date if self.fixed_date else datetime.date.today(),
+                        **self.kwargs)
+                try:
+                    os.remove(self.file_name)
+                except ValueError:
+                    pass
+            self.file_writer = None
+            self.file_name = None
+
 
     def __del__(self):
         self.on_partition_closed()
         self.use_worker_thread = False
+
 
     def finalize(self):
         if self.file_writer:
@@ -179,8 +202,9 @@ class _PartFileWriter():
 
     def finalize(self):
         try:
-            self.file.flush()
-            self.file.close()
+            with threading.Lock():
+                self.file.flush()
+                self.file.close()
         except Exception:   # nosec - ignore errors
             pass
 
@@ -204,10 +228,13 @@ def _worker_thread(data_writer: Writer):
     """
     while data_writer.use_worker_thread:
         if data_writer.file_name:
+
+            # timeout since last write
             if (time.time_ns() - data_writer.last_write) > (data_writer.idle_timeout_seconds * 1e9):
-                with threading.Lock():
-                    data_writer.on_partition_closed()
-    #        if not data_writer.formatted_path == datetime.datetime.today().strftime(data_writer.path):
-    #            change_partition = True
+                data_writer.on_partition_closed()
+
+            # date has changed
+            if not data_writer.fixed_date and (data_writer.date != datetime.date.today()):
+                data_writer.on_partition_closed()
 
         time.sleep(1)

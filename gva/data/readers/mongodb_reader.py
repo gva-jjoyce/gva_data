@@ -8,51 +8,62 @@ collection can have date formatted
 """
 from typing import Iterator, Tuple, Optional, List
 import datetime
+from .base_reader import BaseReader
 try:
-    import pymongo  # type:ignore
-except ImportError:
+    import pymongo     # type:ignore
+except ImportError:    # pragma: no cover
     pass
 
 
-def _iterate_by_chunks(collection, chunksize=1, start_from=0, query={}):
-    chunks = range(start_from, collection.find(query).count(), int(chunksize))
-    num_chunks = len(chunks)
-    for i in range(1,num_chunks+1):
-        if i < num_chunks:
-            yield collection.find(query)[chunks[i-1]:chunks[i]]
-        else:
-            yield collection.find(query)[chunks[i-1]:chunks.stop]
+class MongoDbReader(BaseReader):
+
+    def __init__(
+            self,
+            connection_string: str,
+            database: str,
+            **kwargs):
+        connection = pymongo.MongoClient(connection_string)
+        self.database = connection[database]
+
+        # chunk size affects memory usage
+        self.chunk_size = kwargs.get('chunk_size', 10000)
+        self.query = kwargs.get('query', {})
 
 
-def mongodb_reader(
-        path: str = "",
-        connection: str = "",
-        collection: str = "",
-        connectionstring: str = "",
-        query: dict = {},
-        chunk_size: int = 5000,
-        date_range: Tuple[Optional[datetime.date], Optional[datetime.date]] = (None, None)
-        ) -> Iterator:
+    def list_of_sources(self):
+        yield from self.database.list_collection_names()
 
-    # if dates aren't provided, use today
-    start_date, end_date = date_range
-    if not end_date:
-        end_date = datetime.date.today()
-    if not start_date:
-        start_date = datetime.date.today()
 
-    conn = pymongo.MongoClient(connectionstring)
-    db = conn[connection]
+    def read_from_source(self, item: str):
+        collection = self.database[item]
+        chunks = self._iterate_by_chunks(
+                collection,
+                self.chunk_size,
+                0,
+                query=self.query)
+        for docs in chunks:
+            yield from docs
 
-    # cycle through each day in the range
-    for cycle in range(int((end_date - start_date).days) + 1):
-        cycle_date = start_date + datetime.timedelta(cycle)
 
-        collection_name = cycle_date.strftime(collection)
-        collection_object = db[collection_name]
+    def _iterate_by_chunks(self, collection, chunksize=1, start_from=0, query={}):
+        chunks = range(start_from, collection.find(query).count(), int(chunksize))
+        num_chunks = len(chunks)
+        for i in range(1,num_chunks+1):
+            if i < num_chunks:
+                yield collection.find(query)[chunks[i-1]:chunks[i]]
+            else:
+                yield collection.find(query)[chunks[i-1]:chunks.stop]
 
-        mess_chunk_iter = _iterate_by_chunks(collection_object, chunk_size, 0, query=query)
-        
-        for docs in mess_chunk_iter:
-            for doc in docs:
-                yield doc
+
+if __name__ == "__main__":
+    
+    mdb = MongoDbReader(
+            connection_string="mongodb://10.10.10.30:27017/",
+            database="twitter")
+
+    print(list(mdb.list_of_sources()))
+    for i, doc in enumerate(mdb.read_from_source('cve_tweets')):
+        pass
+
+    print(i)
+

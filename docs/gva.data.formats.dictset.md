@@ -34,10 +34,13 @@ Pandas is somewhat memory intensive, if data is in a dictset compatible format d
 `select_from(dictset, columns, condition)` - Select records and columns from a dictset    
 `set_column(dictset, column_name, setter)` - Update all the fields of a column    
 `set_value(record, column_name, setter)` - Update the value of a field in a record   
-`distinct(dictset, cache)` - Deduplicates a dictset  
+`distinct(dictset, cache)` - Deduplicates a dictset **CORRECTNESS IS NOT GUARANTEED**   
 `limit(dictset, limit)` - Returns upto a maximum of _limit_ records from a dictset   
 `dictsets_match(dictset_1, dictset_2)` - Compare to bounded dictsets for equivilence  
-`page_dictset(dictset, page_size)` - Split a dictset into pages of _page_size_
+`page_dictset(dictset, page_size)` - Split a dictset into pages of _page_size_  
+`sort_dictset(dictset, column, cache_size)` - Order a dictset **CORRECTNESS IS NOT GUARANTEED** 
+
+distinct and sort_dictset work on unbounded datasets so cannot ensure the correctness of their functionality.
 
 ## How Do I Use It?
 

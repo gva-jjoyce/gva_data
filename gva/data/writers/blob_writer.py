@@ -1,6 +1,6 @@
 import datetime
 import os
-from ...utils import BlobPaths
+from ...utils import paths
 try:
     from google.cloud import storage  # type:ignore
 except ImportError:
@@ -25,7 +25,7 @@ def blob_writer(
         raise Exception('blob_writer must have project defined')
 
     # factorize the path
-    bucket, gcs_path, filename, extention = BlobPaths.get_parts(target_path)
+    bucket, gcs_path, filename, extention = paths.get_parts(target_path)
 
     # get a reference to the gcs bucket
     client = storage.Client(project=project)
@@ -33,12 +33,12 @@ def blob_writer(
     
     # avoid collisions
     collision_tests = 0
-    maybe_colliding_filename = BlobPaths.build_path(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+    maybe_colliding_filename = paths.build_path(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
     blob = gcs_bucket.blob(maybe_colliding_filename)
 
     while blob.exists():
         collision_tests += 1
-        maybe_colliding_filename = BlobPaths.build_path(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+        maybe_colliding_filename = paths.build_path(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
         blob = gcs_bucket.blob(maybe_colliding_filename)
 
     # save the blob
