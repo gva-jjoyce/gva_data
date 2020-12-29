@@ -9,6 +9,8 @@ class BaseReader(abc.ABC):
 
     def __init__(self, **kwargs):
         self.from_path = kwargs.get('from_path')
+        if self.from_path is None:
+            raise ValueError('Readers must have a `from_path` parameter')
 
         date_range = kwargs.get('date_range')
         self.start_date = datetime.date.today()

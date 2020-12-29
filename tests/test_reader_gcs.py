@@ -15,7 +15,7 @@ def test_blockers():
     # project is required
     failed = False
     try:
-        r = GoogleCloudStorageReader(path='path')
+        r = GoogleCloudStorageReader(from_path='path')
     except (ValueError, TypeError):
         failed = True
     assert failed

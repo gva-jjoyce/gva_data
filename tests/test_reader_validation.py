@@ -18,8 +18,9 @@ def test_reader_all_good():
 
     try:
         reader = Reader(
-                project_name='',
+                project='',
                 select=['a', 'b'],
+                from_path='',
                 date_range=(datetime.datetime.now(), datetime.datetime.now()),
                 data_format='json')
     except TypeError:
@@ -32,8 +33,9 @@ def test_reader_select_not_list():
     failed = False
     try:
         reader = Reader(
-                project_name='',
+                project='',
                 select='everything',
+                from_path='',
                 date_range=(datetime.datetime.now(), datetime.datetime.now()),
                 data_format='json')
     except TypeError:
@@ -46,8 +48,9 @@ def test_reader_where_not_callable():
     failed = False
     try:
         reader = Reader(
-                project_name='',
+                project='',
                 select=['a', 'b'],
+                from_path='',
                 where=True,
                 date_range=(datetime.datetime.now(), datetime.datetime.now()),
                 data_format='json')
@@ -62,8 +65,9 @@ def test_format_not_known():
     failed = False
     try:
         reader = Reader(
-                project_name='',
+                project='',
                 select=['a', 'b'],
+                from_path='',
                 date_range=datetime.datetime.now(),
                 data_format='excel')
     except TypeError:
