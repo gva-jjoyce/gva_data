@@ -1,17 +1,5 @@
 """
-Base Bin
-
-Implements common functions for each of the bins.
-
-Bins are where information that needs to be saved but isn't part of the
-flow itself.
-
-Two bins are supported initially:
-- ErrorBin - where records unable to be processed are written so they aren't
-  lost when they are dropped from the flow
-- TraceBin - where trace information is written to be persisted.
-
-This Bin is written to support only writing to Google Cloud Storage.
+Google Cloud Storage Bin Writer
 """
 try:
     from google.cloud import storage  # type:ignore
@@ -44,6 +32,7 @@ class GoogleCloudStorageBin(BaseBin):
             record: str):
         # to reduce collisions we get the time in nanoseconds
         # and a random number between 1 and 1000
-        blob_name = F"{self.path}/{time.time_ns()}-{random.randrange(0,9999):04d}.txt"  # nosec - not crypto
+        blob_name = F"{self.path}/{self._date_part()}/{time.time_ns()}-{random.randrange(0,9999):04d}.txt"  # nosec - not crypto
         blob = self.bucket.blob(blob_name)
         blob.upload_from_string(record)
+        return blob_name

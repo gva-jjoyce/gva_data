@@ -9,7 +9,7 @@ from ..utils import TraceBlocks
 import gva.logging  # type:ignore
 import networkx  # type:ignore
 from typing import List, Union  # type:ignore
-from bins import GoogleCloudStorageBin, FileBin, MinioBin
+from .bins import GoogleCloudStorageBin, FileBin, MinioBin
 
 
 def _inner_runner(
@@ -118,22 +118,24 @@ def attach_writers(flow: networkx.DiGraph, writers: List[dict]):
 
         bin = None
         if class_name == 'gcs':
-            bin = GoogleCloudStorageBin(
-                    bin_name=name,
-                    project=writer.get('project'),
-                    bucket=writer.get('bucket'),
-                    path=writer.get('path'))
+            bin = GoogleCloudStorageBin(                    # type: ignore
+                    bin_name=name,                          # type: ignore
+                    project=writer.get('project'),          # type: ignore
+                    bucket=writer.get('bucket'),            # type: ignore
+                    path=writer.get('path'))                # type: ignore
         if class_name == 'file':
-            bin = FileBin(
-                    bin_name=name,
-                    path=writer.get('path'))
+            bin = FileBin(                                  # type: ignore
+                    bin_name=name,                          # type: ignore
+                    path=writer.get('path'))                # type: ignore
         if class_name == 'minio':
-            bin = MinioBin(
-                    bin_name=name,
-                    end_point=writer.get('end_point'),
-                    bucket=writer.get('bucket'),
-                    path=writer.get('path')
-            )
+            bin = MinioBin(                                 # type: ignore
+                    bin_name=name,                          # type: ignore
+                    end_point=writer.get('end_point'),      # type: ignore
+                    bucket=writer.get('bucket'),            # type: ignore
+                    path=writer.get('path'),                # type: ignore
+                    access_key=writer.get('access_key'),    # type: ignore
+                    secret_key=writer.get('secret_key'),    # type: ignore
+                    secure=writer.get('secure', True))      # type: ignore
         
         if bin is not None:
             attach_writer(flow, bin)

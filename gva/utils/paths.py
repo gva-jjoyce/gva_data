@@ -50,10 +50,13 @@ def build_path(path: str, date: datetime.date = None):
     if not path:
         raise ValueError('build_path: path must have a value')
 
-    # process the path
-    bucket, path_string, _, _ = get_parts(path)
-    if path_string != '/':
-        path_string = bucket + '/' + path_string
+    if not path.endswith('/'):
+        # process the path
+        bucket, path_string, filename, extention = get_parts(path)
+        if path_string != '/':
+            path_string = bucket + '/' + path_string
+    else:
+        path_string = path
 
     return date_format(path_string, date)
 

@@ -1,5 +1,5 @@
 """
-MinIO Bin
+MinIO Bin Writer
 
 May support AWS S3 - untested
 """
@@ -9,6 +9,7 @@ except ImportError:
     pass
 import time
 import random
+import io
 from .base_bin import BaseBin
 
 
@@ -17,23 +18,35 @@ class MinioBin(BaseBin):
     def __init__(
             self,
             bin_name: str,
-            project: str,
+            end_point: str,
             bucket: str,
-            path: str):
-        client = storage.Client(project=project)
-        self.bucket = client.get_bucket(bucket)
+            path: str,
+            access_key: str,
+            secret_key: str,
+            secure: bool = True):
+
+        self.client = Minio(end_point, access_key, secret_key, secure=secure)
+        self.bucket = bucket
         self.path = path
         self.name = bin_name
 
     def __str__(self) -> str:
         return self.name
 
-    # does as little as possible to commit the record
     def __call__(
             self,
             record: str):
         # to reduce collisions we get the time in nanoseconds
         # and a random number between 1 and 1000
         object_name = F"{self.path}/{time.time_ns()}-{random.randrange(0,9999):04d}.txt"  # nosec - not crypto
-        blob = self.bucket.blob(object_name)
-        blob.upload_from_string(record)
+
+        record_bytes = record.encode('utf-8')
+        record_stream = io.BytesIO(record_bytes)
+
+        self.client.put_object(
+                self.bucket,
+                object_name,
+                record_stream,
+                file_size=len(record_bytes))
+
+        return object_name

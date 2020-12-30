@@ -1,23 +1,22 @@
+"""
+Google Cloud Storage Reader
+
+Implement a BaseReader to read from a GCS bucket.
+"""
 try:
     from google.cloud import storage  # type:ignore
 except ImportError:   # pragma: no cover
     pass
 import lzma
-import datetime
-from ...utils import paths
-from typing import Tuple, Union, Optional
-from ...logging import get_logger
-from ...utils import common
+from ...utils import common, paths
 from .base_reader import BaseReader
 
 
 class GoogleCloudStorageReader(BaseReader):
 
-
     def __init__(self, project: str, **kwargs):
         super().__init__(**kwargs)
         self.project = project
-
 
     def list_of_sources(self):
 
@@ -29,7 +28,6 @@ class GoogleCloudStorageReader(BaseReader):
             for obj in blobs:
                 yield bucket + '/' + obj.name
 
-
     def read_from_source(self, object_name):
         bucket, object_path, name, extention = paths.get_parts(object_name)
 
@@ -38,10 +36,10 @@ class GoogleCloudStorageReader(BaseReader):
 
         if extention == '.lzma':
             stream = lzma.decompress(stream)
-            
+
         stream = stream.decode('utf-8')
         yield from [item for item in stream.split('\n') if len(item) > 0]
-    
+
 
 def find_blobs_at_path(
         project: str,

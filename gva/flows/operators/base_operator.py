@@ -18,12 +18,12 @@ import orjson as json
 import datetime
 import types
 import sys
-import traceback
 import networkx as nx   # type:ignore
 from ...logging import get_logger  # type:ignore
 from ..runner import go, finalize, attach_writer
 from typing import Union, List
 from ...errors import RenderErrorStack
+from ...data.formats import dictset
 
 
 # inheriting ABC is part of ensuring that this class only ever
@@ -91,6 +91,9 @@ class BaseOperator(abc.ABC):
     def __call__(self, data: dict = {}, context: dict = {}):
         """
         DO NOT OVERRIDE THIS METHOD
+
+        This method wraps the `execute` method, which must be overridden, to
+        to add management of the execution such as sensors and retries.
         """
         if self.first_run:
             self.first_run = False
@@ -113,7 +116,8 @@ class BaseOperator(abc.ABC):
                     self.logger.error(F"{self.__class__.__name__} - {type(err).__name__} - {err} - retry in {self.retry_wait} seconds ({context.get('uuid')})")
                     time.sleep(self.retry_wait)
                 else:
-                    self.logger.error(F"{self.__class__.__name__} - {type(err).__name__} - {err} - tried {self.retry_count} times before aborting ({context.get('uuid')})")
+                    error_log_reference = ''
+                    error_reference = err
                     try:
                         error_payload = (
                                 F"timestamp : {datetime.datetime.today().isoformat()}\n"
@@ -126,9 +130,12 @@ class BaseOperator(abc.ABC):
                                 "----------------------------------------------  data  ----------------------------------------------\n"
                                 F"{data}\n"
                                 "----------------------------------------------------------------------------------------------------\n")
-                        self.error_writer(error_payload)  # type:ignore
+                        error_log_reference = self.error_writer(error_payload)  # type:ignore
                     except Exception as err:
                         self.logger.error(F"Problem writing to the error bin, a record has been lost. {type(err).__name__} - {err} - {context.get('uuid')}")
+                    finally:
+                        # finally blocks are called following a try/except block regardless of the outcome
+                        self.logger.error(F"{self.__class__.__name__} - {type(error_reference).__name__} - {error_reference} - tried {self.retry_count} times before aborting ({context.get('uuid')}) {error_log_reference}")
                     outcome = None
                     # add a failure to the last_few_results list
                     self.last_few_results.append(0)
@@ -262,7 +269,7 @@ class BaseOperator(abc.ABC):
         return value
 
     def hash(self, block):
-        string_object = json.dumps(block, sort_keys=True)
+        string_object = json.dumps(dictset.order(block))
         block_string = string_object.encode()
         raw_hash = hashlib.sha256(block_string)
         hex_hash = raw_hash.hexdigest()

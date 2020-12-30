@@ -2,16 +2,16 @@
 
 ## What Is It?
 
-A set of modules for handling data.
+A set of modules to help with creating data processing systems.
 
 ## What Is In It?
 
-[gva.flows](docs/gva.flows.md)  
-[gva.data.formats](docs/gva.data.formats.md)  
-[gva.data.readers](docs/gva.data.readers.md)  
-[gva.data.validator](docs/gva.data.validator.md)  
-[gva.data.writers](docs/gva.data.writers.md)  
-[gva.logging](docs/gva.logging.md)   
+[gva.flows](docs/gva.flows.md) - data pipelines   
+[gva.data.readers](docs/gva.data.readers.md) - read data from various sources   
+[gva.data.writers](docs/gva.data.writers.md) - write data to various locations   
+[gva.data.formats](docs/gva.data.formats.md) - helper for handling data   
+[gva.data.validator](docs/gva.data.validator.md) - schema conformity testing   
+[gva.logging](docs/gva.logging.md) - logging routines    
 
 ## How Do I Get It?
 ~~~

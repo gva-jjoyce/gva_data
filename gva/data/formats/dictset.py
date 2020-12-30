@@ -154,20 +154,20 @@ def create_index(
 def select_from(
         dictset: Iterator[dict],
         columns: List[str] = ['*'],
-        condition: Callable = select_all) -> Iterator[dict]:
+        where: Callable = select_all) -> Iterator[dict]:
     """
     Scan a dictset, filtering rows and selecting columns.
 
     Parameters:
     - dictset: an iterable of dictionaries
     - columns: a list of column names to return
-    - condition: a function to apply to filter records (keep rows that evaluate to True)
+    - where: a function to apply to filter records (keep rows that evaluate to True)
 
     Approximate SQL:
-    SELECT columns FROM dictset WHERE condition
+    SELECT columns FROM dictset WHERE where
     """
     for record in dictset:
-        if condition(record):
+        if where(record):
             if columns != ['*']:
                 record = select_record_fields(record, columns)
             yield record
@@ -348,3 +348,9 @@ def sort(
             del cache[:quarter_cache]
     cache = sorted(cache, key=lambda x: x[column], reverse=descending) 
     yield from cache
+
+
+def to_pandas(
+        dictset: Iterator[dict]):
+    import pandas  # type:ignore
+    return pandas.DataFrame(dictset)

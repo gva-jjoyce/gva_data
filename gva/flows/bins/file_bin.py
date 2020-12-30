@@ -6,6 +6,7 @@ import random
 from .base_bin import BaseBin
 import os
 
+
 class FileBin(BaseBin):
 
     def __init__(
@@ -22,6 +23,7 @@ class FileBin(BaseBin):
             record: str):
         # to reduce collisions we get the time in nanoseconds
         # and a random number between 1 and 1000
-        file_name = F"{self.path}/{time.time_ns()}-{random.randrange(0,9999):04d}.txt"  # nosec - not crypto
+        file_name = F"{self.path}/{self._date_part()}/{time.time_ns()}-{random.randrange(0,9999):04d}.txt"  # nosec - not crypto
         with open(file_name, 'w') as file:
             file.write(record)
+        return file_name

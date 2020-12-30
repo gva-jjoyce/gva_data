@@ -211,6 +211,20 @@ def test_select_all():
     assert dictset.select_all(1)
 
 
+def test_to_pandas():
+    ds = [
+        {'key': 1, 'value': 'one', 'plus1': 2},
+        {'key': 2, 'value': 'two', 'plus1': 3},
+        {'key': 3, 'value': 'three', 'plus1': 4},
+        {'key': 4, 'value': 'four', 'plus1': 5}
+    ]
+    df = dictset.to_pandas(ds)
+
+    assert len(df) == 4
+    # if loaded correctly we should be able to operate on the values
+    assert df['plus1'].sum() == 14
+
+
 if __name__ == "__main__":
     test_select_record_fields()
     test_order()
@@ -227,5 +241,6 @@ if __name__ == "__main__":
     test_paging()
     test_select_all()
     test_sort()
+    test_to_pandas()
     
     print('okay')
