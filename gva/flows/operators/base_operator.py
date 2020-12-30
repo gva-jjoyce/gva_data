@@ -20,7 +20,7 @@ import types
 import sys
 import networkx as nx   # type:ignore
 from ...logging import get_logger  # type:ignore
-from ..runner import go, finalize, attach_writer
+from ..runner import go, finalize, attach_writer, attach_writers
 from typing import Union, List
 from ...errors import RenderErrorStack
 from ...data.formats import dictset
@@ -255,6 +255,7 @@ class BaseOperator(abc.ABC):
         graph.run = types.MethodType(go, graph)
         graph.finalize = types.MethodType(finalize, graph)
         graph.attach_writer = types.MethodType(attach_writer, graph)
+        graph.attach_writers = types.MethodType(attach_writers, graph)
 
         return graph
 
