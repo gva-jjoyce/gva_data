@@ -24,7 +24,7 @@ jobs:
         run: coverage run -m pytest 
 
       - name: report on coverage
-        run: coverage report --include=gva* --fail-under=65 
+        run: coverage report --include=gva* --fail-under=70 
 
   bandit:
     runs-on: ubuntu-latest
