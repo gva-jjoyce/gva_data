@@ -5,6 +5,7 @@ from .noop_operator import NoOpOperator
 from .print_operator import PrintOperator
 from .save_to_bucket_operator import SaveToBucketOperator
 from .save_to_disk_operator import SaveToDiskOperator
+from .save_to_minio_operator import SaveToMinioOperator
 from .split_text_operator import SplitTextOperator
 from .undefined_operator import UndefinedOperator
 from .validator_operator import ValidatorOperator
