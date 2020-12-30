@@ -87,6 +87,26 @@ flow = DoubleOperator() > PrintOperator() > EndOperator()
 flow.run(data="22")
 ~~~
 
+## Bin Writers
+
+Bins are locations where logging information is written, separate to the `logging` sink;
+there are two types of bins implemented:
+
+- Error Bins - where more information about errors are written, such as stack traces
+- Trace Bins - where information relating to message tracing is written
+
+Bins are separate to logs for a few key reasons:
+
+- The amount of information can be large, especially for a long flow or large data record
+- The data in the stack or trace may include information not appropriate to store in logs
+  which have less restrictive access permissions
+
+Three Bin implementations have been written:
+
+- `GoogleCloudStorageBin`
+- `FileBin`
+- `MinioBin`
+
 ---  
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)  
 Forked from [joocer/newidydd](https://github.com/joocer/newidydd) 
