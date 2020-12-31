@@ -33,12 +33,12 @@ def blob_writer(
     
     # avoid collisions
     collision_tests = 0
-    maybe_colliding_filename = paths.build_path(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+    maybe_colliding_filename = paths.date_format(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
     blob = gcs_bucket.blob(maybe_colliding_filename)
 
     while blob.exists():
         collision_tests += 1
-        maybe_colliding_filename = paths.build_path(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+        maybe_colliding_filename = paths.date_format(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
         blob = gcs_bucket.blob(maybe_colliding_filename)
 
     # save the blob
