@@ -180,5 +180,6 @@ class Reader():
             from IPython.display import HTML, display
             html = to_html_table(self, 5)
             display(HTML(html))
+            return ''  # __repr__ must return something
         else:
             return to_ascii_table(self, 5)
