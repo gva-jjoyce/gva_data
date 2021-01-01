@@ -5,3 +5,4 @@ minio
 jinja2
 orjson
 matplotlib
+rich

@@ -21,7 +21,6 @@ activities on the set in a more memory efficient manner.
 """
 from typing import Callable, Tuple, Optional
 from ..formats.dictset import select_all, select_record_fields, limit, to_html_table, to_ascii_table
-import xmltodict  # type:ignore
 import datetime
 from ...logging import get_logger
 from .base_reader import BaseReader
@@ -35,8 +34,7 @@ except ImportError:
 
 FORMATTERS = {
     "json": json.loads,
-    "text": lambda x: x,
-    "xml": lambda x: xmltodict.parse(x)
+    "text": lambda x: x
 }
 
 
