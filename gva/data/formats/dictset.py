@@ -35,10 +35,8 @@ for record in join_dictsets(filtered_list1, filtered_list2, 'id'):
 
 """
 from typing import Iterator, Any, List, Union, Callable
-try:
-    import orjson as json
-except ImportError:
-    import ujson as json
+from ...utils import serialize, parse
+
 
 class JOINS(object):
     INNER_JOIN = 'INNER'
@@ -234,7 +232,7 @@ def distinct(
     lru = LRU_Index(size=cache_size)
 
     for record in dictset:
-        entry = json.dumps(record)
+        entry = serialize(record)
         if lru(entry):
             continue
         yield record
@@ -274,7 +272,7 @@ def dictsets_match(
         xor = 0
         for record in dictset:
             entry = order(record)
-            entry = json.dumps(entry)  # type:ignore
+            entry = serialize(entry)  # type:ignore
             _hash = hash(entry)
             xor = xor ^ _hash
         return xor
@@ -338,7 +336,9 @@ def sort(
     # which is the slowest part of this method.
     # A cache_size of 1000 has a neglible impact on performance, a 
     # cache_size of 50000 introduces a performance hit of about 15%.
-    quarter_cache = cache_size // 4
+    quarter_cache = (cache_size // 4)
+    if quarter_cache < 1:
+        quarter_cache = 1 
     cache = []
     for item in dictset:
         cache.append(item)
@@ -378,7 +378,7 @@ def to_html_table(
             if first_row:
                 yield '<thead class="thead-light"><tr>'
                 for key, value in record.items():
-                    yield '<th>' + key + '<th>'
+                    yield '<th>' + key + '<th>\n'
                 yield '</tr></thead><tbody>'
             first_row = False
             
@@ -391,8 +391,8 @@ def to_html_table(
                 yield '<tr>'
             highlight = not highlight
             for key, value in record.items():
-                yield '<td>' + str(value) + '<td>'
-            yield '<tr>'
+                yield '<td>' + str(value) + '<td>\n'
+            yield '</tr>'
                 
         yield '</tbody></table>'
         
@@ -414,7 +414,7 @@ def to_ascii_table(
 
     This exhausts generators so is only recommended to be used on lists.
     """    
-
+    result = []
     columns = {}
     cache = []
 
@@ -435,13 +435,15 @@ def to_ascii_table(
         bars.append('─' * (width + 2))
 
     # print headers
-    print('┌' + '┬'.join(bars) + '┐')
-    print('│' + '│'.join([k.center(v + 2) for k, v in columns.items()]) + '│')
-    print('├' + '┼'.join(bars) + '┤')
+    result.append('┌' + '┬'.join(bars) + '┐')
+    result.append('│' + '│'.join([k.center(v + 2) for k, v in columns.items()]) + '│')
+    result.append('├' + '┼'.join(bars) + '┤')
 
     # print values
     for row in cache:
-        print('│' + '│'.join([str(v).center(columns[k] + 2) for k, v in row.items()]) + '│')
+        result.append('│' + '│'.join([str(v).center(columns[k] + 2) for k, v in row.items()]) + '│')
 
     # print footer
-    print('└' + '┴'.join(bars) + '┘')
+    result.append('└' + '┴'.join(bars) + '┘')
+
+    return '\n'.join(result)

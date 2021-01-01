@@ -39,12 +39,12 @@ def _inner_file_reader(
 
 
 def test_parser(parser):
-    reader = _inner_file_reader('tweets.jsonl')
+    reader = _inner_file_reader('../../tweets.jsonl')
     for item in reader:
         parser(item)
 
 def test_serializer(serializer):
-    reader = _inner_file_reader('tweets.jsonl')
+    reader = _inner_file_reader('../../tweets.jsonl')
     for item in reader:
         dic = orjson.loads(item)
         serializer(dic)
@@ -57,11 +57,17 @@ def time_it(test, *args):
 import json
 import ujson
 import orjson
+import os
+import sys
+sys.path.insert(1, os.path.join(sys.path[0], '../..'))
+import gva.utils.json
 
 print('json parse  :', time_it(test_parser, json.loads))
 print('ujson parse :', time_it(test_parser, ujson.loads))
 print('orjson parse:', time_it(test_parser, orjson.loads))  # <- fastest
+print('gva parse:', time_it(test_parser, gva.utils.json.parse))
 
 print('json serialize   :', time_it(test_serializer, json.dumps))
 print('ujson serializer :', time_it(test_serializer, ujson.dumps))
 print('orjson serializer:', time_it(test_serializer, orjson.dumps))  # <- fastest
+print('gva serializer:', time_it(test_serializer, gva.utils.json.serialize))

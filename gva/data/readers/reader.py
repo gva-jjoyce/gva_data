@@ -26,14 +26,11 @@ from ...logging import get_logger
 from .base_reader import BaseReader
 from .gcs_reader import GoogleCloudStorageReader
 from .experimental_threaded_reader import threaded_reader
-try:
-    import orjson as json
-except ImportError:
-    import ujson as json
+from ...utils import parse, serialize
     
 
 FORMATTERS = {
-    "json": json.loads,
+    "json": parse,
     "text": lambda x: x
 }
 

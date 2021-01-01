@@ -32,10 +32,7 @@ import datetime
 from typing import List, Any, Union, Callable
 import os
 import re
-try:
-    import orjson as json
-except ImportError:
-    import ujson as json
+from ...utils import serialize, parse
 
 
 VALID_BOOLEAN_VALUES = ("true", "false", "on", "off", "yes", "no", "0", "1")
@@ -199,9 +196,9 @@ class Schema():
         # if we have a schema as a string, load it into a dictionary
         if type(definition).__name__ == 'str':
             if os.path.exists(definition):  # type:ignore
-                definition = json.loads(open(definition, mode='r').read())  # type:ignore
+                definition = parse(open(definition, mode='r').read())  # type:ignore
             else:
-                definition = json.loads(definition)  # type:ignore
+                definition = parse(definition)  # type:ignore
 
         try:
             # read the schema and look up the validators

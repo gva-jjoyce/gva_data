@@ -1,10 +1,7 @@
 import glob
 import datetime
 from typing import Optional
-try:
-    import orjson as json
-except ImportError:
-    import ujson as json
+from .json import parse, serialize
 
 
 def date_range(start_date: Optional[datetime.date], end_date: Optional[datetime.date]):
@@ -33,7 +30,7 @@ def build_context(**kwargs: dict):
         # read the job configuration
         file_location = glob.glob('**/' + config_file, recursive=True).pop()
         with open(file_location, 'r') as f:
-            config = json.loads(f.read())
+            config = parse(f.read())
         return config
 
     # read the configuration file

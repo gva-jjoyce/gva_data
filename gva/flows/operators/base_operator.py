@@ -23,10 +23,7 @@ from ..runner import go, finalize, attach_writer, attach_writers
 from typing import Union, List
 from ...errors import RenderErrorStack
 from ...data.formats import dictset
-try:
-    import orjson as json
-except ImportError:
-    import ujson as json
+from ...utils import parse, serialize
 
 
 # inheriting ABC is part of ensuring that this class only ever
@@ -273,7 +270,7 @@ class BaseOperator(abc.ABC):
         return value
 
     def hash(self, block):
-        string_object = json.dumps(dictset.order(block))
+        string_object = serialize(dictset.order(block))
         block_string = string_object.encode()
         raw_hash = hashlib.sha256(block_string)
         hex_hash = raw_hash.hexdigest()

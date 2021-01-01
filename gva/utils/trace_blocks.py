@@ -19,10 +19,7 @@ the user must update the trace log and this trace block.
 """
 import datetime
 import hashlib
-try:
-    import orjson as json
-except ImportError:
-    import ujson as json
+from .json import parse, serialize
     
 
 EMPTY_HASH = ['0'] * 64
@@ -62,10 +59,10 @@ class TraceBlocks():
         self.blocks.append(block)
 
     def __str__(self):
-        return json.dumps(self.blocks)
+        return serialize(self.blocks)
 
     def hash(self, block):
-        string_object = json.dumps(block, sort_keys=True)
+        string_object = serialize(block, sort_keys=True)
         block_string = string_object.encode()
         raw_hash = hashlib.sha256(block_string)
         hex_hash = raw_hash.hexdigest()

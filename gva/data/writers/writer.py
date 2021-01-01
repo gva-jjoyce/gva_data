@@ -37,10 +37,7 @@ from .blob_writer import blob_writer
 from typing import Callable, Optional, Any
 from ..validator import Schema  # type:ignore
 from ...errors import ValidationError
-try:
-    import orjson as json
-except ImportError:
-    import ujson as json
+from ...utils import parse, serialize
 
 
 class Writer():
@@ -121,7 +118,7 @@ class Writer():
         self.last_write = time.time_ns()
 
         # serialize the record
-        serialized = json.dumps(record).decode() + '\n'
+        serialized = serialize(record).decode() + '\n'
         # the newline isn't counted so add 1 to get the actual length
         len_serial = len(serialized) + 1
 

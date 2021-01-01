@@ -51,11 +51,22 @@ def test_reader_to_pandas():
     assert len(df) == 50
 
 
+def test_threaded_reader():
+    r = Reader(
+            thread_count=2,
+            reader=FileReader,
+            from_path='tests/data/tweets')
+    df = r.to_pandas()
+
+    assert len(df) == 50
+
+
 if __name__ == "__main__":
     test_reader_can_read()
     test_unknown_format()
     test_reader_context()
     test_reader_to_pandas()
+    test_threaded_reader()
 
     print('okay')
     

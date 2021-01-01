@@ -200,11 +200,16 @@ def test_sort():
         {'key': 2},
         {'key': 1}
     ]
+
     s = list(dictset.sort(ds, 'key', 4))
-    
     # are the items ordered correctly
     for i, r in enumerate(s):
         assert 10-i == r.get('key')
+
+    rev = list(dictset.sort(ds, 'key', 40, False))
+    # the the items ordered correctly
+    for i, r in enumerate(rev):
+        assert 1+i == r.get('key'), F"{i}  {r.get('key')}"
 
 
 def test_select_all():
@@ -225,6 +230,46 @@ def test_to_pandas():
     assert df['plus1'].sum() == 14
 
 
+def test_to_html():
+    ds = [
+        {'key': 1, 'value': 'one', 'plus1': 2},
+        {'key': 2, 'value': 'two', 'plus1': 3},
+        {'key': 3, 'value': 'three', 'plus1': 4},
+        {'key': 4, 'value': 'four', 'plus1': 5}
+    ]
+    html = dictset.to_html_table(ds)
+
+    # are the headers there
+    assert "<th>key<th>" in html
+    assert "<th>value<th>" in html
+    assert "<th>plus1<th>" in html
+
+    # test for some of the values
+    assert "<td>one<td>" in html
+    assert "<td>1<td>" in html
+    assert "<td>5<td>" in html
+
+
+def test_to_ascii():
+    ds = [
+        {'key': 1, 'value': 'one', 'plus1': 2},
+        {'key': 2, 'value': 'two', 'plus1': 3},
+        {'key': 3, 'value': 'three', 'plus1': 4},
+        {'key': 4, 'value': 'four', 'plus1': 5}
+    ]
+    axki = dictset.to_ascii_table(ds)
+
+    # are the headers there
+    assert " key " in axki
+    assert " value " in axki
+    assert " plus1 " in axki
+
+    # test for some of the values
+    assert " one " in axki
+    assert " 1 " in axki
+    assert " 5 " in axki
+
+
 if __name__ == "__main__":
     test_select_record_fields()
     test_order()
@@ -242,5 +287,7 @@ if __name__ == "__main__":
     test_select_all()
     test_sort()
     test_to_pandas()
+    test_to_html()
+    test_to_ascii()
     
     print('okay')
