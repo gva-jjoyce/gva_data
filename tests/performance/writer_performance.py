@@ -13,13 +13,17 @@ Results (seconds to process 250,000 rows of 8 field records):
 -----------------------------------------------------------
 """
 import shutil
-import orjson as json
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], '..\..'))
 from gva.data.writers import Writer, file_writer
 from gva.logging import verbose_logger, get_logger
 from gva.data.validator import Schema
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
+    
 
 logger = get_logger()
 logger.setLevel(5)

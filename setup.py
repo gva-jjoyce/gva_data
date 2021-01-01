@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
    name='gva.data',
-   version='0.1.25',
+   version='0.1.26',
    description='GVA Data Libraries',
    long_description=long_description,
    long_description_content_type="text/markdown",
@@ -13,9 +13,7 @@ setup(
    packages=find_packages(include=['gva', 'gva.*']),
    url="https://github.com/gva-jjoyce/gva_data",
    install_requires=[
-        'google_cloud_storage',
-        'xmltodict',
-        'orjson',
+        'ujson',
         'networkx'
    ]
 )

@@ -20,15 +20,18 @@ into Pandas dataframe, or the dictset helper library can perform some
 activities on the set in a more memory efficient manner.
 """
 from typing import Callable, Tuple, Optional
-from ..formats.dictset import select_all, select_record_fields
+from ..formats.dictset import select_all, select_record_fields, limit, to_html_table, to_ascii_table
 import xmltodict  # type:ignore
 import datetime
 from ...logging import get_logger
-import orjson as json
 from .base_reader import BaseReader
 from .gcs_reader import GoogleCloudStorageReader
 from .experimental_threaded_reader import threaded_reader
-
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
+    
 
 FORMATTERS = {
     "json": json.loads,
@@ -165,3 +168,19 @@ class Reader():
         except ImportError:
             raise ImportError("Pandas must be installed to use 'to_pandas'")
         return pd.DataFrame(self)
+
+    def __repr__(self):
+
+        def is_running_from_ipython():
+            try:
+                from IPython import get_ipython
+                return get_ipython() is not None
+            except:
+                return False
+
+        if is_running_from_ipython():
+            from IPython.display import HTML, display
+            html = to_html_table(self, 5)
+            display(HTML(html))
+        else:
+            return to_ascii_table(self, 5)

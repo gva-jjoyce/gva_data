@@ -1,8 +1,10 @@
 import glob
-import orjson as json
 import datetime
 from typing import Optional
-
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
 
 
 def date_range(start_date: Optional[datetime.date], end_date: Optional[datetime.date]):

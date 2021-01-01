@@ -43,6 +43,8 @@ dictset can filter and select data before loading into a Pandas dataframe.
 `order(record)` - Sort a record by it's keys    
 `select_record_fields(record, fields)` - Selects a subset of fields from a record   
 `set_value(record, column_name, setter)` - Update the value of a field in a record   
+`to_html_table(dictset, limit)` - Create a HTML table of the first _limit_ rows  
+`to_ascii_table(dictset, limit)` - Create a ASCII table of the first _limit_ rows  
 
 
 **NOTE** distinct and sort_dictset have been written to work on unbounded (streaming) datasets and 

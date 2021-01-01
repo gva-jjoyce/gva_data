@@ -2,11 +2,14 @@ import cProfile
 import time
 
 import shutil
-import orjson as json
 import sys
 import os
 sys.path.insert(1, os.path.join(sys.path[0], '..\..'))
 from gva.data.validator import Schema
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
 
 
 schema_definition = {

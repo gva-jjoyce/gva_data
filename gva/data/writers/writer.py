@@ -37,7 +37,10 @@ from .blob_writer import blob_writer
 from typing import Callable, Optional, Any
 from ..validator import Schema  # type:ignore
 from ...errors import ValidationError
-import orjson as json
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
 
 
 class Writer():

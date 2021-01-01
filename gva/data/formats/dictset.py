@@ -35,8 +35,10 @@ for record in join_dictsets(filtered_list1, filtered_list2, 'id'):
 
 """
 from typing import Iterator, Any, List, Union, Callable
-import orjson as json
-
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
 
 class JOINS(object):
     INNER_JOIN = 'INNER'
@@ -205,11 +207,12 @@ def set_value(
     - column_name: the name of the field
     - setter: a method or constant to update the field
     """
+    copy = record.copy()
     if callable(setter):
-        record[column_name] = setter(record)
+        copy[column_name] = setter(copy)
     else:
-        record[column_name] = setter
-    return record
+        copy[column_name] = setter
+    return copy
 
 
 def distinct(
@@ -354,3 +357,91 @@ def to_pandas(
         dictset: Iterator[dict]):
     import pandas  # type:ignore
     return pandas.DataFrame(dictset)
+
+
+def to_html_table(
+        dictset: Iterator[dict],
+        limit: int = 5):
+    """
+    Render the dictset as a HTML table.
+
+    This exhausts generators so is only recommended to be used on lists.
+    """    
+    def _to_html_table(data, limit):
+        
+        first_row = True
+        highlight = False
+        
+        yield '<table class="table table-sm">'
+        for counter, record in enumerate(data):
+            
+            if first_row:
+                yield '<thead class="thead-light"><tr>'
+                for key, value in record.items():
+                    yield '<th>' + key + '<th>'
+                yield '</tr></thead><tbody>'
+            first_row = False
+            
+            if counter >= limit:
+                break
+            
+            if highlight:
+                yield '<tr style="background-color:#F4F4F4">'
+            else:
+                yield '<tr>'
+            highlight = not highlight
+            for key, value in record.items():
+                yield '<td>' + str(value) + '<td>'
+            yield '<tr>'
+                
+        yield '</tbody></table>'
+        
+        import types
+        if isinstance(data, types.GeneratorType):
+            yield f'<p>unknown rows x {len(record.items())} columns</p>'
+            yield 'NOTE: the displayed records have been spent'
+        if isinstance(data, list):
+            yield f'<p>{len(data)} rows x {len(record.items())} columns</p>'
+
+    return ''.join(_to_html_table(dictset, limit))
+
+
+def to_ascii_table(
+        dictset: Iterator[dict],
+        limit: int = 5):
+    """
+    Render the dictset as a ASCII table.
+
+    This exhausts generators so is only recommended to be used on lists.
+    """    
+
+    columns = {}
+    cache = []
+
+    # inspect values
+    for count, row in enumerate(dictset):
+        if count == limit:
+            break
+
+        cache.append(row)
+        for k,v in row.items():
+            length = max(len(str(v)), len(k))
+            if length > columns.get(k, 0):
+                columns[k] = length
+
+    # draw table
+    bars = []
+    for header, width in columns.items():
+        bars.append('─' * (width + 2))
+
+    # print headers
+    print('┌' + '┬'.join(bars) + '┐')
+    print('│' + '│'.join([k.center(v + 2) for k, v in columns.items()]) + '│')
+    print('├' + '┼'.join(bars) + '┤')
+
+    # print values
+    for row in cache:
+        print('│' + '│'.join([str(v).center(columns[k] + 2) for k, v in row.items()]) + '│')
+
+    # print footer
+    print('└' + '┴'.join(bars) + '┘')

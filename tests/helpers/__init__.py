@@ -1,4 +1,7 @@
-from orjson import json
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
 
 
 

@@ -29,10 +29,14 @@ Example Schema:
 }
 """
 import datetime
-import orjson as json
 from typing import List, Any, Union, Callable
 import os
 import re
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
+
 
 VALID_BOOLEAN_VALUES = ("true", "false", "on", "off", "yes", "no", "0", "1")
 DEFAULT_MIN = -9223372036854775808

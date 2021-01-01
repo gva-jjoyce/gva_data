@@ -14,7 +14,6 @@ import inspect
 import functools
 import hashlib
 import time
-import orjson as json
 import datetime
 import types
 import sys
@@ -24,6 +23,10 @@ from ..runner import go, finalize, attach_writer, attach_writers
 from typing import Union, List
 from ...errors import RenderErrorStack
 from ...data.formats import dictset
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
 
 
 # inheriting ABC is part of ensuring that this class only ever

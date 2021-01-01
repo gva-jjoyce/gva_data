@@ -17,9 +17,13 @@ block hash at the time the data is processed which this Class creating an
 independant representation of the trace. In order to bypass this control,
 the user must update the trace log and this trace block.
 """
-import orjson as json
 import datetime
 import hashlib
+try:
+    import orjson as json
+except ImportError:
+    import ujson as json
+    
 
 EMPTY_HASH = ['0'] * 64
 
