@@ -415,7 +415,7 @@ def to_ascii_table(
     This exhausts generators so is only recommended to be used on lists.
     """    
     result = []
-    columns = {}
+    columns:dict = {}
     cache = []
 
     # inspect values

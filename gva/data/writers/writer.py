@@ -31,6 +31,7 @@ import lzma
 import time
 import os
 import threading
+import sys
 import tempfile
 import datetime
 from .blob_writer import blob_writer
@@ -96,7 +97,9 @@ class Writer():
         The behaviour of tempfiles is inconsistent between operating systems,
         this helps to ensure consistent behaviour.
         """
-        file = tempfile.NamedTemporaryFile(prefix='gva-', delete=True)
+        file = tempfile.NamedTemporaryFile(
+                prefix='gva-',
+                delete=True)
         file_name = file.name
         file.close()
         try:
@@ -193,12 +196,19 @@ class _PartFileWriter():
             self,
             file_name: str,  # type:ignore
             compress: bool = False):
-        self.file: Any = open(file_name, mode='wb')
+        self.file: Any = open(file_name, mode='wb', buffering=256*1024)
         if compress:
             self.file = lzma.open(self.file, mode='wb')
 
     def append(self, record: str = ""):
-        self.file.write(record.encode())
+        retry = True
+        while retry:
+            try:
+                self.file.write(record.encode())
+            except:   # nosec - doesn't matter the cause, retry
+                pass
+            finally:
+                retry = False
 
     def finalize(self):
         try:
@@ -227,6 +237,7 @@ def _worker_thread(data_writer: Writer):
     handled and focus on writes
     """
     while data_writer.use_worker_thread:
+
         with threading.Lock():
             if data_writer.file_writer is not None:
                 # timeout since last write
@@ -236,3 +247,5 @@ def _worker_thread(data_writer: Writer):
                 if not data_writer.fixed_date and (data_writer.date != datetime.date.today()):
                     data_writer.on_partition_closed()
         time.sleep(5)
+
+    sys.exit(0)  # terminate the thread

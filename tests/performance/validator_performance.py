@@ -25,8 +25,9 @@ schema_definition = {
     ]
 }
 
+# random tweet with no sensitive or creative information
 data = {
-    "userid":1.2681557490473e18,
+    "userid":12681557490473,
     "username":"USAgovernmentu1",
     "user_verified":False,
     "followers":16,

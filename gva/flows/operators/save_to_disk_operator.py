@@ -12,9 +12,16 @@ class SaveToDiskOperator(BaseOperator):
             to_path: str,
             schema: Schema = None,
             compress: bool = True,
-            date: datetime.date = None):
+            date: datetime.date = None,
+            **kwargs):
         super().__init__()
-        self.writer = Writer(writer=file_writer, to_path=to_path, schema=schema, compress=compress, date=date)
+        self.writer = Writer(
+                writer=file_writer,
+                to_path=to_path,
+                schema=schema,
+                compress=compress,
+                date=date,
+                **kwargs)
 
     def execute(self, data: dict = {}, context: dict = {}):
         self.writer.append(data)

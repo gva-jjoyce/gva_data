@@ -62,7 +62,11 @@ class TraceBlocks():
         return serialize(self.blocks)
 
     def hash(self, block):
-        string_object = serialize(block, sort_keys=True)
+        try:
+            string_object = serialize(block, sort_keys=True)
+        except (AttributeError, ValueError):
+            # some items don't serialize
+            string_object = str(string_object)
         block_string = string_object.encode()
         raw_hash = hashlib.sha256(block_string)
         hex_hash = raw_hash.hexdigest()

@@ -2,6 +2,7 @@ import shutil
 import datetime
 import os
 import sys
+import glob
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.data.writers import Writer, file_writer
 from gva.data.readers import Reader, FileReader
@@ -18,8 +19,22 @@ def do_writer():
         to_path='_tests/year_%Y/test.jsonl',
         date=datetime.date.today()
     )
-    w.append({"test":True})
-    w.append({"test":False})
+    for i in range(int(1e5)):
+        w.append({"test":True})
+        w.append({"test":False})
+    w.finalize()
+
+
+def do_writer_compressed():
+    w = Writer(
+        writer=file_writer,
+        to_path='_tests/year_%Y/test.jsonl',
+        compress=True,
+        date=datetime.date.today()
+    )
+    for i in range(int(1e5)):
+        w.append({"test":True})
+        w.append({"test":False})
     w.finalize()
     del w
 
@@ -32,14 +47,29 @@ def test_reader_writer():
         reader=FileReader,
         from_path='_tests/year_%Y/'
     )
-
     l = len(list(r))
     shutil.rmtree("_tests", ignore_errors=True)
+    assert l == 200000, l
 
-    assert l == 2
+
+def test_reader_writer_compressed():
+
+    do_writer_compressed()
+
+    g = glob.glob('_tests/**/*.lzma')
+    assert len(g) > 0, g
+
+    r = Reader(
+        reader=FileReader,
+        from_path='_tests/year_%Y/'
+    )
+    l = len(list(r))
+    shutil.rmtree("_tests", ignore_errors=True)
+    assert l == 200000, l
 
 
 if __name__ == "__main__":
     test_reader_writer()
+    test_reader_writer_compressed()
 
     print('okay')

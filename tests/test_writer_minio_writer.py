@@ -13,15 +13,19 @@ if __name__ == "__main__":
     
     w = Writer(
             writer=minio_writer,
-            end_point='10.10.10.30:9000',
-            access_key='57BTIM68ETSQ7ZQG',
-            secret_key='LXWODW6DSZX9AD9TX9XBTW292KEOATGB',
+            end_point=os.getenv('MINIO_END_POINT'),
+            access_key=os.getenv('MINIO_ACCESS_KEY'),
+            secret_key=os.getenv('MINIO_SECRET_KEY'),
             secure=False,
             #compress=True,
             to_path='TWITTER/%date/test.jsonl')
+
+    import time
+
+    start = time.time_ns()
 
     for i in range(100):
         w.append({"tv":i+100})
     w.finalize()
 
-    print('okay')
+    print('okay', (start - time.time_ns())/1e9)

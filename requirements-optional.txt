@@ -1,3 +1,6 @@
+# these aren't part of the minimum requirements for this library
+# however, they are referenced somewhere in the codebase
+# if you want an easy life, install these too.
 google_cloud_storage>=1.35
 pandas
 pymongo
@@ -6,3 +9,4 @@ jinja2
 orjson
 matplotlib
 rich
+python-dotenv

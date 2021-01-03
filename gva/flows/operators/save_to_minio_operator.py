@@ -16,7 +16,8 @@ class SaveToMinioOperator(BaseOperator):
             schema: Schema = None,
             compress: bool = True,
             date: datetime.date = None,
-            secure: bool = True):
+            secure: bool = True,
+            **kwargs):
         super().__init__()
         self.writer = Writer(
                 writer=minio_writer,
@@ -27,7 +28,8 @@ class SaveToMinioOperator(BaseOperator):
                 end_point=end_point,
                 access_key=access_key,
                 secret_key=secret_key,
-                secure=secure)
+                secure=secure,
+                **kwargs)
 
     def execute(self, data: dict = {}, context: dict = {}):
         self.writer.append(data)

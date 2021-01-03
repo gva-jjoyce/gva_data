@@ -29,7 +29,8 @@ from .experimental_threaded_reader import threaded_reader
 from ...utils import parse, serialize
     
 
-FORMATTERS = {
+# available line parsers
+PARSERS = {
     "json": parse,
     "text": lambda x: x
 }
@@ -39,6 +40,7 @@ class Reader():
 
     def __init__(
         self,
+        *,  # force all paramters to be keyworded 
         select: list = ['*'],
         from_path: str = None,
         where: Callable = select_all,
@@ -59,8 +61,7 @@ class Reader():
         Reader(
             select=['column'],
             from_path='data/store',
-            where=lambda record: record['size'] == 'large',
-            limit=1
+            where=lambda record: record['size'] == 'large'
         )
 
         Data are automatically partitioned by date.
@@ -70,16 +71,13 @@ class Reader():
         if not hasattr(where, '__call__'):
             raise TypeError("Reader 'where' parameter must be Callable")
 
+        # load the line converter
+        self.parser = PARSERS.get(data_format.lower())
+        if self.parser is None:
+            raise TypeError(F"data format unsupported: {data_format}.")
 
-        self.format = data_format
-        self.formatter = FORMATTERS.get(self.format.lower())
-        if self.formatter is None:
-            raise TypeError(F"data format unsupported: {self.format}.")
-
+        # instantiate the injected reader class
         self.reader_class = reader(from_path=from_path, **kwargs)  # type:ignore
-        self.thread_count = thread_count
-        if thread_count > 0:
-            get_logger().warning("THREADED READER IS EXPERIMENTAL, USE IN SYSEMS IS NOT RECOMMENDED")
 
         self.select = select.copy()
         self.where: Callable = where
@@ -87,8 +85,20 @@ class Reader():
         # initialize the reader
         self._inner_line_reader = None
 
-        logger = get_logger()
-        logger.debug(F"Reader(reader={reader.__name__}, from_path='{from_path}')")  # type:ignore
+        get_logger().debug(F"Executing Reader: (reader={reader.__name__}, from_path='{from_path}')")  # type:ignore
+
+        """ FEATURES IN DEVELOPMENT """
+
+        # number of days to walk backwards to find records
+        self.step_back_days = int(kwargs.get('step_back_days', 0))
+        if self.step_back_days > 0:
+            get_logger().warning("STEP BACK DAYS IS IN DEVELOPMENT")
+
+        # threaded reader
+        self.thread_count = thread_count
+        if thread_count > 0:
+            get_logger().warning("THREADED READER IS EXPERIMENTAL, USE IN SYSEMS IS NOT RECOMMENDED")
+
 
     """
     Iterable
@@ -108,7 +118,6 @@ class Reader():
 
 
     def __iter__(self):
-        self._inner_line_reader = None
         return self
 
 
@@ -119,8 +128,10 @@ class Reader():
         if self._inner_line_reader is None:
             self._inner_line_reader = self.new_raw_lines_reader()
         while True:
+            # get the the next line from the reader
             record = self._inner_line_reader.__next__()
-            record = self.formatter(record)
+            # convert from text to a dictionary (usually json)
+            record = self.parser(record)
             if not self.where(record):
                 continue
             if self.select != ['*']:
@@ -164,17 +175,21 @@ class Reader():
             raise ImportError("Pandas must be installed to use 'to_pandas'")
         return pd.DataFrame(self)
 
+
     def __repr__(self):
 
         def is_running_from_ipython():
+            """
+            True when running in Jupyter
+            """
             try:
-                from IPython import get_ipython
+                from IPython import get_ipython  # type:ignore
                 return get_ipython() is not None
             except:
                 return False
 
         if is_running_from_ipython():
-            from IPython.display import HTML, display
+            from IPython.display import HTML, display  # type:ignore
             html = to_html_table(self, 5)
             display(HTML(html))
             return ''  # __repr__ must return something

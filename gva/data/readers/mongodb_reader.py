@@ -54,16 +54,3 @@ class MongoDbReader(BaseReader):
             else:
                 yield collection.find(query)[chunks[i-1]:chunks.stop]
 
-
-if __name__ == "__main__":
-    
-    mdb = MongoDbReader(
-            connection_string="mongodb://10.10.10.30:27017/",
-            database="twitter")
-
-    print(list(mdb.list_of_sources()))
-    for i, doc in enumerate(mdb.read_from_source('cve_tweets')):
-        pass
-
-    print(i)
-

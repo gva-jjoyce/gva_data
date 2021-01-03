@@ -16,14 +16,6 @@ concurrently read and there is a a delay associated with reading the data,
 such as reading over a network or slow storage. Use in other situations
 (for example the MongoDB reader or where files are on local SSD storage)
 may be detrimental to performance.
-
-
-OBSERVATIONS
-- Over a small set of files (9 observed), this code can improve the read
-  speed from about 15 seconds to about 3 seconds - this is inline with
-  the purpose of the code. However, over larger sets of files (17
-  observed), the speed up is only from about 30 seconds to 24 seconds.
-  The cause of this this 'poor' performance has not been identified.
 """
 import queue
 import threading
@@ -42,7 +34,6 @@ def threaded_reader(items_to_read, reader, max_threads=4):
     Each file is in it's own thread, so reading a single file 
     wouldn't benefit from this approach.
     """
-
     thread_pool = []
 
     def thread_process():
@@ -65,7 +56,7 @@ def threaded_reader(items_to_read, reader, max_threads=4):
                 source = source_queue.pop(0)
             except IndexError:
                 source = None
-        sys.exit()
+        sys.exit(0)
 
     source_queue = items_to_read.copy()
     # we can have 64 blocks waiting on the queue, if this is unbounded
@@ -93,7 +84,7 @@ def threaded_reader(items_to_read, reader, max_threads=4):
         thread.daemon = True
         thread.start()
         thread_pool.append(thread)
-        time.sleep(0.05)  # we want to offset the start of the threads
+        time.sleep(0.05)  # offset the start of the threads
 
     # when the threads are all complete and all the records
     # have been read from the reply queue, we're done
