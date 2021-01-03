@@ -19,6 +19,7 @@ jobs:
         
       - name: install gva requirements
         run:  pip install -r $GITHUB_WORKSPACE/requirements.txt
+        run:  pip install -r $GITHUB_WORKSPACE/requirements-optional.txt
 
       - name: run regression tests
         run: coverage run -m pytest 
