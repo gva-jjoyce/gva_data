@@ -19,9 +19,5 @@ class BaseBin(abc.ABC):
     def __call__(self, record: str) -> str:
         raise NotImplementedError()
 
-    def __ror__(self, flow):
-        # set a attribute on the flow which calls this class
-        setattr(flow, str(self), self)
-
     def _date_part(self):
         return datetime.date.today().strftime('%Y-%m-%d')

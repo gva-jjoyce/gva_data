@@ -103,7 +103,7 @@ def attach_writer(flow: networkx.DiGraph, writer):
         for node_id in flow.nodes():
             node = flow.nodes()[node_id]
             function = node.get('function')
-            function | writer
+            setattr(function, str(writer.name), writer)
         return True
     except Exception as err:
         logger.error(F"Failed to add writer to flow - {type(err).__name__} - {err}")
@@ -116,19 +116,20 @@ def attach_writers(flow: networkx.DiGraph, writers: List[dict]):
         name = writer.get('name')
         class_name = writer.get('type')
 
-        bin = None
         if class_name == 'gcs':
-            bin = GoogleCloudStorageBin(                    # type: ignore
+            writer = GoogleCloudStorageBin(                 # type: ignore
                     bin_name=name,                          # type: ignore
                     project=writer.get('project'),          # type: ignore
                     bucket=writer.get('bucket'),            # type: ignore
                     path=writer.get('path'))                # type: ignore
+            attach_writer(flow, writer)
         if class_name == 'file':
-            bin = FileBin(                                  # type: ignore
+            writer = FileBin(                               # type: ignore
                     bin_name=name,                          # type: ignore
                     path=writer.get('path'))                # type: ignore
+            attach_writer(flow, writer)
         if class_name == 'minio':
-            bin = MinioBin(                                 # type: ignore
+            writer = MinioBin(                              # type: ignore
                     bin_name=name,                          # type: ignore
                     end_point=writer.get('end_point'),      # type: ignore
                     bucket=writer.get('bucket'),            # type: ignore
@@ -136,6 +137,4 @@ def attach_writers(flow: networkx.DiGraph, writers: List[dict]):
                     access_key=writer.get('access_key'),    # type: ignore
                     secret_key=writer.get('secret_key'),    # type: ignore
                     secure=writer.get('secure', True))      # type: ignore
-        
-        if bin is not None:
-            attach_writer(flow, bin)
+            attach_writer(flow, writer)
