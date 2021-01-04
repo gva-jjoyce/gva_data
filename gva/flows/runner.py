@@ -53,8 +53,6 @@ def go(
 
     returns block trace for the execution
     """
-
-
     # create a uuid for the message if it doesn't already have one
     if not context.get('uuid'):
         context['uuid'] = str(uuid.uuid4())
@@ -63,22 +61,19 @@ def go(
     if not context.get('execution_trace'):
         context['execution_trace'] = TraceBlocks(uuid=context['uuid'])
 
-    # create a copy of the context
-    my_context = context.copy()
-
     # if trace hasn't been explicitly set - randomly select based on a sample rate
-    if not my_context.get('trace') and trace_sample_rate:
-        my_context['trace'] = random.randint(1, round(1 / trace_sample_rate)) == 1  # nosec
+    if not context.get('trace') and trace_sample_rate:
+        context['trace'] = random.randint(1, round(1 / trace_sample_rate)) == 1  # nosec
 
     # walk through the flow, by calling each of the operators
     nodes = [node for node in flow.nodes() if len(flow.in_edges(node)) == 0]
     for node in nodes:
-        _inner_runner(flow=flow, node=node, data=data, context=my_context)
+        _inner_runner(flow=flow, node=node, data=data, context=context)
 
     # if being traced, send the trace to the trace writer
-    if my_context.get('trace', False):
+    if context.get('trace', False):
         if hasattr(flow, 'traces'):
-            flow.trace_writer(my_context['execution_trace'])
+            flow.trace_writer(context['execution_trace'])
     return None
 
 
