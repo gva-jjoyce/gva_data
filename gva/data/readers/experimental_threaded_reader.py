@@ -16,13 +16,17 @@ concurrently read and there is a a delay associated with reading the data,
 such as reading over a network or slow storage. Use in other situations
 (for example the MongoDB reader or where files are on local SSD storage)
 may be detrimental to performance.
+
+The number of Queue slots and the size of the chunks have had various
+combinations tried, there may be performance improvements with larger
+numbers for each, it's noth within the resolution of my system to be
+able to measure them.
 """
 import queue
 import threading
 import sys
 import time
 from ..formats import dictset
-
 
 def threaded_reader(items_to_read, reader, max_threads=4):
     """
@@ -42,7 +46,7 @@ def threaded_reader(items_to_read, reader, max_threads=4):
 
         1) Get any files off the file queue
         2) Read the file in chunks
-        3) Put the chunk onto a reply queue
+        3) Put a chunk onto a reply queue
         """
         try:
             source = source_queue.pop(0)
@@ -84,7 +88,7 @@ def threaded_reader(items_to_read, reader, max_threads=4):
         thread.daemon = True
         thread.start()
         thread_pool.append(thread)
-        time.sleep(0.05)  # offset the start of the threads
+        time.sleep(0.01)  # offset the start of the threads
 
     # when the threads are all complete and all the records
     # have been read from the reply queue, we're done

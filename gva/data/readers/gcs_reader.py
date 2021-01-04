@@ -8,6 +8,7 @@ try:
 except ImportError:   # pragma: no cover
     pass
 import lzma
+import io
 from ...utils import common, paths
 from .base_reader import BaseReader
 
@@ -35,10 +36,12 @@ class GoogleCloudStorageReader(BaseReader):
         stream = blob.download_as_string()
 
         if extention == '.lzma':
-            stream = lzma.decompress(stream)
-
-        stream = stream.decode('utf-8')
-        yield from [item for item in stream.split('\n') if len(item) > 0]
+            io_stream = io.BytesIO(stream)
+            with lzma.open(io_stream, 'rb') as l:
+                yield from l.readlines()
+        else:
+            stream = stream.decode('utf-8')
+            yield from [item for item in stream.split('\n') if len(item) > 0]
 
 
 def find_blobs_at_path(

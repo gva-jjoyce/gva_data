@@ -27,6 +27,10 @@ Example Schema:
      {"name": "followers", "type": ["string", "nullable"]}
  ]
 }
+
+
+Notes:
+- type(var).__name__ in (set) is faster than isinstance
 """
 import datetime
 from typing import List, Any, Union, Callable
@@ -54,7 +58,7 @@ class is_string():
             return type(value).__name__ == "str"
     def __str__(self):
         if self.pattern:
-            return f'string {self.pattern}'
+            return f'string ({self.pattern})'
         else:
             return 'string'
 
@@ -118,7 +122,7 @@ class is_numeric():
 
 def is_date(value: Any) -> bool:
     try:
-        if type(value).__name__ in ["datetime", "date", "time"]:
+        if type(value).__name__ in ("datetime", "date", "time"):
             return True
         datetime.datetime.fromisoformat(value)
         return True
@@ -175,12 +179,12 @@ def get_validators(
     return validators
 
 
-def field_validator(value, validators: list) -> bool:
+def field_validator(value, validators: set) -> bool:
     """
     Execute a set of validator functions (the _is_x) against a value.
     Return True if any of the validators are True.
     """
-    return any([validator(value) for validator in validators])
+    return any([True for validator in validators if validator(value)])
 
 
 class Schema():

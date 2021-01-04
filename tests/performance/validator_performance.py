@@ -38,10 +38,37 @@ data = {
     }
 
 def validate():
-    for i in range(5000):
+    for i in range(1000000):
         s = Schema(schema_definition)
         s.validate(data)
 
+
+def type_check_performance():
+
+    test_1 = 'test'
+    test_2 = 100
+    cycles = 10000000
+
+    start = time.time_ns()
+    for i in range(cycles):
+        s = isinstance(test_1, (str, int))
+        n = isinstance(test_2, (str, int))
+    print(time.time_ns() - start, s, n)
+
+    start = time.time_ns()
+    for i in range(cycles):
+        s = type(test_1).__name__ in {'str', 'int'}
+        n = type(test_2).__name__ in {'str', 'int'}
+    print(time.time_ns() - start, s, n)
+
+
 start = time.time_ns()
-cProfile.run("validate()")
+#cProfile.run("validate()")
+#cProfile.run("type_check_performance()")
 print((time.time_ns() - start) / 1e9)
+
+
+import datetime
+print(type(datetime.datetime(2002,1,1)).__name__)
+print(type(datetime.date(2002,1,1)).__name__)
+print(type(datetime.time(12,0)).__name__)
