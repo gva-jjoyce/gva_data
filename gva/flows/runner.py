@@ -60,8 +60,8 @@ def go(
         context['uuid'] = str(uuid.uuid4())
 
     # create a tracer for the message
-    if not my_context('execution_trace'):
-        my_context['execution_trace'] = TraceBlocks(uuid=my_context['uuid'])
+    if not context.get('execution_trace'):
+        context['execution_trace'] = TraceBlocks(uuid=context['uuid'])
 
     # create a copy of the context
     my_context = context.copy()
