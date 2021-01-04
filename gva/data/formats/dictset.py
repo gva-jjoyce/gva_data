@@ -35,7 +35,7 @@ for record in join_dictsets(filtered_list1, filtered_list2, 'id'):
 
 """
 from typing import Iterator, Any, List, Union, Callable
-from ...utils import serialize, parse
+from ...utils.json import serialize, parse
 
 
 class JOINS(object):

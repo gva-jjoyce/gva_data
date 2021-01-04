@@ -38,7 +38,7 @@ from .blob_writer import blob_writer
 from typing import Callable, Optional, Any
 from ..validator import Schema  # type:ignore
 from ...errors import ValidationError
-from ...utils import parse, serialize
+from ...utils.json import parse, serialize
 
 
 class Writer():

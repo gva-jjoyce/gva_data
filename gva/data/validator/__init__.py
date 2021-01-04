@@ -36,7 +36,7 @@ import datetime
 from typing import List, Any, Union, Callable
 import os
 import re
-from ...utils import serialize, parse
+from ...utils.json import serialize, parse
 
 
 VALID_BOOLEAN_VALUES = ("true", "false", "on", "off", "yes", "no", "0", "1")

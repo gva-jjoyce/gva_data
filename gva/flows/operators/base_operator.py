@@ -23,7 +23,7 @@ from ..runner import go, finalize, attach_writer, attach_writers
 from typing import Union, List
 from ...errors import RenderErrorStack
 from ...data.formats import dictset
-from ...utils import parse, serialize
+from ...utils.json import parse, serialize
 
 
 # inheriting ABC is part of ensuring that this class only ever

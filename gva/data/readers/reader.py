@@ -26,7 +26,7 @@ from ...logging import get_logger
 from .base_reader import BaseReader
 from .gcs_reader import GoogleCloudStorageReader
 from .experimental_threaded_reader import threaded_reader
-from ...utils import parse, serialize
+from ...utils.json import parse, serialize
     
 
 # available line parsers
