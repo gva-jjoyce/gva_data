@@ -104,6 +104,7 @@ def attach_writer(flow: networkx.DiGraph, writer):
             node = flow.nodes()[node_id]
             function = node.get('function')
             setattr(function, str(writer.name), writer)
+            logger.debug(F"added {writer.name} to {type(function).__name__}")
         return True
     except Exception as err:
         logger.error(F"Failed to add writer to flow - {type(err).__name__} - {err}")
