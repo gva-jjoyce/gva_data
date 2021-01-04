@@ -144,14 +144,16 @@ class BaseOperator(abc.ABC):
         # message tracing
         if context.get('trace', False):
             data_hash = self.hash(data)
-            self.logger.trace(F"{context.get('uuid')} {self.__class__.__name__} {data_hash}")
             context['execution_trace'].add_block(data_hash=data_hash,
                                                  operator=self.__class__.__name__,
                                                  version=self.version())
+            trace_location = ''
             try:
-                self.trace_writer(context['execution_trace'].blocks[-1])  # type:ignore
+                trace_location = self.trace_writer(serialize(context['execution_trace'].blocks[-1]))  # type:ignore
             except Exception as err: 
                 self.logger.error(F"Failed to write Trace for {context.get('uuid')} - {type(err).__name__} {err}")
+            finally:
+                self.logger.trace(F"{context.get('uuid')} {self.__class__.__name__} {data_hash} at {trace_location}")
 
         # if there is a high failure rate, abort
         if sum(self.last_few_results) < (len(self.last_few_results) / 2):
