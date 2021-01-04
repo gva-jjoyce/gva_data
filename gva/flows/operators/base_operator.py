@@ -270,8 +270,10 @@ class BaseOperator(abc.ABC):
         return value
 
     def hash(self, block):
-        string_object = serialize(dictset.order(block))
-        block_string = string_object.encode()
-        raw_hash = hashlib.sha256(block_string)
+        try:
+            bytes_object = serialize(dictset.order(block))
+        except:
+            bytes_object = str(block).encode()
+        raw_hash = hashlib.sha256(bytes_object)
         hex_hash = raw_hash.hexdigest()
         return hex_hash

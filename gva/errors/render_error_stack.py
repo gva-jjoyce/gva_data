@@ -133,7 +133,7 @@ def _read_from_code(
         end_line = min(line + extend_by, len(lines)+1)
         yield ('-' * 46) + '  code  ' + ('-' * 46)
         for line_number in range(start_line, end_line):
-            prefix = '❱' if line_number == line else ' '
+            prefix = '>' if line_number == line else ' '
             yield F"{prefix}{line_number:4d} {lines[line_number-1]}"
             line_number += 1
     except:
