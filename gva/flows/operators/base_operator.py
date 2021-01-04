@@ -151,7 +151,7 @@ class BaseOperator(abc.ABC):
             try:
                 self.trace_writer(context['execution_trace'].blocks[-1])  # type:ignore
             except Exception as err: 
-                self.logger.error(F"Failed to write Trace for {self.uuid} - {type(err).__name__} {err}")
+                self.logger.error(F"Failed to write Trace for {context.get('uuid')} - {type(err).__name__} {err}")
 
         # if there is a high failure rate, abort
         if sum(self.last_few_results) < (len(self.last_few_results) / 2):
