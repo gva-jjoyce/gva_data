@@ -1,4 +1,4 @@
-# GVA Data Libraries
+# GVA Libraries
 
 ## What Is It?
 
@@ -21,3 +21,25 @@ or in your requirements.txt
 ~~~
 git+https://github.com/gva-jjoyce/gva_data
 ~~~
+
+## Repository Structure
+
+### docs/
+
+A collection of documents describing how to use various aspects of the `gva` library.
+
+### gva/
+
+The code for the `gva` library.
+
+### labs/
+
+Jupyter Notebooks with lessons to help build familiarity with the `gva` library.
+
+### tests/
+
+Unit, Regression and Performance tests, and artefacts to support these tests.
+
+### tools/
+
+Stand-alone tools for use with the `gva` library but not part of the library itself.
