@@ -54,14 +54,17 @@ def go(
     returns block trace for the execution
     """
 
-    # create a copy of the context
-    my_context = context.copy()
+
     # create a uuid for the message if it doesn't already have one
-    if not my_context.get('uuid'):
-        my_context['uuid'] = str(uuid.uuid4())
+    if not context.get('uuid'):
+        context['uuid'] = str(uuid.uuid4())
 
     # create a tracer for the message
-    my_context['execution_trace'] = TraceBlocks(uuid=my_context['uuid'])
+    if not my_context('execution_trace'):
+        my_context['execution_trace'] = TraceBlocks(uuid=my_context['uuid'])
+
+    # create a copy of the context
+    my_context = context.copy()
 
     # if trace hasn't been explicitly set - randomly select based on a sample rate
     if not my_context.get('trace') and trace_sample_rate:
