@@ -115,7 +115,7 @@ def attach_writers(flow: networkx.DiGraph, writers: List[dict]):
 
     for writer in writers:
         name = writer.get('name')
-        class_name = writer.get('type')
+        class_name = writer.get('class')
 
         if class_name == 'gcs':
             writer = GoogleCloudStorageBin(                 # type: ignore
