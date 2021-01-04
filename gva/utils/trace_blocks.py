@@ -19,14 +19,30 @@ the user must update the trace log and this trace block.
 """
 import datetime
 import hashlib
+import os
 from .json import parse, serialize
 from ..data.formats import dictset
-    
 
 EMPTY_HASH = ['0'] * 64
 
+def random_int() -> int:
+    """
+    Select a random integer (64bit)
+    """
+    return bytes_to_int(os.urandom(8))
+
+def bytes_to_int(bytes: bytes) -> int:
+    """
+    Helper function, convert set of bytes to an integer
+    """
+    result = 0
+    for b in bytes:
+        result = result * 256 + int(b)
+    return result
 
 class TraceBlocks():
+
+    __slots__ = ['blocks']
 
     def __init__(self, uuid="00000000-0000-0000-0000-000000000000"):
         """
@@ -42,12 +58,21 @@ class TraceBlocks():
     def add_block(self,
                   data_hash=EMPTY_HASH,
                   operator="Not Specified",
-                  version="-"):
+                  version="-",
+                  execution_ns=0):
         """
         Add a new block to the chain.
         """
         previous_block = self.blocks[-1]
         previous_block_hash = self.hash(previous_block)
+
+        # proof is what makes mining for bitcoin so hard, we're setting a low
+        # target of the last character being a 0, 4, 8, 12 (1/4 chance)
+        # if you wanted to make this harder, set a different rule to exit
+        # while loop
+        proof = str(random_int())
+        while self.hash(''.join([proof, previous_block_hash]))[-1] not in ['0', '4', '8', '12']:
+            proof = str(random_int())
 
         block = {
             "block": len(self.blocks) + 1,
@@ -55,7 +80,9 @@ class TraceBlocks():
             "data_hash": data_hash,
             "previous_block_hash": previous_block_hash,
             "operator": operator,
-            "version": version
+            "version": version,
+            "execution_ns": execution_ns,
+            "proof": proof
         }
         self.blocks.append(block)
 
