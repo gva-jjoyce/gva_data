@@ -60,7 +60,7 @@ class TraceBlocks():
         self.blocks.append(block)
 
     def __str__(self):
-        return serialize(self.blocks)
+        return serialize(self.blocks).decode()
 
     def hash(self, block):
         try:
