@@ -24,22 +24,22 @@ git+https://github.com/gva-jjoyce/gva_data
 
 ## Repository Structure
 
-### docs/
+#### docs/
 
 A collection of documents describing how to use various aspects of the `gva` library.
 
-### gva/
+#### gva/
 
 The code for the `gva` library.
 
-### labs/
+#### labs/
 
 Jupyter Notebooks with lessons to help build familiarity with the `gva` library.
 
-### tests/
+#### tests/
 
 Unit, Regression and Performance tests, and artefacts to support these tests.
 
-### tools/
+#### tools/
 
 Stand-alone tools for use with the `gva` library but not part of the library itself.
