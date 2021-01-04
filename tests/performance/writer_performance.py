@@ -93,16 +93,16 @@ schema = Schema(schema_definition)
 
 logger.debug("no compression, no validation")
 execute_test(False, None)
-shutil.rmtree("year_2020")
+shutil.rmtree("year_2021")
 
 logger.debug("compression, no validation")
 execute_test(True, None)
-shutil.rmtree("year_2020")
+shutil.rmtree("year_2021")
 
 logger.debug("no compression, validation")
 execute_test(False, schema)
-shutil.rmtree("year_2020")
+shutil.rmtree("year_2021")
 
 logger.debug("compression, validation")
 execute_test(True, schema)
-shutil.rmtree("year_2020")
+shutil.rmtree("year_2021")

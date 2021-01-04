@@ -29,7 +29,7 @@ The default behaviour of the writer is to create partitions. Partitions are chun
 partitions are also closed no new records have been appended to the writer for 30 seconds. 
 
 Partitions have four digit suffixes added to filenames. Compressed files have _.lzma_ added as an extention.
-Writer will replace datetime placeholders, including helpers to covert `$date` to `$Y-$m-$d` and `$datefolders` 
+Writer will replace datetime placeholders, including macros to covert `%date` to `%Y-%m-%d` and `%datefolders` 
 to `year_%Y/month_%m/day_%d`.
 
 For example:

@@ -39,7 +39,8 @@ critical_errors.to_pandas()
 
 **blob_reader** - the default reader  
 **file_reader** - read from files and folders on the filesystem  
-**mongodb_reader** - read from a mongo db  
+**mongodb_reader** - read from a MongoDB    
+**minio_reader** - read from MinIo (may work with S3)  
 
 ## Usage Recommendations
 

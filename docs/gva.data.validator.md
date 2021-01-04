@@ -18,25 +18,24 @@ Parameters
 
 **numeric** - a number  
 Paramters 
-  - **min** - (optional) minimum valid value
-  - **max** - (optional) maximum valid value
+  - **min** - (optional) minimum valid value - if no value is provided an arbitrary very low number is used
+  - **max** - (optional) maximum valid value - if no value is provided an arbitrary very high number is used
 
-**date** - an iso format date or time  
+**date** - a datetime object or a string in iso format    
 No Parameters  
 
-**boolean** - binary value  
+**boolean** - boolean value  
 Parameters
-  - **symbols** - (optional) list of valid values
+  - **symbols** - (optional) list of valid values - if no value is provided a default set is used  
 
-**nullable** - empty or missing value allowed  
+**nullable** - an empty (None) or missing value allowed  
 No Parameters
 
 **list** - list of values  
 No Parameters
 
-**enum** - one of a list of values
+**enum** - one of a set of values
 Parameters
-
   -  **symbols** - (optional) list of valid values
 
 **other** - not one of the above, but a required field  
@@ -56,7 +55,7 @@ No Parameters
 
 A field can be tested against multiple Types by putting the Types in a list (see _age_ in the Example Schema above). In this case the field is valid if any of the types match; this is most useful for values which are _null_ or a value.
 
-The _null_ checker is valid if the field is _None_ or is a [Python False](https://docs.python.org/2.4/lib/truth.html)
+The _null_ checker is valid if `is None` evaluates to `True` for the the value.
 
 ### Example Code
 ~~~python

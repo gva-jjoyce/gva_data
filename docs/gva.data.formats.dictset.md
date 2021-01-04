@@ -14,7 +14,7 @@ datasets.
 
 ## What It Is Not
 
-This is not a replacement for a tool like _Pandas_, especially if aggregations or
+This is not a replacement for a tool like `Pandas`, especially if aggregations or
 other functions across the entire dataset.
 
 Pandas is somewhat memory intensive, if data is in a dictset compatible format

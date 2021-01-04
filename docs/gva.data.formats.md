@@ -13,19 +13,19 @@ A set of methods for handling complex data types.
 
 ### dictset
 ~~~python
-from gva.data.formats.dictset import *
+from gva.data.formats import dictset
 
-dictset = something_which_returns_a_dictset()
-dictset = distinct(dictset)
-dictset = select_from(dictset, columns['name', 'rank'])
-dataframe = pandas.DataFrame(dictset)
+ds = something_which_returns_a_dictset()
+ds = dictset.distinct(ds)
+ds = dictset.select_from(ds, columns=['name', 'rank'])
+dataframe = pandas.DataFrame(ds)
 ~~~
 
 ### graphs
 ~~~python
-from gva.data.formats.graphs import *
+from gva.data.formats import graphs
 
 graph = something_which_returns_a_graph()
-graph = search_nodes(graph, {'type', 'person'})
-show_graph(graph)
+graph = graphs.search_nodes(graph, {'type', 'person'})
+graphs.show_graph(graph)
 ~~~

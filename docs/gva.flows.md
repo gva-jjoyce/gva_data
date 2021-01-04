@@ -16,6 +16,7 @@ The library contains the following set of operators:
 **NoOpOperator** - No Operation, does nothing  
 **PrintOperator** - Prints the _data_ payload to the screen  
 **SaveToBucketOperator** - Save the _data_ payload to a json lines blob on GCS  
+**SaveToMinioOperator** - Save the _data_ payload to a json lines file on MinIo (may be S3 compatible)    
 **SaveToDiskOperator** - Save the _data_ payload to a json lines file
 **ValidatorOperator** - Tests the _data_ payload for conformity to a Schema  
 **SplitTextOperator** - Splits a text payload to _data_ into multiple messages
