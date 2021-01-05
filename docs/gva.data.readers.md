@@ -4,7 +4,7 @@
 
 A data reader library.
 
-The reader can read across multiple blobs in a GCS bucket with filter, select and and name pattern matching functionality.
+The reader can read across multiple files in a GCS bucket with filter, select and and name pattern matching functionality.
 
 ## How Do I Use It?
 
@@ -115,7 +115,7 @@ There are two ways to read from files from particular dates - filter at a folder
 recommended that folder-level filtering is used as a gross filter and the _where_ as a fine filter. Folder filtering 
 will reduce the number of files that need to be read, improving performance.
 
-**Data Filtering**
+**Data Filtering**   
 Converting to json takes time, if the 'where' clause is essentially a text search consider using 'text' as the 'data_format', doing the text search in the 'where' and converting the filtered records to `dict`s.
 
 ---

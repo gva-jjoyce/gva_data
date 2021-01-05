@@ -109,7 +109,7 @@ class Reader():
     """
     def new_raw_lines_reader(self):
         sources = list(self.reader_class.list_of_sources())
-        get_logger().debug(F"Reader found {len(sources)} to read data from.")
+        get_logger().debug(F"Reader found {len(sources)} sources to read data from.")
         if self.thread_count > 0:
             yield from threaded_reader(sources, self.reader_class, self.thread_count)
         else:
