@@ -46,7 +46,6 @@ class Reader():
         where: Callable = select_all,
         reader: BaseReader = GoogleCloudStorageReader,   # type:ignore
         data_format: str = "json",
-        thread_count: int = 0,
         **kwargs):
         """
         Reader accepts a method which iterates over a data source and provides
@@ -95,8 +94,8 @@ class Reader():
             get_logger().warning("STEP BACK DAYS IS IN DEVELOPMENT")
 
         # threaded reader
-        self.thread_count = thread_count
-        if thread_count > 0:
+        self.thread_count = int(kwargs.get('thread_count', 0))
+        if self.thread_count > 0:
             get_logger().warning("THREADED READER IS EXPERIMENTAL, USE IN SYSEMS IS NOT RECOMMENDED")
 
 
@@ -109,11 +108,12 @@ class Reader():
             print(line)
     """
     def new_raw_lines_reader(self):
+        sources = list(self.reader_class.list_of_sources())
+        get_logger().debug(F"Reader found {len(sources)} to read data from.")
         if self.thread_count > 0:
-            sources = list(self.reader_class.list_of_sources())
             yield from threaded_reader(sources, self.reader_class, self.thread_count)
         else:
-            for partition in self.reader_class.list_of_sources():
+            for partition in sources:
                 yield from self.reader_class.read_from_source(partition)
 
 
