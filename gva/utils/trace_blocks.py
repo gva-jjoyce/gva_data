@@ -23,22 +23,16 @@ import os
 from .json import parse, serialize
 from ..data.formats import dictset
 
-EMPTY_HASH = ['0'] * 64
+EMPTY_HASH = "0" * 64
 
 def random_int() -> int:
     """
-    Select a random integer (64bit)
+    Select a random integer (16bit)
     """
-    return bytes_to_int(os.urandom(8))
-
-def bytes_to_int(bytes: bytes) -> int:
-    """
-    Helper function, convert set of bytes to an integer
-    """
-    result = 0
-    for b in bytes:
-        result = result * 256 + int(b)
-    return result
+    ran = 0
+    for b in os.urandom(2):
+        ran = ran * 256 + int(b)
+    return ran
 
 class TraceBlocks():
 
@@ -67,11 +61,11 @@ class TraceBlocks():
         previous_block_hash = self.hash(previous_block)
 
         # proof is what makes mining for bitcoin so hard, we're setting a low
-        # target of the last character being a 0, 4, 8, 12 (1/4 chance)
+        # target of the last character being a 0,5 (1/5 chance)
         # if you wanted to make this harder, set a different rule to exit
         # while loop
         proof = str(random_int())
-        while self.hash(''.join([proof, previous_block_hash]))[-1] not in ['0', '4', '8', '12']:
+        while self.hash(''.join([proof, previous_block_hash]))[-1] not in ['0', '5']:
             proof = str(random_int())
 
         block = {

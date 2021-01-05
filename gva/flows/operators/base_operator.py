@@ -25,6 +25,13 @@ from ...errors import RenderErrorStack
 from ...data.formats import dictset
 from ...utils.json import parse, serialize
 
+# This is the hash of the code in the version function we don't ever want this
+# method overidden, so we're going to make sure the hash still matches
+VERSION_HASH = "8a12785756d64abe7877ab21e7c4cbae22d5b8954d0e4f0b8b7d497aded5f66d"
+# This is the hash of the code in the __call__ function we don't ever want this
+# method overidden, so we're going to make sure the hash still matches
+CALL_HASH = "b7ced8b5a797ddc294c75167cadcdeb4fcea37337aee05ea5ca751b37b9201a3"
+
 
 # inheriting ABC is part of ensuring that this class only ever
 # interited from
@@ -66,11 +73,15 @@ class BaseOperator(abc.ABC):
         rolling_failure_window = self._clamp(kwargs.get('rolling_failure_window', 10), 1, 100)
         self.last_few_results = [1] * rolling_failure_window  # track the last n results
 
-        # error on detecting override of some methods
-        if inspect.getsource(self.execute) != inspect.getsource(self.__class__.execute):
-            raise Exception("Operator's __call__ method must not be overridden.")
-        if inspect.getsource(self.version) != inspect.getsource(self.__class__.version):
+        # Detect version and __call__ being overridden
+        call_hash = self.hash(inspect.getsource(self.__call__))
+        print('call hash:', call_hash)
+        if call_hash != CALL_HASH:
+            raise Exception("Operator's __call__ method must not be overridden.")      
+        version_hash = self.hash(inspect.getsource(self.version))
+        if version_hash != VERSION_HASH:
             raise Exception("Operator's version method must not be overridden.")
+
 
     @abc.abstractmethod
     def execute(self, data: dict = {}, context: dict = {}):
@@ -86,7 +97,7 @@ class BaseOperator(abc.ABC):
 
         The list can be a generator.
         """
-        raise NotImplementedError("execute method must be overridden")
+        raise NotImplementedError("execute method must be overridden")  # pragma: no cover
 
     def __call__(self, data: dict = {}, context: dict = {}):
         """
@@ -120,10 +131,11 @@ class BaseOperator(abc.ABC):
                     error_reference = err
                     try:
                         error_payload = (
-                                F"timestamp : {datetime.datetime.today().isoformat()}\n"
-                                F"operator  : {self.__class__.__name__}\n"
-                                F"error     : {type(err).__name__}\n"
-                                F"details   : {err}\n"
+                                F"timestamp  : {datetime.datetime.today().isoformat()}\n"
+                                F"operator   : {self.__class__.__name__}\n"
+                                F"error type : {type(err).__name__}\n"
+                                F"details    : {err}\n"
+                                "----------------------------------------------------------------------------------------------------\n"
                                 F"{RenderErrorStack()}\n"
                                 "---------------------------------------------  context  --------------------------------------------\n"
                                 F"{context}\n"
@@ -146,14 +158,9 @@ class BaseOperator(abc.ABC):
             data_hash = self.hash(data)
             context['execution_trace'].add_block(data_hash=data_hash,
                                                  operator=self.__class__.__name__,
-                                                 version=self.version())
-            trace_location = ''
-            try:
-                trace_location = self.trace_writer(serialize(context['execution_trace'].blocks[-1]))  # type:ignore
-            except Exception as err: 
-                self.logger.error(F"Failed to write Trace for {context.get('uuid')} - {type(err).__name__} {err}")
-            finally:
-                self.logger.trace(F"{context.get('uuid')} {self.__class__.__name__} {data_hash} at {trace_location}")
+                                                 version=self.version(),
+                                                 execution_ns=self.execution_time_ns)
+            self.logger.trace(F"{context.get('uuid')} {self.__class__.__name__} {data_hash}")
 
         # if there is a high failure rate, abort
         if sum(self.last_few_results) < (len(self.last_few_results) / 2):
@@ -199,10 +206,6 @@ class BaseOperator(abc.ABC):
     def __del__(self):
         # do nothing - prevents errors if someone calls super().__del__
         pass
-
-    def trace_writer(self, record):
-        # this is a stub to be overridden
-        raise ValueError('no trace_writer attached')
 
     def error_writer(self, record):
         # this is a stub to be overridden

@@ -2,7 +2,6 @@
 File Bin
 """
 import time
-import random
 from .base_bin import BaseBin
 import os
 
@@ -17,13 +16,12 @@ class FileBin(BaseBin):
         self.name = bin_name
         os.makedirs(self.path, exist_ok=True)
 
-    # does as little as possible to commit the record
     def __call__(
             self,
-            record: str):
-        # to reduce collisions we get the time in nanoseconds
-        # and a random number between 1 and 1000
-        file_name = F"{self.path}/{self._date_part()}/{time.time_ns()}-{random.randrange(0,9999):04d}.txt"  # nosec - not crypto
-        with open(file_name, 'w') as file:
+            record: str,
+            id_: str = ''):
+
+        filename = F"{self.path}/{self._date_part()}/{id_}{time.time_ns()}.txt"
+        with open(filename, 'w') as file:
             file.write(record)
-        return file_name
+        return filename

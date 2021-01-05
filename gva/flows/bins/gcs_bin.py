@@ -6,7 +6,6 @@ try:
 except ImportError:
     pass
 import time
-import random
 from .base_bin import BaseBin
 
 
@@ -26,13 +25,12 @@ class GoogleCloudStorageBin(BaseBin):
     def __str__(self) -> str:
         return self.name
 
-    # does as little as possible to commit the record
     def __call__(
             self,
-            record: str):
-        # to reduce collisions we get the time in nanoseconds
-        # and a random number between 1 and 1000
-        blob_name = F"{self.path}/{self._date_part()}/{time.time_ns()}-{random.randrange(0,9999):04d}.txt"  # nosec - not crypto
-        blob = self.bucket.blob(blob_name)
+            record: str,
+            id_: str = ''):
+
+        filename = F"{self.path}/{self._date_part()}/{id_}{time.time_ns()}.txt"
+        blob = self.bucket.blob(filename)
         blob.upload_from_string(record)
-        return blob_name
+        return filename

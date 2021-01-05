@@ -8,7 +8,6 @@ try:
 except ImportError:
     pass
 import time
-import random
 import io
 from .base_bin import BaseBin
 
@@ -35,18 +34,17 @@ class MinioBin(BaseBin):
 
     def __call__(
             self,
-            record: str):
-        # to reduce collisions we get the time in nanoseconds
-        # and a random number between 1 and 1000
-        object_name = F"{self.path}/{time.time_ns()}-{random.randrange(0,9999):04d}.txt"  # nosec - not crypto
+            record: str,
+            id_: str = ''):
 
+        filename = F"{self.path}/{self._date_part()}/{id_}{time.time_ns()}.txt"
         record_bytes = record.encode('utf-8')
         record_stream = io.BytesIO(record_bytes)
 
         self.client.put_object(
                 self.bucket,
-                object_name,
+                filename,
                 record_stream,
                 file_size=len(record_bytes))
 
-        return object_name
+        return filename

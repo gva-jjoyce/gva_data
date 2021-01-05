@@ -72,8 +72,8 @@ def go(
 
     # if being traced, send the trace to the trace writer
     if context.get('trace', False):
-        if hasattr(flow, 'traces'):
-            flow.trace_writer(context['execution_trace'])
+        if hasattr(flow, 'trace_writer'):
+            flow.trace_writer(context['execution_trace'], id_=context.get('uuid'))
     return None
 
 
@@ -103,6 +103,7 @@ def attach_writer(flow: networkx.DiGraph, writer):
             function = node.get('function')
             setattr(function, str(writer.name), writer)
             logger.debug(F"added {writer.name} to {type(function).__name__}")
+        setattr(flow, str(writer.name), writer)
         return True
     except Exception as err:
         logger.error(F"Failed to add writer to flow - {type(err).__name__} - {err}")
