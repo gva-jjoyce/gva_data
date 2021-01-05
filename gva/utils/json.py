@@ -11,11 +11,14 @@ import datetime
 from ..logging import get_logger
 try:
     # if orjson is available, use it
-    # we will optimize for orjson and adjust ujson to match
     import orjson
 
     parse = orjson.loads
-    serialize = orjson.dumps
+
+    def serialize(obj: Any) -> str:
+        # return a string
+        return orjson.dumps(obj).decode()
+
 
 except ImportError:  # pragma: no cover
     # orjson doesn't install on 32bit systems so we need a backup plan
@@ -26,7 +29,7 @@ except ImportError:  # pragma: no cover
     logger = get_logger()
     logger.warning('orjson not installed using ujson')
 
-    def serialize(obj: Any) -> bytes:   # type:ignore
+    def serialize(obj: Any) -> str:   # type:ignore
 
         def fix_fields(dt: Any) -> str:
             """
@@ -40,7 +43,6 @@ except ImportError:  # pragma: no cover
         if isinstance(obj, dict):
             obj_copy = {k:fix_fields(v) for k,v in obj.items()}
 
-        # ujson returns a string, orjson
-        return ujson.dumps(obj_copy).encode("utf8")
+        return ujson.dumps(obj_copy)
 
     parse = ujson.loads  # type:ignore

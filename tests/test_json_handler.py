@@ -31,7 +31,7 @@ def test_json_parsing():
         failed = True
 
     assert not failed, "didn't process all types"
-    assert isinstance(b, bytes), "didn't return bytes"
+    assert isinstance(b, str), "didn't return string"
 
 
 if __name__ == "__main__":

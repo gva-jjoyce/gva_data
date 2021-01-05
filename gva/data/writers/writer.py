@@ -121,7 +121,7 @@ class Writer():
         self.last_write = time.time_ns()
 
         # serialize the record
-        serialized = serialize(record).decode() + '\n'
+        serialized = serialize(record) + '\n'
         # the newline isn't counted so add 1 to get the actual length
         len_serial = len(serialized) + 1
 

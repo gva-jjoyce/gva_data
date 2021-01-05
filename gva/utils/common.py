@@ -2,6 +2,7 @@ import glob
 import datetime
 from typing import Optional
 from .json import parse, serialize
+from ..logging import get_logger
 
 
 def date_range(start_date: Optional[datetime.date], end_date: Optional[datetime.date]):
@@ -28,10 +29,14 @@ def build_context(**kwargs: dict):
     """
     def read_config(config_file):
         # read the job configuration
-        file_location = glob.glob('**/' + config_file, recursive=True).pop()
-        with open(file_location, 'r') as f:
-            config = parse(f.read())
-        return config
+        try:
+            file_location = glob.glob('**/' + config_file, recursive=True).pop()
+            get_logger().debug(F'Reading configuration from {file_location}.')
+            with open(file_location, 'r') as f:
+                config = parse(f.read())
+            return config
+        except:
+            return {}
 
     # read the configuration file
     config_file = kwargs.get('config_file', 'config.json')

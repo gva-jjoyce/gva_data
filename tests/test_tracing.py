@@ -4,7 +4,7 @@ import string
 import random
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.utils.trace_blocks import TraceBlocks
-from gva.utils.json import parse
+from gva.utils.json import parse, serialize
 try:
     from rich import traceback
     traceback.install()
@@ -47,6 +47,7 @@ def test_hashes():
 
         previous_block = block
 
+    print(type(serialize(tb.blocks)))
 
 if __name__ == "__main__":
     test_hashes()

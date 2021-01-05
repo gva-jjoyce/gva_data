@@ -75,13 +75,13 @@ class TraceBlocks():
         self.blocks.append(block)
 
     def __str__(self):
-        return serialize(self.blocks).decode()
+        return serialize(self.blocks)
 
     def hash(self, block):
         try:
             bytes_object = serialize(dictset.order(block))
         except:
-            bytes_object = str(block).encode()
-        raw_hash = hashlib.sha256(bytes_object)
+            bytes_object = block
+        raw_hash = hashlib.sha256(bytes_object.encode())
         hex_hash = raw_hash.hexdigest()
         return hex_hash
