@@ -279,7 +279,7 @@ class BaseOperator(abc.ABC):
         try:
             bytes_object = serialize(dictset.order(block))
         except:
-            bytes_object = str(block).encode()
-        raw_hash = hashlib.sha256(bytes_object)
+            bytes_object = str(block)
+        raw_hash = hashlib.sha256(bytes_object.encode())
         hex_hash = raw_hash.hexdigest()
         return hex_hash
