@@ -30,7 +30,7 @@ from ...utils.json import parse, serialize
 VERSION_HASH = "8a12785756d64abe7877ab21e7c4cbae22d5b8954d0e4f0b8b7d497aded5f66d"
 # This is the hash of the code in the __call__ function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
-CALL_HASH = "b7ced8b5a797ddc294c75167cadcdeb4fcea37337aee05ea5ca751b37b9201a3"
+CALL_HASH = "b4a0ee53c9fb985cd315898dbc6c1f70ab6eb521d295fb5ff24f010567af3781"
 
 
 # inheriting ABC is part of ensuring that this class only ever
@@ -75,9 +75,8 @@ class BaseOperator(abc.ABC):
 
         # Detect version and __call__ being overridden
         call_hash = self.hash(inspect.getsource(self.__call__))
-        print('call hash:', call_hash)
         if call_hash != CALL_HASH:
-            raise Exception("Operator's __call__ method must not be overridden.")      
+            raise Exception(F"Operator's __call__ method must not be overridden - discovered hash was {call_hash}")      
         version_hash = self.hash(inspect.getsource(self.version))
         if version_hash != VERSION_HASH:
             raise Exception("Operator's version method must not be overridden.")
@@ -115,7 +114,8 @@ class BaseOperator(abc.ABC):
             try:
                 start_time = time.perf_counter_ns()
                 outcome = self.execute(data, context)
-                self.execution_time_ns += (time.perf_counter_ns() - start_time)
+                my_execution_time = time.perf_counter_ns() - start_time
+                self.execution_time_ns += my_execution_time
                 # add a success to the last_few_results list
                 self.last_few_results.append(1)
                 self.last_few_results.pop(0)
@@ -158,8 +158,9 @@ class BaseOperator(abc.ABC):
             data_hash = self.hash(data)
             context['execution_trace'].add_block(data_hash=data_hash,
                                                  operator=self.__class__.__name__,
-                                                 version=self.version(),
-                                                 execution_ns=self.execution_time_ns)
+                                                 operator_version=self.version(),
+                                                 execution_ns=my_execution_time,
+                                                 data_block=serialize(data))
             self.logger.trace(F"{context.get('uuid')} {self.__class__.__name__} {data_hash}")
 
         # if there is a high failure rate, abort

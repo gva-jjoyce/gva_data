@@ -23,7 +23,7 @@ def test_invalid_op_call():
         o = invalid_operator_call()
     except:
         failed = True
-    assert failed, 'overriden __call__'
+    assert failed, 'overridden __call__'
 
 def test_invalid_op_vers():
     failed = False
@@ -31,7 +31,7 @@ def test_invalid_op_vers():
         o = invalid_operator_version()
     except:
         failed = True
-    assert failed, 'overriden version'
+    assert failed, 'overridden version'
 
 
 if __name__ == "__main__":

@@ -50,10 +50,7 @@ class TraceBlocks():
         })
 
     def add_block(self,
-                  data_hash=EMPTY_HASH,
-                  operator="Not Specified",
-                  version="-",
-                  execution_ns=0):
+                  **kwargs):
         """
         Add a new block to the chain.
         """
@@ -71,12 +68,9 @@ class TraceBlocks():
         block = {
             "block": len(self.blocks) + 1,
             "timestamp": datetime.datetime.now().isoformat(),
-            "data_hash": data_hash,
             "previous_block_hash": previous_block_hash,
-            "operator": operator,
-            "version": version,
-            "execution_ns": execution_ns,
-            "proof": proof
+            "proof": proof,
+            **kwargs
         }
         self.blocks.append(block)
 

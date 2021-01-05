@@ -32,5 +32,5 @@ class GoogleCloudStorageBin(BaseBin):
 
         filename = F"{self.path}/{self._date_part()}/{id_}{time.time_ns()}.txt"
         blob = self.bucket.blob(filename)
-        blob.upload_from_string(record)
+        blob.upload_from_string(record.encode('utf-8'))
         return filename
