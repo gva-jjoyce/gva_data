@@ -9,6 +9,8 @@ try:
 except ImportError:   # pragma: no cover
     pass
 
+from gva.logging import get_logger
+get_logger().setLevel(5)
 
 def test_reader_can_read():
     r = Reader(

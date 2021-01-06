@@ -18,6 +18,7 @@ import datetime
 base = sys.path[0]
 sys.path.clear()
 sys.path.insert(1, os.path.join(base, '..'))
+sys.path.insert(1, os.path.join(base, '../..'))
 from gva.utils.json import parse, serialize
 
 

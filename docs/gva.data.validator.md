@@ -13,33 +13,38 @@ A schema is loaded into a _Schema_ object, data objects are then passed to the '
 ## Supported Types  
 
 **string** - a character sequence  
-Parameters
-  - **format** - (optional) A Regular Expression to Match  
+> **Parameters**  
+> **format**: str, regexp, optional  
+> A Regular Expression to Match  
 
 **numeric** - a number  
-Paramters 
-  - **min** - (optional) minimum valid value - if no value is provided an arbitrary very low number is used
-  - **max** - (optional) maximum valid value - if no value is provided an arbitrary very high number is used
+> **Parameters**  
+> **min**: int, optional  
+> minimum valid value - if no value is provided an arbitrary very low number is used  
+> **max**: int, optional   
+> maximum valid value - if no value is provided an arbitrary very high number is used
 
 **date** - a datetime object or a string in iso format    
-No Parameters  
+> **Parameters** - none 
 
 **boolean** - boolean value  
-Parameters
-  - **symbols** - (optional) list of valid values - if no value is provided a default set is used  
+> **Parameters**  
+> **symbols**: list, optional  
+> list of valid values - if no value is provided a default set is used  
 
 **nullable** - an empty (None) or missing value allowed  
-No Parameters
+> **Parameters** - none 
 
 **list** - list of values  
-No Parameters
+> **Parameters** - none 
 
 **enum** - one of a set of values
-Parameters
-  -  **symbols** - (optional) list of valid values
+> **Parameters**
+> **symbols**: list, optional  
+> list of valid values
 
 **other** - not one of the above, but a required field  
-No Parameters
+> **Parameters** - none 
 
 ### Example Schema
 ~~~json

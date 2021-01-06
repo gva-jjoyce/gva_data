@@ -2,23 +2,26 @@
 Testing writer performance after observing some jobs which
 were a few minutes were observed to take over an hour.
 
-Results (seconds to process 250,000 rows of 8 field records):
+Results (seconds to process 57,581 rows of 8 field records):
 
- compression | validation |    time | ratio  | through-put
------------------------------------------------------------
-  no         |  no        |   2.719 |  1.00  |        100%
-  yes        |  no        |  38.031 | 13.33  |          8%
-  no         |  yes       |   4.843 |  1.75  |         57%
-  yes        |  yes       |  41.859 | 14.30  |          7%
------------------------------------------------------------
+┌─────────────┬────────────┬────────┬───────┬─────────────┐
+│ compression │ validation │  time  │ ratio │ rows/second │
+├─────────────┼────────────┼────────┼───────┼─────────────┤
+│    False    │   False    │ 0.374  │  1.0  │    153634   │
+│     True    │   False    │ 16.255 │ 0.023 │     3542    │
+│    False    │    True    │ 0.791  │ 0.473 │    72719    │
+│     True    │    True    │ 16.75  │ 0.022 │     3437    │
+└─────────────┴────────────┴────────┴───────┴─────────────┘
 """
 import shutil
 import sys
 import os
+import time
 sys.path.insert(1, os.path.join(sys.path[0], '..\..'))
 from gva.data.writers import Writer, file_writer
 from gva.logging import verbose_logger, get_logger
 from gva.data.validator import Schema
+from gva.data.formats import dictset
 try:
     import orjson as json
 except ImportError:
@@ -42,7 +45,7 @@ schema_definition = {
 }
 
 
-def read_jsonl(filename, limit=-1, chunk_size=16 * 1024 * 1024, delimiter="\n"):
+def read_jsonl(filename, limit=-1, chunk_size=16*1024*1024, delimiter="\n"):
     """"""
     file_reader = read_file(filename, chunk_size=chunk_size, delimiter=delimiter)
     line = next(file_reader, None)
@@ -73,8 +76,7 @@ def read_file(filename, chunk_size=16*1024*1024, delimiter="\n"):
         if carry_forward:
             yield carry_forward
 
-@verbose_logger
-def execute_test(compress, schema):
+def execute_test(compress, schema, reader):
     writer = Writer(
             writer=file_writer,
             to_path='%datefolders',
@@ -82,27 +84,58 @@ def execute_test(compress, schema):
             schema=schema
     )
 
-    reader = read_jsonl('tweets.jsonl')
+    #reader = read_jsonl('tweets.jsonl')
+    start = time.perf_counter_ns()
     for record in reader:
         writer.append(record)
-
     writer.finalize()
+    return (time.perf_counter_ns() - start) / 1e9
 
 schema = Schema(schema_definition)
+lines = list(read_jsonl('tweets.jsonl'))
 
+print(len(lines))
+print(lines[1])
 
-logger.debug("no compression, no validation")
-execute_test(False, None)
+results = []
+result = {
+    'compression': False,
+    'validation': False,
+    'time': execute_test(False, None, lines)
+}
+results.append(result)
 shutil.rmtree("year_2021")
 
-logger.debug("compression, no validation")
-execute_test(True, None)
+result = {
+    'compression': True,
+    'validation': False,
+    'time': execute_test(True, None, lines)
+}
+results.append(result)
 shutil.rmtree("year_2021")
 
-logger.debug("no compression, validation")
-execute_test(False, schema)
+result = {
+    'compression': False,
+    'validation': True,
+    'time': execute_test(False, schema, lines)
+}
+results.append(result)
 shutil.rmtree("year_2021")
 
-logger.debug("compression, validation")
-execute_test(True, schema)
+result = {
+    'compression': True,
+    'validation': True,
+    'time': execute_test(True, schema, lines)
+}
+results.append(result)
 shutil.rmtree("year_2021")
+
+fastest = 100000000000
+for result in results:
+    if result['time'] < fastest:
+        fastest = result['time']
+results = dictset.set_column(results, 'ratio', lambda r: int((1000 * fastest) / r['time']) / 1000)
+results = dictset.set_column(results, 'rows/second', lambda r: int(len(lines)/r['time']))
+results = dictset.set_column(results, 'time', lambda r: int(1000 * r['time'])/1000)
+
+print(dictset.to_ascii_table(results))

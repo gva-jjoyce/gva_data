@@ -12,6 +12,9 @@ try:
 except ImportError:
     pass
 
+from gva.logging import get_logger
+get_logger().setLevel(5)
+
 
 def do_writer():
     w = Writer(

@@ -60,7 +60,7 @@ def threaded_reader(items_to_read, reader, max_threads=4):
                 source = source_queue.pop(0)
             except IndexError:
                 source = None
-        sys.exit(0)
+
 
     source_queue = items_to_read.copy()
     # we can have 64 blocks waiting on the queue, if this is unbounded

@@ -84,7 +84,16 @@ class Reader():
         # initialize the reader
         self._inner_line_reader = None
 
-        get_logger().debug(F"Executing Reader: (reader={reader.__name__}, from_path='{from_path}')")  # type:ignore
+        args_passed_in_function = [
+                F"select={select}",
+                F"from_path='{from_path}'",
+                F"where={where.__name__}",
+                F"reader={reader.__name__}",     # type:ignore
+                F"data_format='{data_format}'"]
+        kwargs_passed_in_function = [f"{k}={v!r}" for k, v in kwargs.items()]
+        formatted_arguments = ", ".join(args_passed_in_function + kwargs_passed_in_function)
+
+        get_logger().debug(f"Reader({formatted_arguments})")
 
         """ FEATURES IN DEVELOPMENT """
 
@@ -107,7 +116,7 @@ class Reader():
         for line in Reader("file"):
             print(line)
     """
-    def new_raw_lines_reader(self):
+    def create_line_reader(self):
         sources = list(self.reader_class.list_of_sources())
         get_logger().debug(F"Reader found {len(sources)} sources to read data from.")
         if self.thread_count > 0:
@@ -126,7 +135,7 @@ class Reader():
         This wraps the primary filter and select logic
         """
         if self._inner_line_reader is None:
-            self._inner_line_reader = self.new_raw_lines_reader()
+            self._inner_line_reader = self.create_line_reader()
         while True:
             # get the the next line from the reader
             record = self._inner_line_reader.__next__()

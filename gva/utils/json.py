@@ -15,9 +15,12 @@ try:
 
     parse = orjson.loads
 
-    def serialize(obj: Any) -> str:
+    def serialize(obj: Any, indent: bool = False) -> str:
         # return a string
-        return orjson.dumps(obj).decode()
+        if indent and isinstance(obj, dict):
+            return orjson.dumps(obj, option=orjson.OPT_INDENT_2 + orjson.OPT_SORT_KEYS).decode()
+        else:
+            return orjson.dumps(obj, option=orjson.OPT_SORT_KEYS).decode()
 
 
 except ImportError:  # pragma: no cover
@@ -29,7 +32,7 @@ except ImportError:  # pragma: no cover
     logger = get_logger()
     logger.warning('orjson not installed using ujson')
 
-    def serialize(obj: Any) -> str:   # type:ignore
+    def serialize(obj: Any, indent: bool = False) -> str:   # type:ignore
 
         def fix_fields(dt: Any) -> str:
             """
@@ -43,6 +46,9 @@ except ImportError:  # pragma: no cover
         if isinstance(obj, dict):
             obj_copy = {k:fix_fields(v) for k,v in obj.items()}
 
-        return ujson.dumps(obj_copy)
+        if indent:
+            return ujson.dumps(obj_copy, sort_keys=True, indent=2)
+        else:
+            return ujson.dumps(obj_copy, sort_keys=True)
 
     parse = ujson.loads  # type:ignore

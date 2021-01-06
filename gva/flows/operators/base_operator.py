@@ -27,10 +27,10 @@ from ...utils.json import parse, serialize
 
 # This is the hash of the code in the version function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
-VERSION_HASH = "8a12785756d64abe7877ab21e7c4cbae22d5b8954d0e4f0b8b7d497aded5f66d"
+VERSION_HASH = "54ebb39c76dd9159475b723dc2467e2a6a9c4cf794388c9f8c7ec0a777c90f17"
 # This is the hash of the code in the __call__ function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
-CALL_HASH = "b4a0ee53c9fb985cd315898dbc6c1f70ab6eb521d295fb5ff24f010567af3781"
+CALL_HASH = "3bf4f5fd5986a799cb29db45620cddeffebb1cf09a3af946e68d28370f65d194"
 
 
 # inheriting ABC is part of ensuring that this class only ever
@@ -79,7 +79,7 @@ class BaseOperator(abc.ABC):
             raise Exception(F"Operator's __call__ method must not be overridden - discovered hash was {call_hash}")      
         version_hash = self.hash(inspect.getsource(self.version))
         if version_hash != VERSION_HASH:
-            raise Exception("Operator's version method must not be overridden.")
+            raise Exception(F"Operator's version method must not be overridden - discovered hash was {version_hash}") 
 
 
     @abc.abstractmethod
@@ -277,7 +277,7 @@ class BaseOperator(abc.ABC):
 
     def hash(self, block):
         try:
-            bytes_object = serialize(dictset.order(block))
+            bytes_object = serialize(block)
         except:
             bytes_object = str(block)
         raw_hash = hashlib.sha256(bytes_object.encode())

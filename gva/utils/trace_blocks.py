@@ -79,7 +79,7 @@ class TraceBlocks():
 
     def hash(self, block):
         try:
-            bytes_object = serialize(dictset.order(block))
+            bytes_object = serialize(block, indent=True)
         except:
             bytes_object = block
         raw_hash = hashlib.sha256(bytes_object.encode())

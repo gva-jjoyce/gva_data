@@ -4,7 +4,19 @@
 
 A set of modules to define and execute data flows.
 
-Data Flows are designed to process Python dictionaries through a series of ordered steps such as validation, transformation and storage. These steps are called _operations_ implemented by _operators_. A series of _operators_ are called a _flow_.
+## What It Is Not
+
+`gva.flows` does not schedule the execution of data flows, it only orchestrates the execution of a flow once it has been triggered.
+
+## Terminology
+
+**flow** - describes the steps and order of **how** data is going to be processed - this is an implementation of a [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph#Data_processing_networks)   
+
+**operator** - describe **what** work is being going to be done to, or with, data  
+
+**data** - usually a python `dict`, but any piece of information which is acted on   
+
+**context** - information separate to the data, but accompanies it through the pipeline to provide more information about what has happened to the data or to configure the operations  
 
 ## What Is In It?
 

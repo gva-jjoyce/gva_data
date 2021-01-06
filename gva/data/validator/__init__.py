@@ -52,10 +52,10 @@ class is_string():
         if self.pattern:
             self.regex = re.compile(self.pattern)
     def __call__(self, value: Any) -> bool:
-        if self.pattern:
-            return self.regex.match(str(value))
-        else:
+        if self.pattern is None:
             return type(value).__name__ == "str"
+        else:
+            return self.regex.match(str(value))
     def __str__(self):
         if self.pattern:
             return f'string ({self.pattern})'
@@ -80,12 +80,13 @@ class is_valid_enum():
 class is_boolean(is_valid_enum):
     def __init__(self, **kwargs):
         """
-        is_boolean is a special implementation of is_valid_enum
+        is_boolean is a specific case of is_valid_enum
         - it defaults to a set of true/false values
         - the check is case insensitive
         """
         super().__init__()
-        self.symbols = VALID_BOOLEAN_VALUES
+        if len(self.symbols) == 0:
+            self.symbols = VALID_BOOLEAN_VALUES
     def __call__(self, value: Any) -> bool:
         return super().__call__(str(value).lower())
 
@@ -104,11 +105,9 @@ class is_numeric():
     def __call__(self, value: Any) -> bool:
         try:
             n = float(value)
-        except ValueError:
+        except (ValueError, TypeError):
             return False
-        except TypeError:
-            return False
-        return (n >= self.min) and (n <= self.max)
+        return self.min <= n <= self.max
     def __str__(self):
         if self.min == DEFAULT_MIN and self.max == DEFAULT_MAX:
             return 'numeric'
@@ -139,7 +138,7 @@ def other_validator(value: Any) -> bool:
 
 
 def is_list(value: Any) -> bool:
-    return isinstance(value, list)
+    return type(value).__name__ == 'list'
 
 
 """

@@ -90,7 +90,7 @@ new_ds = demonstration_generator(ds)
 ~~~
 
 The above code will not print anything to the screen as the code in the for loop isn't executed.
-The result of `type(new_ds).__name__` will show it is a generator rather than a list like `ds`.
+The result of `type(new_ds).__name__` will show it is a generator rather than a `list`.
 
 The code in the for loop is executed when the records from `new_ds` are stepped through like this:
 

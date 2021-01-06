@@ -39,6 +39,7 @@ from typing import Callable, Optional, Any
 from ..validator import Schema  # type:ignore
 from ...errors import ValidationError
 from ...utils.json import parse, serialize
+from ...logging import get_logger
 
 
 class Writer():
@@ -165,12 +166,13 @@ class Writer():
                 self.file_writer = None
             # save the file to it's destination
             if self.file_name:
-                self.writer(
+                name = self.writer(
                         source_file_name=self.file_name,
                         target_path=self.to_path,
                         add_extention='.lzma' if self.compress else '',
                         date=self.date if self.fixed_date else datetime.date.today(),
                         **self.kwargs)
+                get_logger().debug(F"Partition Committed - {name}")
                 try:
                     os.remove(self.file_name)
                 except ValueError:
@@ -186,6 +188,7 @@ class Writer():
     def finalize(self):
         if self.file_writer:
             self.on_partition_closed()
+        self.use_worker_thread = False
 
 
 class _PartFileWriter():
@@ -247,5 +250,3 @@ def _worker_thread(data_writer: Writer):
                 if not data_writer.fixed_date and (data_writer.date != datetime.date.today()):
                     data_writer.on_partition_closed()
         time.sleep(5)
-
-    sys.exit(0)  # terminate the thread
