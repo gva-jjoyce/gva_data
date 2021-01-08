@@ -329,6 +329,20 @@ def sort(
     Also note that if this method is placed in a pipeline, it will need
     to collect cache_size number of records before it will emit any records.
     """
+
+    def _sort_key(key):
+        """
+        replace the lambda function which was:
+            lambda row: row[key]
+
+        will be called:
+            _sort_key(key)(row)
+        """
+        k = key
+        def _inner_sort_key(row):
+            return row.get(k)
+        return _inner_sort_key
+
     # cache_size is the high water mark, 3/4 is the low water mark. 
     # We fill the cache to the high water mark, sort it and yield 
     # the top 1/4 before filling again.
@@ -343,13 +357,13 @@ def sort(
     for item in dictset:
         cache.append(item)
         if len(cache) > cache_size:
-            cache = sorted(cache, key=lambda x: x[column], reverse=descending) 
+            cache = sorted(cache, key=_sort_key(column), reverse=descending) 
             if descending:
                 yield from reversed(cache[:quarter_cache])
             else:
                 yield from cache[:quarter_cache]
             del cache[:quarter_cache]
-    cache = sorted(cache, key=lambda x: x[column], reverse=descending) 
+    cache = sorted(cache, key=_sort_key(column), reverse=descending) 
     yield from cache
 
 
@@ -447,3 +461,72 @@ def to_ascii_table(
     result.append('└' + '┴'.join(bars) + '┘')
 
     return '\n'.join(result)
+
+class group_by():
+    """
+    group_by
+    
+    Parameters:
+    - dictset: an iterable of dictionaries
+    - field: the dictionary field to group by
+    
+    Returns a 'group_by' object. The 'group_by' object holds the dataset in
+    memory so is unsuitable for large datasets.
+    """
+    __slots__ = ['groups']
+
+    def __init__(self, dictset, field):
+        groups = {}
+        for item in dictset:
+            if not field in groups:
+                groups[item.get(field)] = []
+            groups[item.get(field)].append(item)
+        self.groups = groups
+
+    def count(self, value=None):
+        """
+        Count the number of items in groups
+        
+        Paramters:
+        - value: (optional) if provided, return the count of just this group
+        """
+        if value is None:
+            return {x:len(y) for x,y in self.groups.items()}
+        else:
+            try:
+                return [len(y) for x,y in self.groups.items() if x == value].pop()
+            except:
+                return 0
+
+    def aggregate(self, field, method):
+        """
+        Applies an aggregation function by group.
+        
+        Parameters:
+        - field: the name of the field to aggregate
+        - method: the function to aggregate with
+        
+        Examples
+        - maxes = grouped.aggregate('age', max)
+        - means = grouped.aggregate('age', group_by.mean)  
+        """
+        return {
+            key: (
+                    [
+                        method
+                            (
+                                [v for k,v in tweet.items() if k == field]
+                            )
+                        for tweet in grp
+                    ].pop())
+            for key,grp in self.groups.items()}
+            
+    def __len__(self):
+        """
+        Returns the number of groups in the set.
+        """
+        return len(self.groups)
+    
+    @staticmethod
+    def mean(a):
+        return sum(a) / len(a)

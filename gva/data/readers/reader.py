@@ -20,19 +20,22 @@ into Pandas dataframe, or the dictset helper library can perform some
 activities on the set in a more memory efficient manner.
 """
 from typing import Callable, Tuple, Optional
-from ..formats.dictset import select_all, select_record_fields, limit, to_html_table, to_ascii_table
+from ..formats.dictset import select_all, select_record_fields, limit, to_html_table, to_ascii_table, select_from
 import datetime
 from ...logging import get_logger
 from .base_reader import BaseReader
 from .gcs_reader import GoogleCloudStorageReader
 from .experimental_threaded_reader import threaded_reader
+from .experimental_processed_reader import processed_reader
 from ...utils.json import parse, serialize
     
+def do_nothing(x):
+    return x
 
 # available line parsers
 PARSERS = {
     "json": parse,
-    "text": lambda x: x
+    "text": do_nothing
 }
 
 
@@ -105,7 +108,12 @@ class Reader():
         # threaded reader
         self.thread_count = int(kwargs.get('thread_count', 0))
         if self.thread_count > 0:
-            get_logger().warning("THREADED READER IS EXPERIMENTAL, USE IN SYSEMS IS NOT RECOMMENDED")
+            get_logger().warning("THREADED READER IS EXPERIMENTAL, IT MAY NOT RETURN ALL DATA")
+
+        # multiprocessed reader
+        self.process_count = int(kwargs.get('process_count', 0))
+        if self.process_count > 0:
+            get_logger().warning("MULTI-PROCESS READER IS EXPERIMENTAL, IT IS LIKELY TO NOT RETURN ALL DATA")
 
 
     """
@@ -120,15 +128,23 @@ class Reader():
         sources = list(self.reader_class.list_of_sources())
         get_logger().debug(F"Reader found {len(sources)} sources to read data from.")
         if self.thread_count > 0:
-            yield from threaded_reader(sources, self.reader_class, self.thread_count)
+            ds = threaded_reader(sources, self.reader_class, self.thread_count)
+            ds = self._parse(ds)
+            yield from select_from(ds, where=self.where)
+        elif self.process_count > 0:
+            yield from processed_reader(sources, self.reader_class, self.parser, self.where)
         else:
             for partition in sources:
-                yield from self.reader_class.read_from_source(partition)
+                ds = self.reader_class.read_from_source(partition)
+                ds = self._parse(ds)
+                yield from select_from(ds, where=self.where)
 
+    def _parse(self, ds):
+        for item in ds:
+            yield self.parser(item)
 
     def __iter__(self):
         return self
-
 
     def __next__(self):
         """
@@ -139,8 +155,6 @@ class Reader():
         while True:
             # get the the next line from the reader
             record = self._inner_line_reader.__next__()
-            # convert from text to a dictionary (usually json)
-            record = self.parser(record)
             if not self.where(record):
                 continue
             if self.select != ['*']:
