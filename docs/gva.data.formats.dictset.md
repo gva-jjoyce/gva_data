@@ -45,7 +45,7 @@ dictset can filter and select data before loading into a Pandas dataframe.
 `set_value(record, column_name, setter)` - Update the value of a field in a record   
 `to_html_table(dictset, limit)` - Create a HTML table of the first _limit_ rows  
 `to_ascii_table(dictset, limit)` - Create a ASCII table of the first _limit_ rows  
-
+`group_by(dictset, column)` - Create a group_by object, grouping records by the value in _column_
 
 **NOTE** distinct and sort_dictset have been written to work on unbounded (streaming) datasets and 
 work on blocks of records so cannot ensure the correctness of the results they create. If these functions
@@ -63,6 +63,31 @@ ds = dictset.distinct(ds, 1000)
 ds = dictset.select_from(ds, columns['name', 'rank'])
 dataframe = pandas.DataFrame(ds)
 ~~~
+
+## Groups
+
+**Groups** is in development and its functionality and interface is subject to change - use in systems is not recommended.
+
+The `group_by` function creates a new object holding the grouped data that other operations
+can be carried out on. 
+
+~~~python
+# create a group_by from a dataset called 'example_dictset'
+# group on the value in the column 'country'
+groups = dictset.group_by(example_dictset, column='country')
+
+# len() will return the number of groups
+print(f'There are {len(groups)} countries')
+
+# aggregate() with apply a function to a column in each group
+averages = groups.aggregate('population', sum)
+
+# count() returns the number of items in a specific group
+# if no group is provided, it returns an aggregation with len
+states_in_oz = groups.count('Australia')
+~~~
+
+
 
 ## A Note On Generators
 

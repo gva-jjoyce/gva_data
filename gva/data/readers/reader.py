@@ -46,7 +46,7 @@ class Reader():
         *,  # force all paramters to be keyworded 
         select: list = ['*'],
         from_path: str = None,
-        where: Callable = select_all,
+        where: Callable = None,
         reader: BaseReader = GoogleCloudStorageReader,   # type:ignore
         data_format: str = "json",
         **kwargs):
@@ -70,8 +70,8 @@ class Reader():
         """
         if not isinstance(select, list):
             raise TypeError("Reader 'select' parameter must be a list")
-        if not hasattr(where, '__call__'):
-            raise TypeError("Reader 'where' parameter must be Callable")
+        if where is not None and not hasattr(where, '__call__'):
+            raise TypeError("Reader 'where' parameter must be Callable or None")
 
         # load the line converter
         self.parser = PARSERS.get(data_format.lower())
@@ -90,7 +90,7 @@ class Reader():
         args_passed_in_function = [
                 F"select={select}",
                 F"from_path='{from_path}'",
-                F"where={where.__name__}",
+                F"where={where.__name__ if not where is None else 'Select All'}",
                 F"reader={reader.__name__}",     # type:ignore
                 F"data_format='{data_format}'"]
         kwargs_passed_in_function = [f"{k}={v!r}" for k, v in kwargs.items()]

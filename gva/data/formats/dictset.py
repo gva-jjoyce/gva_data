@@ -36,7 +36,7 @@ for record in join_dictsets(filtered_list1, filtered_list2, 'id'):
 """
 from typing import Iterator, Any, List, Union, Callable
 from ...utils.json import serialize, parse
-
+from ...logging import get_logger
 
 class JOINS(object):
     INNER_JOIN = 'INNER'
@@ -166,8 +166,13 @@ def select_from(
     Approximate SQL:
     SELECT columns FROM dictset WHERE where
     """
-    for record in dictset:
-        if where(record):
+    # sometimes we're called with nothing to do
+    if where is None and columns == ['*']:
+        yield from dictset
+    else:
+        for record in dictset:
+            if where is not None and not where(record):
+                continue
             if columns != ['*']:
                 record = select_record_fields(record, columns)
             yield record
@@ -468,19 +473,20 @@ class group_by():
     
     Parameters:
     - dictset: an iterable of dictionaries
-    - field: the dictionary field to group by
+    - column: the field to group by
     
     Returns a 'group_by' object. The 'group_by' object holds the dataset in
     memory so is unsuitable for large datasets.
     """
     __slots__ = ['groups']
 
-    def __init__(self, dictset, field):
+    def __init__(self, dictset, column):
+        get_logger().warning('dictset.group_by is alpha functionality and subject to significant change - do not use in systems')
         groups = {}
         for item in dictset:
-            if not field in groups:
-                groups[item.get(field)] = []
-            groups[item.get(field)].append(item)
+            if not column in groups:
+                groups[item.get(column)] = []
+            groups[item.get(column)].append(item)
         self.groups = groups
 
     def count(self, value=None):
@@ -498,15 +504,15 @@ class group_by():
             except:
                 return 0
 
-    def aggregate(self, field, method):
+    def aggregate(self, column, method):
         """
         Applies an aggregation function by group.
         
         Parameters:
-        - field: the name of the field to aggregate
+        - column: the name of the field to aggregate
         - method: the function to aggregate with
         
-        Examples
+        Examples:
         - maxes = grouped.aggregate('age', max)
         - means = grouped.aggregate('age', group_by.mean)  
         """
@@ -515,7 +521,7 @@ class group_by():
                     [
                         method
                             (
-                                [v for k,v in tweet.items() if k == field]
+                                [v for k,v in tweet.items() if k == column]
                             )
                         for tweet in grp
                     ].pop())

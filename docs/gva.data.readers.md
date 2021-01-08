@@ -90,7 +90,10 @@ critical_errors.to_pandas()
 >The number of days to step back if there is no data available for day (default is 0) - _**in development**_
 
 **thread_count**: int, optional
->The number of threads to use to read data, provides performance improvement at the cost of record ordering (default is not use any threading) - _**in development**_
+>The number of threads to use to read data, provides performance improvement at the cost of record ordering (default is not use any threading) 
+
+**fork_processes**: bool, optional
+>Fork the read over multiple processes to speed up reading _**in development**_
 
 **NOTE** The `MongoDbReader` and `MinioReader` have additional parameters not listed above.
 

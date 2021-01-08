@@ -15,11 +15,10 @@ from ..formats import dictset
 from ...logging import get_logger
 
 
-def _inner_parse(parser, chunk, condition):
+def _inner_parse(parser, chunk):
     for item in chunk:
         item = parser(item)
-        if condition(item):
-            yield item
+        yield item
 
 def inner_process(flag, reader, source_queue, reply_queue, parser, where):
 
@@ -29,15 +28,17 @@ def inner_process(flag, reader, source_queue, reply_queue, parser, where):
         source = None
 
     while source is not None:
-        source_reader = reader.read_from_source(source)
-        for chunk in dictset.page_dictset(source_reader, 256):
-            reply_queue.put(list(_inner_parse(parser, chunk, where)))  # wait
+        reader = reader.read_from_source(source)
+        reader = _inner_parse(parser, reader)
+        if where is not None:
+            reader = dictset.select_from(reader, where=where)
+        for chunk in dictset.page_dictset(reader, 256):
+            reply_queue.put(chunk)  # wait
         try:
             source = source_queue.get(timeout=0.1)
         except Exception:
             source = None
 
-    #get_logger().debug('close flag')
     flag.value = 0
 
 
@@ -64,7 +65,6 @@ def processed_reader(items_to_read, reader, parser, where):
 
     process_pool = set(process_pool)
 
-    # this may end the loop before all of the data is read
     while any({t.value == 1 for t in process_pool}) or not(reply_queue.empty()):
         #get_logger().debug(F"{ {t.value == 1 for t in process_pool} }, {reply_queue.empty()}, {send_queue.empty()}")
         try:
