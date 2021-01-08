@@ -1,8 +1,6 @@
 """
 Threaded Reader
 
-THIS IS EXPERIMENTAL, USING IN SYSEMS IS NOT RECOMMENDED
-
 This wraps the reader classes to read multiple partitions concurrently.
 
 Internally it uses Queues to create the set of partitions to read from

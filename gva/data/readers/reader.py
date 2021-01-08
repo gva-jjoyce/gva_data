@@ -25,7 +25,7 @@ import datetime
 from ...logging import get_logger
 from .base_reader import BaseReader
 from .gcs_reader import GoogleCloudStorageReader
-from .experimental_threaded_reader import threaded_reader
+from .threaded_reader import threaded_reader
 from .experimental_processed_reader import processed_reader
 from ...utils.json import parse, serialize
     
@@ -107,12 +107,12 @@ class Reader():
 
         # threaded reader
         self.thread_count = int(kwargs.get('thread_count', 0))
-        if self.thread_count > 0:
-            get_logger().warning("THREADED READER IS EXPERIMENTAL, IT MAY NOT RETURN ALL DATA")
 
         # multiprocessed reader
-        self.process_count = int(kwargs.get('process_count', 0))
-        if self.process_count > 0:
+        self.fork_processes = int(kwargs.get('fork_processes', False))
+        if self.thread_count > 0 and self.fork_processes:
+            raise Exception('Forking and Threading can not be used at the same time')
+        if self.fork_processes:
             get_logger().warning("MULTI-PROCESS READER IS EXPERIMENTAL, IT IS LIKELY TO NOT RETURN ALL DATA")
 
 
@@ -131,7 +131,7 @@ class Reader():
             ds = threaded_reader(sources, self.reader_class, self.thread_count)
             ds = self._parse(ds)
             yield from select_from(ds, where=self.where)
-        elif self.process_count > 0:
+        elif self.fork_processes:
             yield from processed_reader(sources, self.reader_class, self.parser, self.where)
         else:
             for partition in sources:
@@ -155,8 +155,6 @@ class Reader():
         while True:
             # get the the next line from the reader
             record = self._inner_line_reader.__next__()
-            if not self.where(record):
-                continue
             if self.select != ['*']:
                 record = select_record_fields(record, self.select)
             return record
