@@ -28,11 +28,11 @@ def inner_process(flag, reader, source_queue, reply_queue, parser, where):
         source = None
 
     while source is not None:
-        reader = reader.read_from_source(source)
-        reader = _inner_parse(parser, reader)
+        data = reader.read_from_source(source)
+        data = _inner_parse(parser, data)
         if where is not None:
-            reader = dictset.select_from(reader, where=where)
-        for chunk in dictset.page_dictset(reader, 256):
+            data = dictset.select_from(data, where=where)
+        for chunk in dictset.page_dictset(data, 256):
             reply_queue.put(chunk)  # wait
         try:
             source = source_queue.get(timeout=0.1)
