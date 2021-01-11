@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/static/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    <link href="/static/fontawesome.min.css" rel="stylesheet" />
+    <link href="/static/styles.css" rel="stylesheet" />
+    <title>Search</title>
+  </head>
+  <body>
+
+    <div class="container">
+        <div class="row">
+
+          <h1>Search</h1>
+
+          <form>
+              <div class="input-group">
+                  <input type="text" id="query_string" class="form-control">
+                  <select class="form-select col-2" id="period" size="1">
+                    <option value='today' selected>Today</option>
+                    <option value="t-30">Last 30 days</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                  <button type="submit" class="btn btn-primary" id="search">Search</button>
+              </div>
+
+              <br />
+
+              <div class="row" id="custom-date-range">
+                <div class="col-1 offset-md-8">
+                  <label for="start_date" class="col-form-label">From Date</label>
+                </div>
+                <div class="col-3">
+                  <div class="input-group">
+                    <button class="btn btn-outline-secondary" type="button" id="prev-start-date"><i class="fas fa-chevron-left"></i></button>
+                    <input type="date" class="form-control" id="start_date" />
+                    <button class="btn btn-outline-secondary" type="button" id="next-start-date"><i class="fas fa-chevron-right"></i></button>
+                  </div>
+                </div>
+
+                <div class="col-1 offset-md-8">
+                  <label for="end_date" class="col-form-label">To Date</label>
+                </div>
+                <div class="col-3">
+                  <div class="input-group">
+                    <button class="btn btn-outline-secondary" type="button" id="prev-end-date"><i class="fas fa-chevron-left"></i></button>
+                    <input type="date" class="form-control" id="end_date" />
+                    <button class="btn btn-outline-secondary" type="button" id="next-end-date"><i class="fas fa-chevron-right"></i></button>
+                  </div>
+                </div>
+            </div>
+          </form>
+
+          <div id="clock"></div>
+
+          <br /><br />
+
+          <div id="data_table"></div>
+
+      </div>
+
+    </div>
+
+    <script src="/static/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script src="/static/moment.min.js" crossorigin="anonymous"></script>
+    <script src="/static/scripts.js" crossorigin="anonymous"></script>
+
+    <script>
+
+      function get_columns(data) {
+        if (data.columns === undefined) {
+          var columns = [];
+          for(var key in data) {
+            columns.push(key);
+          }
+          return columns
+        }
+        return data.columns
+      }
+
+      function fetch_data() {
+
+        document.getElementById('data_table').innerHTML = "<img src='/static/waiting.gif' width='250px'/>"
+
+        var url = '/search/' + 
+          document.getElementById('query_string').value + '/' +
+          document.getElementById('start_date').value + '/' +
+          document.getElementById('end_date').value + '/'
+
+        var timer = performance.now();
+        fetch(url)
+          .then((res) => res.json())
+          .then(output => {
+            var results = output;
+            results.columns = get_columns(results[0]);
+            document.getElementById('clock').innerText = parseInt(performance.now() - timer) / 1000;
+            document.getElementById('data_table').innerHTML = renderTable(results, 0)
+          }
+          );
+      }
+
+
+      function update_period() {
+        var selected_value = document.getElementById('period').value;
+        var start_element = document.getElementById('start_date')
+        var end_element = document.getElementById('end_date')
+        var today = new Date()
+        var t_minus_30 = new Date(new Date().setDate(today.getDate()-30))
+        var date_select_wrapper = document.getElementById('custom-date-range')
+
+        switch (selected_value) {
+          case 'today':
+            start_element.valueAsDate = today;
+            end_element.valueAsDate = new Date();
+            date_select_wrapper.classList.add('d-none');
+            break;
+          case 't-30':
+            start_element.valueAsDate = t_minus_30;
+            end_element.valueAsDate = today;
+            date_select_wrapper.classList.add('d-none');
+            break;
+          default:
+            date_select_wrapper.classList.remove('d-none');
+        } 
+      }
+
+      function update_date(field, increment) {
+        current_date = document.getElementById(field).valueAsDate;
+        document.getElementById(field).valueAsDate = new Date(new Date().setDate(current_date.getDate() + increment))
+      }
+
+      function increment_start() { update_date('start_date', 1) }
+      function decrement_start() { update_date('start_date', -1) }
+      function increment_end() { update_date('end_date', 1) }
+      function decrement_end() { update_date('end_date', -1) }
+
+      document.getElementById('search').addEventListener('click', fetch_data, false);
+      document.getElementById('period').addEventListener('change', update_period, false);
+
+      document.getElementById('prev-start-date').addEventListener('click', decrement_start, false);
+      document.getElementById('next-start-date').addEventListener('click', increment_start, false);
+      document.getElementById('prev-end-date').addEventListener('click', decrement_end, false);
+      document.getElementById('next-end-date').addEventListener('click', increment_end, false);
+
+    </script>
+
+  </body>
+</html>

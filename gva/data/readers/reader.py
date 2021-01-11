@@ -149,7 +149,6 @@ class Reader():
 
     def __next__(self):
         if self._inner_line_reader is None:
-            print('creating new reader')
             self._inner_line_reader = self.create_line_reader()
 
         # get the the next line from the reader

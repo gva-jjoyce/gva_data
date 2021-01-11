@@ -1,0 +1,21 @@
+@font-face {
+    font-family: 'Roboto Condensed';
+    src: url('/static/RobotoCondensed-Light.ttf');
+    font-weight: 200;
+    font-style: normal;
+  }
+
+table {
+    font-size: 0.8em;
+}
+
+body {
+    margin-top: 10px;
+    color: #444;
+    font-family: 'Roboto Condensed';
+    -webkit-print-color-adjust: exact !important;
+}
+
+#period {
+    max-width: 125px;
+}
