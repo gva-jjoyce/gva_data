@@ -6,8 +6,8 @@ Maths functions
 
 ## What Is In It?
 
-`mean(series)`
-`standard_deviation(series)`
+`mean(series)`  
+`standard_deviation(series)`  
 `variance(series)`
 
 ---  
