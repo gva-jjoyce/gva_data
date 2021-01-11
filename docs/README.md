@@ -6,4 +6,4 @@
 [gva.data.validator](gva.data.validator.md)  
 [gva.data.writers](gva.data.writers.md)  
 [gva.logging](gva.logging.md)   
-[gva.maths](docs/gva.maths.md) 
+[gva.maths](dgva.maths.md) 
