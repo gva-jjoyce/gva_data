@@ -484,9 +484,11 @@ class group_by():
         get_logger().warning('dictset.group_by is alpha functionality and subject to significant change - do not use in systems')
         groups = {}
         for item in dictset:
-            if not column in groups:
+            key = item.get(column)
+            if groups.get(key) is None:
                 groups[item.get(column)] = []
-            groups[item.get(column)].append(item)
+            del item[column]
+            groups[key].append(item)
         self.groups = groups
 
     def count(self, value=None):
@@ -514,25 +516,20 @@ class group_by():
         
         Examples:
         - maxes = grouped.aggregate('age', max)
-        - means = grouped.aggregate('age', group_by.mean)  
+        - means = grouped.aggregate('age', maths.mean)  
         """
-        return {
-            key: (
-                    [
-                        method
-                            (
-                                [v for k,v in tweet.items() if k == column]
-                            )
-                        for tweet in grp
-                    ].pop())
-            for key,grp in self.groups.items()}
+        response = {}
+        for key, items in self.groups.items():
+            values = []
+            for item in items:
+                value = item.get(column)
+                if value is not None:
+                    values.append(value)
+            response[key] = method(values)
+        return response
             
     def __len__(self):
         """
         Returns the number of groups in the set.
         """
         return len(self.groups)
-    
-    @staticmethod
-    def mean(a):
-        return sum(a) / len(a)

@@ -61,24 +61,11 @@ def threaded_reader(items_to_read, reader, max_threads=4):
 
 
     source_queue = items_to_read.copy()
-    # we can have 64 blocks waiting on the queue, if this is unbounded
-    # or set too high, we crash the app by putting all of the file contents
-    # into the queue.
-    # A lot of small blocks (64 blocks of 256 records) is peferred over
-    # few large blocks, the key reason being to help to give opportunity
-    # for each thread to participate
-    reply_queue = queue.Queue(64)
 
     # scale the number of threads, if we have more than the number
     # of files we're reading, will have threads that never complete
-    t = len(source_queue)
-    if t > max_threads:
-        t = max_threads
-    # set a hard limit
-    if t > 8:
-        t = 8
-    if t < 1:
-        t = 1
+    t = min(len(source_queue), max_threads, 8)
+    reply_queue = queue.Queue(t * 8)
 
     # start the threads
     for _ in range(t):
@@ -91,5 +78,5 @@ def threaded_reader(items_to_read, reader, max_threads=4):
     # when the threads are all complete and all the records
     # have been read from the reply queue, we're done
     while any([t.is_alive() for t in thread_pool]) or not(reply_queue.empty()):
-        records = reply_queue.get()
+        records = reply_queue.get(timeout=10)  # don't wait forever
         yield from records

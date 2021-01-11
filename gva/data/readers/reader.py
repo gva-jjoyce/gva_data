@@ -82,7 +82,7 @@ class Reader():
         self.reader_class = reader(from_path=from_path, **kwargs)  # type:ignore
 
         self.select = select.copy()
-        self.where: Callable = where
+        self.where: Optional[Callable] = where
 
         # initialize the reader
         self._inner_line_reader = None
@@ -96,7 +96,11 @@ class Reader():
         kwargs_passed_in_function = [f"{k}={v!r}" for k, v in kwargs.items()]
         formatted_arguments = ", ".join(args_passed_in_function + kwargs_passed_in_function)
 
+        # threaded reader
+        self.thread_count = int(kwargs.get('thread_count', 0))
+
         get_logger().debug(f"Reader({formatted_arguments})")
+
 
         """ FEATURES IN DEVELOPMENT """
 
@@ -104,9 +108,6 @@ class Reader():
         self.step_back_days = int(kwargs.get('step_back_days', 0))
         if self.step_back_days > 0:
             get_logger().warning("STEP BACK DAYS IS IN DEVELOPMENT")
-
-        # threaded reader
-        self.thread_count = int(kwargs.get('thread_count', 0))
 
         # multiprocessed reader
         self.fork_processes = int(kwargs.get('fork_processes', False))
@@ -147,17 +148,15 @@ class Reader():
         return self
 
     def __next__(self):
-        """
-        This wraps the primary filter and select logic
-        """
         if self._inner_line_reader is None:
+            print('creating new reader')
             self._inner_line_reader = self.create_line_reader()
-        while True:
-            # get the the next line from the reader
-            record = self._inner_line_reader.__next__()
-            if self.select != ['*']:
-                record = select_record_fields(record, self.select)
-            return record
+
+        # get the the next line from the reader
+        record = self._inner_line_reader.__next__()
+        if self.select != ['*']:
+            record = select_record_fields(record, self.select)
+        return record
 
 
     """

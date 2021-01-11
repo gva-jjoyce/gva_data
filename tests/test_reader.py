@@ -1,8 +1,10 @@
 import datetime
+import time
 import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from gva.data.readers import Reader, FileReader
+from gva.data.readers import Reader, FileReader, MinioReader
+from gva.data.formats import dictset
 try:
     from rich import traceback
     traceback.install()
@@ -59,7 +61,15 @@ def test_threaded_reader():
             reader=FileReader,
             from_path='tests/data/tweets')
     df = r.to_pandas()
+    assert len(df) == 50
 
+
+def test_multiprocess_reader():
+    r = Reader(
+            fork_processes=True,
+            reader=FileReader,
+            from_path='tests/data/tweets')
+    df = r.to_pandas()
     assert len(df) == 50
 
 
@@ -69,6 +79,7 @@ if __name__ == "__main__":
     test_reader_context()
     test_reader_to_pandas()
     test_threaded_reader()
+    test_multiprocess_reader()
 
     print('okay')
     

@@ -37,8 +37,8 @@ class GoogleCloudStorageReader(BaseReader):
 
         if extention == '.lzma':
             io_stream = io.BytesIO(stream)
-            with lzma.open(io_stream, 'rb') as l:
-                yield from l.readlines()
+            with lzma.open(io_stream, 'rb') as file:
+                yield from file
         else:
             stream = stream.decode('utf-8')
             yield from [item for item in stream.split('\n') if len(item) > 0]
