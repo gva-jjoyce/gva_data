@@ -1,11 +1,8 @@
-from gva.services import GoogleTaskOperator
 from flask import Flask, request, jsonify, make_response, render_template
 import gva.logging
 from gva.data.readers import Reader, FileReader
 from gva.data.formats import dictset
 import datetime
-
-CREDENTIALS_FILE = "bqro.json"
 
 app = Flask(__name__)
 
@@ -43,7 +40,7 @@ def search_query(query=None, start_date=None, end_date=None):
         #fork_processes=True,
         #thread_count=4,
         reader=FileReader,
-        from_path='C:/Users/justi/Desktop/month_%m/day_%d/',
+        from_path='data/%datefolders/',
  #       data_format='text',
         start_date=date_term(start_date),
         end_date=date_term(end_date),
