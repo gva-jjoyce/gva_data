@@ -55,5 +55,5 @@ def search_query(query=None, start_date=None, end_date=None):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=2100, debug=True)
+    app.run(host="0.0.0.0", port=2100, debug=True)  # nosec
  

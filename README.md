@@ -6,14 +6,15 @@ The `gva` libraries are a set of modules to help with creating data processing s
 
 # What Is In It?
 
-
 [gva.flows](docs/gva.flows.md) - data pipelines   
 [gva.data.readers](docs/gva.data.readers.md) - read data from various sources   
 [gva.data.writers](docs/gva.data.writers.md) - write data to various locations   
 [gva.data.formats](docs/gva.data.formats.md) - helper for handling data   
 [gva.data.validator](docs/gva.data.validator.md) - schema conformity testing   
 [gva.logging](docs/gva.logging.md) - logging routines    
-[gva.maths](docs/gva.maths.md) - math routines 
+[gva.maths](docs/gva.maths.md) - math routines   
+
+More documentation is available in [the docs folder](docs/)  
 
 # How Do I Get It?
 ~~~

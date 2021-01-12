@@ -1,6 +1,6 @@
 # gva.data.formats.dictset
 
-## What Is It?
+# What Is It?
 
 **DICT** ionary  data **SET**
 
@@ -12,7 +12,7 @@ Handling generators also allows dictset to work with unbounded data (streaming o
 infinite datasets); methods like _distinct_ may not operate as expected over large
 datasets.
 
-## What It Is Not
+# What It Is Not
 
 This is not a replacement for a tool like `Pandas`, especially if aggregations or
 other functions across the entire dataset.
@@ -20,14 +20,14 @@ other functions across the entire dataset.
 Pandas is somewhat memory intensive, if data is in a dictset compatible format
 dictset can filter and select data before loading into a Pandas dataframe.
 
-## Terminology
+# Terminology
 
 **dictset** - an iterable of dictionaries - usually a list or generator    
 **record** - a single dictionary of values (a row)  
 **field** - a single data item in a record (a cell)  
 **column** - a field across multiple records   
 
-## What Is In It?
+# What Is In It?
 
 `select_from(dictset, columns, where)` - Select records and columns from a dictset    
 `set_column(dictset, column_name, setter)` - Update all the fields of a column    
@@ -45,14 +45,15 @@ dictset can filter and select data before loading into a Pandas dataframe.
 `set_value(record, column_name, setter)` - Update the value of a field in a record   
 `to_html_table(dictset, limit)` - Create a HTML table of the first _limit_ rows  
 `to_ascii_table(dictset, limit)` - Create a ASCII table of the first _limit_ rows  
-`group_by(dictset, column)` - Create a group_by object, grouping records by the value in _column_
+`group_by(dictset, column)` - Create a group_by object, grouping records by the value in _column_  
+`extract_column(dictset, column)` - Extract the values in _column_ to a list   
 
 **NOTE** distinct and sort_dictset have been written to work on unbounded (streaming) datasets and 
 work on blocks of records so cannot ensure the correctness of the results they create. If these functions
 need to be correct, set the _cache_size_ to match the size of the dictset, or use another tool
 such as _Pandas_.
 
-## How Do I Use It?
+# How Do I Use It?
 
 ~~~python
 from gva.data.formats import dictset
@@ -64,7 +65,7 @@ ds = dictset.select_from(ds, columns['name', 'rank'])
 dataframe = pandas.DataFrame(ds)
 ~~~
 
-## Groups
+# Groups
 
 **Groups** is in development and its functionality and interface is subject to change - use in systems is not recommended.
 
@@ -89,7 +90,7 @@ states_in_oz = groups.count('Australia')
 
 
 
-## A Note On Generators
+# A Note On Generators
 
 Most methods in this library delay their execution, which means something like this code:
 

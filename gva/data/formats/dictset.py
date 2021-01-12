@@ -467,6 +467,13 @@ def to_ascii_table(
 
     return '\n'.join(result)
 
+
+def extract_column(
+        dictset: Iterator[dict],
+        column: str) -> list:
+    return [record.get(column) for record in dictset]
+
+
 class group_by():
     """
     group_by

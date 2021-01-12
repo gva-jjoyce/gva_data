@@ -270,6 +270,17 @@ def test_to_ascii():
     assert " 5 " in axki
 
 
+def test_extract_column():
+    ds = [
+        {'key': 1, 'value': 'one'},
+        {'key': 2, 'value': 'two'},
+        {'key': 3, 'value': 'three'},
+        {'key': 4, 'value': 'four'},
+        {'key': 5, 'value': 'five'}]
+
+    assert dictset.extract_column(ds, 'value') == ['one', 'two', 'three', 'four', 'five']
+
+
 if __name__ == "__main__":
     test_select_record_fields()
     test_order()
@@ -289,5 +300,6 @@ if __name__ == "__main__":
     test_to_pandas()
     test_to_html()
     test_to_ascii()
+    test_extract_column()
     
     print('okay')
