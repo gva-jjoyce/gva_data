@@ -12,6 +12,8 @@ A set of modules to define and execute data flows.
 
 **flow** - describes the steps and order of **how** data is going to be processed - this is an implementation of a [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph#Data_processing_networks)   
 
+**run** - a specific execution of a flow
+
 **operator** - describe **what** work is being going to be done to, or with, data  
 
 **data** - usually a python `dict`, but any piece of information which is acted on   
