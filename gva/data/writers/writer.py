@@ -91,6 +91,8 @@ class Writer():
             self.thread.daemon = True
             self.thread.start()
 
+        get_logger().warning('gva.data.writer is being rewritten and may require changes in future releases')
+
     def _get_temp_file_name(self):
         """
         Create a tempfile, get the name and then deletes the tempfile.
@@ -192,7 +194,7 @@ class Writer():
 
 class _PartFileWriter():
     """ simple wrapper for file writing to a temp file """
-    __slots__ = ['file']
+    __slots__ = ('file')
 
     def __init__(
             self,

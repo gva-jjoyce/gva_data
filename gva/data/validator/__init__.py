@@ -45,7 +45,7 @@ DEFAULT_MAX = 9223372036854775807
 
 
 class is_string():
-    __slots__ = ['pattern', 'regex']
+    __slots__ = ('pattern', 'regex')
     def __init__(self, **kwargs):
         self.regex = None
         self.pattern = kwargs.get('format')
@@ -63,7 +63,7 @@ class is_string():
             return 'string'
 
 class is_valid_enum():
-    __slots__ = ['symbols']
+    __slots__ = ('symbols')
     def __init__(self, **kwargs):
         """
         -> "type": "enum", "symbols": ["up", "down"]
@@ -92,7 +92,7 @@ class is_boolean(is_valid_enum):
 
 
 class is_numeric():
-    __slots__ = ['min', 'max']
+    __slots__ = ('min', 'max')
     def __init__(self, **kwargs):
         """
         -> "type": "numeric", "min": 0, "max": 100

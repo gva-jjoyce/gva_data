@@ -42,10 +42,7 @@ def test_group_by_advanced():
     ]
 
     groups = dictset.group_by(ds, 'user').apply(summarize)
-    assert list(groups) == [
-            {'count': 5, 'min': 1, 'max': 2},
-            {'count': 6, 'min': 3, 'max': 5},
-            {'count': 2, 'min': 6, 'max': 7}]
+    assert groups == {'bob': {'count': 5, 'min': 1, 'max': 2}, 'alice': {'count': 6, 'min': 3, 'max': 5}, 'eve': {'count': 2, 'min': 6, 'max': 7}}
 
 
 def test_group_by():

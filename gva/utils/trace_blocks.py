@@ -36,7 +36,7 @@ def random_int() -> int:
 
 class TraceBlocks():
 
-    __slots__ = ['blocks']
+    __slots__ = ('blocks')
 
     def __init__(self, uuid="00000000-0000-0000-0000-000000000000"):
         """

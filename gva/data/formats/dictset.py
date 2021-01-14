@@ -37,6 +37,8 @@ for record in join_dictsets(filtered_list1, filtered_list2, 'id'):
 from typing import Iterator, Any, List, Union, Callable
 from ...utils.json import serialize, parse
 from ...logging import get_logger
+from .group_by import Groups
+from .render import to_ascii_table, to_html_table
 
 class JOINS(object):
     INNER_JOIN = 'INNER'
@@ -378,182 +380,13 @@ def to_pandas(
     return pandas.DataFrame(dictset)
 
 
-def to_html_table(
-        dictset: Iterator[dict],
-        limit: int = 5):
-    """
-    Render the dictset as a HTML table.
-
-    This exhausts generators so is only recommended to be used on lists.
-    """    
-    def _to_html_table(data, limit):
-        
-        first_row = True
-        highlight = False
-        
-        yield '<table class="table table-sm">'
-        for counter, record in enumerate(data):
-            
-            if first_row:
-                yield '<thead class="thead-light"><tr>'
-                for key, value in record.items():
-                    yield '<th>' + key + '<th>\n'
-                yield '</tr></thead><tbody>'
-            first_row = False
-            
-            if counter >= limit:
-                break
-            
-            if highlight:
-                yield '<tr style="background-color:#F4F4F4">'
-            else:
-                yield '<tr>'
-            highlight = not highlight
-            for key, value in record.items():
-                yield '<td>' + str(value) + '<td>\n'
-            yield '</tr>'
-                
-        yield '</tbody></table>'
-        
-        import types
-        if isinstance(data, types.GeneratorType):
-            yield f'<p>unknown rows x {len(record.items())} columns</p>'
-            yield 'NOTE: the displayed records have been spent'
-        if isinstance(data, list):
-            yield f'<p>{len(data)} rows x {len(record.items())} columns</p>'
-
-    return ''.join(_to_html_table(dictset, limit))
-
-
-def to_ascii_table(
-        dictset: Iterator[dict],
-        limit: int = 5):
-    """
-    Render the dictset as a ASCII table.
-
-    This exhausts generators so is only recommended to be used on lists.
-    """    
-    result = []
-    columns:dict = {}
-    cache = []
-
-    # inspect values
-    for count, row in enumerate(dictset):
-        if count == limit:
-            break
-
-        cache.append(row)
-        for k,v in row.items():
-            length = max(len(str(v)), len(k))
-            if length > columns.get(k, 0):
-                columns[k] = length
-
-    # draw table
-    bars = []
-    for header, width in columns.items():
-        bars.append('─' * (width + 2))
-
-    # print headers
-    result.append('┌' + '┬'.join(bars) + '┐')
-    result.append('│' + '│'.join([k.center(v + 2) for k, v in columns.items()]) + '│')
-    result.append('├' + '┼'.join(bars) + '┤')
-
-    # print values
-    for row in cache:
-        result.append('│' + '│'.join([str(v).center(columns[k] + 2) for k, v in row.items()]) + '│')
-
-    # print footer
-    result.append('└' + '┴'.join(bars) + '┘')
-
-    return '\n'.join(result)
-
-
 def extract_column(
         dictset: Iterator[dict],
         column: str) -> list:
     return [record.get(column) for record in dictset]
 
 
-class group_by():
-    """
-    group_by
-    
-    Parameters:
-    - dictset: an iterable of dictionaries
-    - column: the field to group by
-    
-    Returns a 'group_by' object. The 'group_by' object holds the dataset in
-    memory so is unsuitable for large datasets.
-    """
-    __slots__ = ['groups']
-
-    def __init__(self, dictset, column):
-        get_logger().warning('dictset.group_by is alpha functionality and subject to significant change - do not use in systems')
-        groups = {}
-        for item in dictset:
-            my_item = item.copy()
-            key = my_item.get(column)
-            if groups.get(key) is None:
-                groups[my_item.get(column)] = []
-            my_item[column] = None
-            del my_item[column]
-            groups[key].append(my_item)
-        self.groups = groups
-
-    def count(self, value=None):
-        """
-        Count the number of items in groups
-        
-        Paramters:
-        - value: (optional) if provided, return the count of just this group
-        """
-        if value is None:
-            return {x:len(y) for x,y in self.groups.items()}
-        else:
-            try:
-                return [len(y) for x,y in self.groups.items() if x == value].pop()
-            except:
-                return 0
-
-    def aggregate(self, column, method):
-        """
-        Applies an aggregation function by group.
-        
-        Parameters:
-        - column: the name of the field to aggregate
-        - method: the function to aggregate with
-        
-        Examples:
-        - maxes = grouped.aggregate('age', max)
-        - means = grouped.aggregate('age', maths.mean)  
-        """
-        response = {}
-        for key, items in self.groups.items():
-            values = []
-            for item in items:
-                value = item.get(column)
-                if value is not None:
-                    values.append(value)
-            response[key] = method(values)
-        return response
-
-    def apply(self, method: Callable):
-        """
-        Apply a function to all groups, returns a generator.
-        """
-        result = {}
-        for key, items in self.groups.items():
-            result[key] = method(items)
-        return result
-            
-    def __len__(self):
-        """
-        Returns the number of groups in the set.
-        """
-        return len(self.groups)
-
-    def __repr__(self):
-        """
-        Returns the group names
-        """
-        return "[" + ",".join(list(self.groups.keys())) + "]"
+def group_by(
+        dictset: Iterator[dict],
+        column: str) -> Groups:
+    return Groups(dictset, column)

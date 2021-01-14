@@ -15,7 +15,7 @@ from typing import Any, List, Optional
 
 class LRU_Index(object):
 
-    __slots__ = ['hash_list']
+    __slots__ = ('hash_list')
 
     def __init__(self, size: int = 1000):
         self.hash_list: List[Optional[int]] = [None] * size
