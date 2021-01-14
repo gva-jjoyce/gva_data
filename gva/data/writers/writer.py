@@ -34,7 +34,7 @@ import threading
 import sys
 import tempfile
 import datetime
-from .blob_writer import blob_writer
+from .google_cloud_storage_writer import google_cloud_storage_writer
 from typing import Callable, Optional, Any
 from ..validator import Schema  # type:ignore
 from ...errors import ValidationError
@@ -47,8 +47,8 @@ class Writer():
     def __init__(
         self,
         *,
-        writer: Callable = blob_writer,
-        to_path: str = '%datefolders',
+        writer: Callable = google_cloud_storage_writer,
+        to_path: str = '%datefolders/file.jsonl',
         partition_size: int = 16*1024*1024,
         schema: Schema = None,
         compress: bool = False,
@@ -162,7 +162,6 @@ class Writer():
             # finalize the writer
             if self.file_writer:
                 self.file_writer.finalize()
-                del self.file_writer
                 self.file_writer = None
             # save the file to it's destination
             if self.file_name:

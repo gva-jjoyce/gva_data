@@ -491,11 +491,13 @@ class group_by():
         get_logger().warning('dictset.group_by is alpha functionality and subject to significant change - do not use in systems')
         groups = {}
         for item in dictset:
-            key = item.get(column)
+            my_item = item.copy()
+            key = my_item.get(column)
             if groups.get(key) is None:
-                groups[item.get(column)] = []
-            del item[column]
-            groups[key].append(item)
+                groups[my_item.get(column)] = []
+            my_item[column] = None
+            del my_item[column]
+            groups[key].append(my_item)
         self.groups = groups
 
     def count(self, value=None):
@@ -534,9 +536,22 @@ class group_by():
                     values.append(value)
             response[key] = method(values)
         return response
+
+    def apply(self, method: Callable):
+        """
+        Apply a function to all groups, returns a generator.
+        """
+        for key, items in self.groups.items():
+            yield method(items)
             
     def __len__(self):
         """
         Returns the number of groups in the set.
         """
         return len(self.groups)
+
+    def __repr__(self):
+        """
+        Returns the group names
+        """
+        return list(self.groups.keys())

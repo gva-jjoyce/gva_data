@@ -28,7 +28,7 @@ except:
 def safe_get(arr, index, default=None):
     return arr[index] if index < len(arr) else default
 
-def get_input_stream():
+def get_input_stream(input_filename):
     """
     If first paramter is - use standard in, if it's a existing
     file, open an use that
@@ -36,10 +36,12 @@ def get_input_stream():
     """   
     if input_filename == '-':
         if not sys.stdin.isatty():
-            return sys.stdin    
-    if os.path.isfile(input_filename):
-        return open(input_filename, 'r')
-    return None
+            return sys.stdin
+    try:
+        return open(input_filename, 'r', encoding='utf8')
+    except Exception as e:
+        print(type(e).__name__, e)
+        return None
 
 def get_parameter_value(label):
     """
@@ -59,7 +61,7 @@ show_help    = '-?' in sys.argv or '-h' in sys.argv or '--help' in sys.argv
 no_headers   = '-no' in sys.argv
 out_file     = get_parameter_value('-o')
 input_filename = safe_get(sys.argv, 1, '')
-input_stream = get_input_stream()
+input_stream = get_input_stream(input_filename)
 
 # if help requested, display help and exit with no error
 if show_help:
@@ -95,7 +97,7 @@ with open(out_file, 'w', encoding='utf8') as of:
     counter = 0
     for counter, row in enumerate(csv_reader):
         # row variable is a list that represents a row in csv
-        of.write(json.dumps(dict(zip(headers, row))).decode() + '\n')
+        of.write(json.dumps(dict(zip(headers, row))).decode('utf8') + '\n')
 
 # zero is zero, otherwise it's +1
 if counter > 0:
