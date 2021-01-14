@@ -541,8 +541,10 @@ class group_by():
         """
         Apply a function to all groups, returns a generator.
         """
+        result = {}
         for key, items in self.groups.items():
-            yield method(items)
+            result[key] = method(items)
+        return result
             
     def __len__(self):
         """
@@ -554,4 +556,4 @@ class group_by():
         """
         Returns the group names
         """
-        return list(self.groups.keys())
+        return "[" + ",".join(list(self.groups.keys())) + "]"
