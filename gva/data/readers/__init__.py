@@ -1,5 +1,5 @@
 from .reader import Reader
-from .base_reader import BaseReader
+from .internals.base_reader import BaseReader
 
 # Implementations of the BaseReader for different resource types
 from .file_reader import FileReader

@@ -1,35 +1,35 @@
-from ...utils import paths
-from os.path import exists
+import glob
 import os
 import shutil
-from typing import Optional
-import datetime
+from ...utils import paths
+from .internals.base_writer import BaseWriter
 
 
-def file_writer(
-        source_file_name: str,
-        target_path: str,
-        date: Optional[datetime.date] = None,
-        add_extention: str = '',
-        **kwargs):
-    
-    if date is None:
-        date = datetime.datetime.today()
+class FileWriter(BaseWriter):
 
-    filename, extention = paths.split_filename(target_path)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-    # avoid collisions
-    collision_tests = 0
-    maybe_colliding_filename = paths.date_format(f"{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+    def _build_path(self, index):
+        return f"{self.filename}-{index:04d}{self.extention}"
 
-    while exists(maybe_colliding_filename):
-        collision_tests += 1
-        maybe_colliding_filename = paths.date_format(f"{filename}-{collision_tests:04d}{extention}{add_extention}", date)
+    def commit(
+            self,
+            source_file_name):
+        existing_partitions = self.get_partition_list()
 
-    unique_filename = maybe_colliding_filename
+        collision_tests = 0
+        maybe_colliding_filename = self._build_path(collision_tests)
 
-    bucket, path, filename, ext = paths.get_parts(unique_filename)
-    os.makedirs(bucket + '/' + path, exist_ok=True)
+        while maybe_colliding_filename in existing_partitions:
+            collision_tests += 1
+            maybe_colliding_filename = self._build_path(collision_tests)
 
-    # save
-    return shutil.copy(source_file_name, unique_filename)
+        bucket, path, filename, ext = paths.get_parts(maybe_colliding_filename)
+        os.makedirs(bucket + '/' + path, exist_ok=True)
+
+        # save
+        return shutil.copy(source_file_name, maybe_colliding_filename)
+
+    def get_partition_list(self):
+        return glob.glob(self.filename + '**', recursive=True)

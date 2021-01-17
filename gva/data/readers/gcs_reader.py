@@ -10,7 +10,7 @@ except ImportError:   # pragma: no cover
 import lzma
 import io
 from ...utils import common, paths
-from .base_reader import BaseReader
+from .internals import BaseReader
 
 
 class GoogleCloudStorageReader(BaseReader):

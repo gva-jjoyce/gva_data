@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from gva.data.writers import null_writer
+from gva.data.writers.null_writer import NullWriter
 try:
     from rich import traceback
     traceback.install()
@@ -12,10 +12,9 @@ except ImportError:
 def test_null_writer():
 
     # none of these should do anything
-    assert null_writer() is None
-    assert null_writer(file='%$£@£$') is None
-    assert null_writer(to_path='%$£@£$') is None
-
+    nw = NullWriter(to_path='bucket/path/file.extention')
+    assert nw.get_partition_list() == []
+    assert nw.commit('') == 'NullWriter'
 
 if __name__ == "__main__":
     test_null_writer()

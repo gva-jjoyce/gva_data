@@ -8,7 +8,7 @@ collection can have date formatted
 """
 from typing import Iterator, Tuple, Optional, List
 import datetime
-from .base_reader import BaseReader
+from .internals import BaseReader
 try:
     import pymongo     # type:ignore
 except ImportError:    # pragma: no cover

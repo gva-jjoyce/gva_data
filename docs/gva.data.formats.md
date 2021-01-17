@@ -8,6 +8,7 @@ A set of methods for handling complex data types.
 
 [**dictset**](gva.data.formats.dictset.md) for handling lists or generators of dictionaries  
 **graphs** for handling networkx graphs
+[**display**](gva.data.formats.display.md) for formatting data for display purposes
 
 ## How Do I Use It?
 

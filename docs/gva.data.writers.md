@@ -1,5 +1,13 @@
 # gva.data.writer
 
+# ! WRITER HAS BEEN REFACTORED, DOCUMENTATION UPDATE TO FOLLOW !
+
+The new model:
+- The writer gets the inner_writer injected, kwargs pass any optional configuration
+- The writer creates a pool of partion_writers, these are identified with the partition name
+- The partition writers use the inner_writer to commit the partition to the partition name
+
+
 # What Is It?
 
 A data writer helper library.

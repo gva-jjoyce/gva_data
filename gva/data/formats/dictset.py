@@ -21,24 +21,11 @@ Most methods return generators, which mean they can only be iterated once, to
 iterate again they need to be regenerated. If you know you're going
 to need to iterate more than once, you can use list() or similar to cache the
 values, however this may cause problems if the list is large.
-
-
-Example usage:
-
-# filter the two lists
-filtered_list1 = select_from_dictset(list1, ['id', 'name'], lambda x: x['height'] > 2)
-filtered_list2 = select_from_dictset(list2, ['id', 'last_seen'])
-
-# join the two lists on id
-for record in join_dictsets(filtered_list1, filtered_list2, 'id'):
-    print(record)
-
 """
-from typing import Iterator, Any, List, Union, Callable
-from ...utils.json import serialize, parse
-from ...logging import get_logger
+from typing import Iterator, Any, List, Callable
+from ...utils.json import serialize
 from .group_by import Groups
-from .render import to_ascii_table, to_html_table
+
 
 class JOINS(object):
     INNER_JOIN = 'INNER'
@@ -76,6 +63,7 @@ def order(record: dict) -> dict:
     """
     return dict(sorted(record.items()))
 
+
 def join(
         left: Iterator[dict],
         right: Iterator[dict],
@@ -96,7 +84,7 @@ def join(
     NOTES:
     - where columns are in both tables - I don't know what happens.
     - resultant records may have inconsistent columns (same as 
-      source lists)
+    source lists)
 
     Parameters:
     - left: the 'left' dictset
@@ -144,7 +132,7 @@ def create_index(
     Parameters:
     - dictset: an iterable of dictionaries
     - index_column: the column in the dictset to index on, it is expected to be
-      unique but this is not enforced.
+    unique but this is not enforced.
     """
     index = {}
     for record in dictset:
@@ -156,7 +144,7 @@ def create_index(
 def select_from(
         dictset: Iterator[dict],
         columns: List[str] = ['*'],
-        where: Callable = select_all) -> Iterator[dict]:
+        where: Callable = None) -> Iterator[dict]:
     """
     Scan a dictset, filtering rows and selecting columns.
 
@@ -168,16 +156,16 @@ def select_from(
     Approximate SQL:
     SELECT columns FROM dictset WHERE where
     """
-    # sometimes we're called with nothing to do
-    if where is None and columns == ['*']:
-        yield from dictset
-    else:
+    def _select_columns(dictset, columns):
         for record in dictset:
-            if where is not None and not where(record):
-                continue
-            if columns != ['*']:
-                record = select_record_fields(record, columns)
+            record = select_record_fields(record, columns)
             yield record
+
+    if where is not None:
+        dictset = filter(where, dictset)
+    if columns != ['*']:
+        dictset = _select_columns(dictset, columns)
+    yield from dictset
 
 
 def set_column(
@@ -346,8 +334,10 @@ def sort(
             _sort_key(key)(row)
         """
         k = key
+
         def _inner_sort_key(row):
             return row.get(k)
+
         return _inner_sort_key
 
     # cache_size is the high water mark, 3/4 is the low water mark. 
@@ -359,7 +349,7 @@ def sort(
     # cache_size of 50000 introduces a performance hit of about 15%.
     quarter_cache = (cache_size // 4)
     if quarter_cache < 1:
-        quarter_cache = 1 
+        quarter_cache = 1
     cache = []
     for item in dictset:
         cache.append(item)

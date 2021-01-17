@@ -6,7 +6,7 @@ import datetime
 from ...utils import paths
 import lzma
 from ...utils import common
-from .base_reader import BaseReader
+from .internals import BaseReader
 import glob
 from os.path import isfile, exists
 

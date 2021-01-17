@@ -19,18 +19,18 @@ it is a log reader and returns log entries. The reader can convert a set
 into Pandas dataframe, or the dictset helper library can perform some 
 activities on the set in a more memory efficient manner.
 """
-from typing import Callable, Tuple, Optional
-from ..formats.dictset import select_all, select_record_fields, limit, to_html_table, to_ascii_table, select_from
-import datetime
+from typing import Callable, Optional
+from ..formats.dictset import select_record_fields, select_from
+from ..formats.display import html_table, ascii_table
 from ...logging import get_logger
-from .base_reader import BaseReader
 from .gcs_reader import GoogleCloudStorageReader
-from .threaded_reader import threaded_reader
-from .experimental_processed_reader import processed_reader
-from ...utils.json import parse, serialize
-    
+from .internals import BaseReader, threaded_reader, processed_reader
+from ...utils.json import parse
+
+
 def do_nothing(x):
     return x
+
 
 # available line parsers
 PARSERS = {
@@ -43,7 +43,7 @@ class Reader():
 
     def __init__(
         self,
-        *,  # force all paramters to be keyworded 
+        *,  # force all paramters to be keyworded
         select: list = ['*'],
         from_path: str = None,
         where: Callable = None,
@@ -168,7 +168,7 @@ class Reader():
             while line:
                 print(line)
     """
-    
+
     def __enter__(self):
         return self
 
@@ -194,7 +194,6 @@ class Reader():
             raise ImportError("Pandas must be installed to use 'to_pandas'")
         return pd.DataFrame(self)
 
-
     def __repr__(self):
 
         def is_running_from_ipython():
@@ -204,13 +203,13 @@ class Reader():
             try:
                 from IPython import get_ipython  # type:ignore
                 return get_ipython() is not None
-            except:
+            except Exception:
                 return False
 
         if is_running_from_ipython():
             from IPython.display import HTML, display  # type:ignore
-            html = to_html_table(self, 5)
+            html = html_table(self, 5)
             display(HTML(html))
             return ''  # __repr__ must return something
         else:
-            return to_ascii_table(self, 5)
+            return ascii_table(self, 5)

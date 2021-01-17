@@ -9,7 +9,7 @@ conclusion is the issue is with the Minio library.
 from ...utils import paths, common
 import lzma
 import io
-from .base_reader import BaseReader
+from .internals import BaseReader
 try:
     from minio import Minio  # type:ignore
 except ImportError:

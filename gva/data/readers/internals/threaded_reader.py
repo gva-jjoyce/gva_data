@@ -24,7 +24,7 @@ import queue
 import threading
 import sys
 import time
-from ..formats import dictset
+from ...formats import dictset
 
 def threaded_reader(items_to_read, reader, max_threads=4):
     """

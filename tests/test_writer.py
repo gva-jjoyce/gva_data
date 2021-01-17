@@ -4,7 +4,7 @@ import os
 import sys
 import glob
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from gva.data.writers import Writer, file_writer
+from gva.data.writers import Writer, NullWriter, FileWriter
 from gva.data.readers import Reader, FileReader
 try:
     from rich import traceback
@@ -18,9 +18,9 @@ get_logger().setLevel(5)
 
 def do_writer():
     w = Writer(
-        writer=file_writer,
+        inner_writer=FileWriter,
         to_path='_tests/year_%Y/test.jsonl',
-        date=datetime.date.today()
+        date_exchange=datetime.date.today()
     )
     for i in range(int(1e5)):
         w.append({"test":True})
@@ -30,10 +30,10 @@ def do_writer():
 
 def do_writer_compressed():
     w = Writer(
-        writer=file_writer,
+        inner_writer=FileWriter,
         to_path='_tests/year_%Y/test.jsonl',
         compress=True,
-        date=datetime.date.today()
+        date_exchange=datetime.date.today()
     )
     for i in range(int(1e5)):
         w.append({"test":True})
@@ -69,6 +69,13 @@ def test_reader_writer_compressed():
     l = len(list(r))
     shutil.rmtree("_tests", ignore_errors=True)
     assert l == 200000, l
+
+
+def get_data():
+    r = Reader(
+        reader=FileReader,
+        from_path='tests/data/tweets')
+    return r
 
 
 if __name__ == "__main__":

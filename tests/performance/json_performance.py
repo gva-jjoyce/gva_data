@@ -39,19 +39,20 @@ def _inner_file_reader(
 
 
 def test_parser(parser):
-    reader = _inner_file_reader('../../tweets.jsonl')
+    reader = _inner_file_reader('tests/data/tweets/tweets-0000.jsonl')
     for item in reader:
         parser(item)
 
 def test_serializer(serializer):
-    reader = _inner_file_reader('../../tweets.jsonl')
+    reader = _inner_file_reader('tests/data/tweets/tweets-0000.jsonl')
     for item in reader:
         dic = orjson.loads(item)
         serializer(dic)
 
 def time_it(test, *args):
     start = time.perf_counter_ns()
-    test(*args)
+    for i in range(10000):
+        test(*args)
     return (time.perf_counter_ns() - start) / 1e9
 
 import json
