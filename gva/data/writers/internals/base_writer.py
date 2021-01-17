@@ -13,11 +13,18 @@ class BaseWriter(abc.ABC):
 
     def __init__(
             self,
-            to_path: str):
+            to_path: str,
+            compress):
 
         self.bucket, path, filename, self.extention = paths.get_parts(to_path)
         self.filename = self.bucket + '/' + path + filename
         self.filename_without_bucket = path + filename
+        self.compress = compress
+
+    def _build_path(self, index):
+        if self.compress:
+            return f"{self.filename}-{index:04d}{self.extention}.lzma"
+        return f"{self.filename}-{index:04d}{self.extention}"
 
     @abc.abstractclassmethod
     def commit(

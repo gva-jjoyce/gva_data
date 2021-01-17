@@ -8,8 +8,6 @@ can be more active PartitionWriters, this is used to determine how many
 PartitionWriters to recommend for evict.
 """
 from .partition_writer import PartitionWriter
-from .base_writer import BaseWriter
-from ..null_writer import NullWriter
 from ...formats import display
 import threading
 import time
@@ -30,12 +28,11 @@ class WriterPool():
 
     def get_writer(self, identity):
         try:
-            with threading.Lock():
-                # if a writer with the specified identity exists then return it
-                # update the last_access status so we can determin the LRU
-                writer = [writer for writer in self.writers if writer.get('identity') == identity].pop()
-                writer['last_access'] = time.time_ns() / 1e9
-            return writer.get('writer')
+            # if a writer with the specified identity exists then return it
+            # update the last_access status so we can determin the LRU
+            writer = [writer for writer in self.writers if writer['identity'] == identity].pop()
+            writer['last_access'] = time.time()
+            return writer['writer']
         except IndexError:
             # if no writer was found, create a new one and add to the pool.
             # we don't check if we're overflowing before doing this,
@@ -48,7 +45,7 @@ class WriterPool():
         # instantiate a new writer
         new_writer = {
             'identity': identity,
-            'last_access': time.time_ns() / 1e9,
+            'last_access': time.time(),
             'writer': PartitionWriter(to_path=identity, **self.kwargs)
         }
         return new_writer
@@ -76,7 +73,7 @@ class WriterPool():
 
     def get_stale_writers(self, seconds_since_last_use):
         """ get the identities of writers which haven't been accessed recently """
-        now = time.time_ns() / 1e9
+        now = time.time()
         return [writer.get('identity') for writer in self.writers if now - writer.get('last_access') > seconds_since_last_use]
 
     def __str__(self):

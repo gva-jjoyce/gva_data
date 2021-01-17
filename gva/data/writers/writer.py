@@ -35,7 +35,7 @@ class Writer():
 
         # to work out which member of the pool is going to accept the data
         # we define a get_date method
-        self.get_date = lambda record: datetime.date.today()
+        self.get_date = lambda record: datetime.datetime.now()
         if isinstance(date_exchange, datetime.date):
             self.get_date = lambda record: date_exchange
         if isinstance(date_exchange, str):
@@ -65,11 +65,10 @@ class Writer():
         if isinstance(data_date, str):
             data_date = parser.parse(data_date, yearfirst=True)
         identity = paths.date_format(self.to_path, data_date)
-        if self.compress:
-            identity = identity + '.lzma'
 
-        partition_writer = self.writer_pool.get_writer(identity)
-        return partition_writer.append(record)
+        with threading.Lock():
+            partition_writer = self.writer_pool.get_writer(identity)
+            return partition_writer.append(record)
 
     def __del__(self):
         self.finalize()

@@ -61,13 +61,21 @@ def build_path(path: str, date: datetime.date = None):
     return date_format(path_string, date)
 
 
-def date_format(path_string:str, date: datetime.date = None):
+def date_format(path_string: str, date: datetime.date = None):
 
     if not date:
         date = datetime.datetime.now()
 
-    path_string = path_string.replace('%datefolders', 'year_%Y/month_%m/day_%d')
-    path_string = path_string.replace('%date', '%Y-%m-%d')
-    path_string = path_string.replace('%time', '%H%M%S')
+    year = date.year
+    month = F"{date.month:02d}"
+    day = F"{date.day:02d}"
+
+    path_string = path_string.replace('%datefolders', F'year_{year}/month_{month}/day_{day}')
+    path_string = path_string.replace('%date', F'{year}-{month}-{day}')
+
+    if '%' in path_string:
+        path_string = path_string.replace('%Y', F"{year}")
+        path_string = path_string.replace('%m', month)
+        path_string = path_string.replace('%d', day)
     
-    return date.strftime(path_string)
+    return path_string

@@ -18,9 +18,7 @@ class MinIOWriter(BaseWriter):
         super().__init__(**kwargs)
 
         self.client = Minio(end_point, access_key, secret_key, secure=secure)
-
-    def _build_path(self, index):
-        return f"{self.filename_without_bucket}-{index:04d}{self.extention}"
+        self.filename = self.filename_without_bucket
 
     def commit(
             self,
@@ -47,7 +45,7 @@ class MinIOWriter(BaseWriter):
         return maybe_colliding_filename
 
     def get_partition_list(self):
-        existing_items = {obj.object_name for obj in self.client.list_objects(bucket_name=self.bucket, prefix=self.filename_without_bucket)}
+        existing_items = {obj.object_name for obj in self.client.list_objects(bucket_name=self.bucket, prefix=self.filename)}
         return existing_items
 
 

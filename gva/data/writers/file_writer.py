@@ -10,9 +10,6 @@ class FileWriter(BaseWriter):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def _build_path(self, index):
-        return f"{self.filename}-{index:04d}{self.extention}"
-
     def commit(
             self,
             source_file_name):

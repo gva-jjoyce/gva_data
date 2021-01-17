@@ -8,7 +8,7 @@ from ....utils.json import serialize
 from .base_writer import BaseWriter
 from ..null_writer import NullWriter
 
-BUFFER_SIZE = 1024*1024  # 1Mb
+BUFFER_SIZE = 128*1024  # 128kb
 
 
 class PartitionWriter():
@@ -21,28 +21,27 @@ class PartitionWriter():
             compress: bool = True,
             **kwargs):
 
-        self.inner_writer = inner_writer(**kwargs)
         self.compress = compress
         self.maximum_partition_size = partition_size
+        kwargs['compress'] = compress
+        self.inner_writer = inner_writer(**kwargs)
         self.open_partition()
 
     def append(self, record: dict = {}):
         # serialize the record
-        serialized = serialize(record) + '\n'
+        serialized = serialize(record, as_bytes=True) + b'\n'
+
         # the newline isn't counted so add 1 to get the actual length
-        len_serial = len(serialized) + 1
+        # if this write would exceed the partition, close it so another
+        # partition will be created
+        self.bytes_in_partition += len(serialized) + 1
+        if self.bytes_in_partition > self.maximum_partition_size:
+            self.commit()
+            self.open_partition()
 
-        with threading.Lock():
-            # if this write would exceed the partition, close it so another
-            # partition will be created
-            self.bytes_in_partition += len_serial
-            if self.bytes_in_partition > self.maximum_partition_size:
-                self.commit()
-                self.open_partition()
-
-            # write the record to the file
-            self.file.write(serialized.encode())
-            self.records_in_partition += 1
+        # write the record to the file
+        self.file.write(serialized)
+        self.records_in_partition += 1
 
         return self.records_in_partition
 
