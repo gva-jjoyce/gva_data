@@ -1,7 +1,8 @@
 import time
 import threading
 import datetime
-from typing import Callable, Any
+from dateutil import parser
+from typing import Any
 from ..validator import Schema  # type:ignore
 from ...errors import ValidationError
 from .internals.writer_pool import WriterPool
@@ -61,6 +62,8 @@ class Writer():
         # the writer identity is the base of the path where the partitions
         # are written.
         data_date = self.get_date(record)
+        if isinstance(data_date, str):
+            data_date = parser.parse(data_date, yearfirst=True)
         identity = paths.date_format(self.to_path, data_date)
         if self.compress:
             identity = identity + '.lzma'

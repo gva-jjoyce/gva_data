@@ -7,7 +7,7 @@ Results (seconds to process 57,581 rows of 8 field records):
 ┌─────────────┬────────────┬────────┬───────┬─────────────┐
 │ compression │ validation │  time  │ ratio │ rows/second │
 ├─────────────┼────────────┼────────┼───────┼─────────────┤
-│    False    │   False    │ 0.256  │ 0.999 │    224844   │
+│    False    │   False    │ 0.256  │ 0.999 │    224844   │  <- perfromation down to about 70k/sec
 │     True    │   False    │ 16.263 │ 0.015 │     3540    │
 │    False    │    True    │ 0.826  │ 0.309 │    69698    │
 │     True    │    True    │ 16.744 │ 0.015 │     3438    │

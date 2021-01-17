@@ -31,7 +31,7 @@ def test_writer_partition_from_data():
     w = Writer(
             to_path='bucket/%datefolders/file.extention',
             inner_writer=NullWriter,
-            date_exchange=lambda row: datetime.datetime.fromisoformat(row['date_field']))
+            date_exchange=lambda row: row['date_field'])
 
     results = []
     for row in ds:
