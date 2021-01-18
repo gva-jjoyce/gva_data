@@ -1,6 +1,6 @@
 # gva.data.writer
 
-# ! WRITER HAS BEEN REFACTORED, DOCUMENTATION UPDATE TO FOLLOW !
+
 
 The new model:
 - The writer gets the inner_writer injected, kwargs pass any optional configuration
@@ -41,7 +41,7 @@ writer.append({"server": "files", "error_level": "debug", "message", "power on"}
 
 **partition_size**: int, optional
 >The maximum size of chunks the data being written is created (the default is
->16Mb), actual filesizes will be different as this is a maximum and will be
+>64Mb), actual filesizes will be different as this is a maximum and will be
 >a fraction of this size if the data is compressed.
 
 **schema**: gva.data.validator.Schema, optional
@@ -52,20 +52,17 @@ writer.append({"server": "files", "error_level": "debug", "message", "power on"}
 **compress**: bool, optional
 >Compress partitions as they are written (default is to not compress)
 
-**use_worker_thread**: bool, optional
->Use a background helper thread to assist with tasks (default is to use a
->background thread)
-
 **idle_timeout_seconds**: int, optional
 >The minimum time to wait before closing a thread when no new writes are
 >made (the default is 30 seconds), this is generally only relevant to
 >streaming systems as batch systems will tend to write continuously.
 
-**date**: datetime.date, optional
->The date to use for replacing date format placeholders in the 'to_path'
->(default is today)
+**date_exchange**: many, optional
+>Usually will be a date to use for replacing date format placeholders in the
+>'to_path' (default is today), this parameter can also be a function which
+>is run against the row to enable extracting a date from the row.
 
-**writer**: Callable, optional
+**inner_writer**: Callable, optional
 >The internal writer used to commit the partition (default is the the
 >google_cloud_storage_writer)
 
@@ -97,13 +94,18 @@ exhanges:
 # Partitions
 
 The default behaviour of the writer is to create partitions. Partitions are
-chunks of data upto 16Mb in size, partitions are also closed no new records
+chunks of data upto 64Mb in size, partitions are also closed no new records
 have been appended to the writer for 30 seconds. 
 
 Partitions have four digit suffixes added to filenames. Compressed files have 
-_.lzma_ added as an extention. Writer will replace datetime placeholders,
-including macros to covert `%date` to `%Y-%m-%d` and `%datefolders` to
-`year_%Y/month_%m/day_%d`.
+_.lzma_ added as an extention. Writer will replace date placeholders with
+date fields:
+
+- `%Y` to year
+- `%m` to month
+- `%d` to day
+- `%date` to `%Y-%m-%d`
+- `%datefolders` to `year_%Y/month_%m/day_%d`.
 
 For example:
 
@@ -131,8 +133,8 @@ creating folders for each unit of time and writing files to those folders. This 
 etc, depending on the frequency and volume of the data. The Writer can create up to 9999 partitions before the partition
 numbers start to collide - this is:
 
-- over a rate of one parition every 10 seconds
-- over 156Gb of data/day
+- over a rate of one parition (64Mb) every 10 seconds
+- over 625Gb of data/day
 
 If these limits are being approached, the partition numbering logic should be rewritten or the resolution of the data
 changed.
