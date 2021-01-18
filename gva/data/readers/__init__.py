@@ -5,4 +5,4 @@ from .internals.base_reader import BaseReader
 from .file_reader import FileReader
 from .mongodb_reader import MongoDbReader
 from .minio_reader import MinIoReader
-from .gcs_reader import GoogleCloudStorageReader
+from .google_cloud_storage_reader import GoogleCloudStorageReader

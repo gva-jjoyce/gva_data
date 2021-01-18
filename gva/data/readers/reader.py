@@ -23,7 +23,7 @@ from typing import Callable, Optional
 from ..formats.dictset import select_record_fields, select_from
 from ..formats.display import html_table, ascii_table
 from ...logging import get_logger
-from .gcs_reader import GoogleCloudStorageReader
+from .google_cloud_storage_reader import GoogleCloudStorageReader
 from .internals import BaseReader, threaded_reader, processed_reader
 from ...utils.json import parse
 
