@@ -47,8 +47,9 @@ dictset can filter and select data before loading into a Pandas dataframe.
 `to_ascii_table(dictset, limit)` - Create a ASCII table of the first _limit_ rows  
 `group_by(dictset, column)` - Create a group_by object, grouping records by the value in _column_  
 `extract_column(dictset, column)` - Extract the values in _column_ to a list   
+`jsonify(list_of_json_strings)` - Convert an iterable of JSON strings to a iterable of dictionaries  
 
-**NOTE** distinct and sort_dictset have been written to work on unbounded (streaming) datasets and 
+**NOTE** _distinct_ and _sort_dictset_ have been written to work on unbounded (streaming) datasets and 
 work on blocks of records so cannot ensure the correctness of the results they create. If these functions
 need to be correct, set the _cache_size_ to match the size of the dictset, or use another tool
 such as _Pandas_.

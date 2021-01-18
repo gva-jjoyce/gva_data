@@ -76,8 +76,8 @@ class Writer():
     def finalize(self):
         try:
             self.writer_pool.close()
-            self.keep_worker_thread_alive = False
-        except:
+        except Exception as e:
+            get_logger().error(F"Writer failed to close pool {type(e).__name__} - {e}")
             pass
 
     def worker_thread(self):

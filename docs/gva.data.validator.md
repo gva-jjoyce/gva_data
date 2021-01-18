@@ -43,6 +43,9 @@ A schema is loaded into a _Schema_ object, data objects are then passed to the '
 > **symbols**: list, optional  
 > list of valid values
 
+**cve** - cve identifier
+> **Parameters** - none 
+
 **other** - not one of the above, but a required field  
 > **Parameters** - none 
 

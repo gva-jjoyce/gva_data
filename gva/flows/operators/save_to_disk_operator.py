@@ -1,6 +1,6 @@
-from . import BaseOperator
-from gva.data.writers import file_writer, Writer # type:ignore
-from gva.data.validator import Schema  # type:ignore
+from .base_operator import BaseOperator
+from ...writers import FileWriter, Writer  # type:ignore
+from ...validator import Schema  # type:ignore
 import datetime
 
 
@@ -16,11 +16,11 @@ class SaveToDiskOperator(BaseOperator):
             **kwargs):
         super().__init__()
         self.writer = Writer(
-                writer=file_writer,
+                inner_writer=FileWriter,
                 to_path=to_path,
                 schema=schema,
                 compress=compress,
-                date=date,
+                date_exchange=date,
                 **kwargs)
 
     def execute(self, data: dict = {}, context: dict = {}):

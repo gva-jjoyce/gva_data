@@ -273,14 +273,24 @@ def test_validator_number_ranges():
 
 def test_validator_string_format():
 
-    
     INVALID_TEST_DATA = {"cve": "eternalblue"}
     VALID_TEST_DATA = {"cve": "CVE-2017-0144"}
     TEST_SCHEMA = {"fields": [{"name": "cve", "type": "string", "format": r"(?i)CVE-\d{4}-\d{4,7}"}]}
 
     test = Schema(TEST_SCHEMA)
     assert (not test.validate(INVALID_TEST_DATA))
-    assert (test.validate(VALID_TEST_DATA))
+    assert (test.validate(VALID_TEST_DATA)), test.last_error
+
+
+def test_validator_cve_format():
+
+    INVALID_TEST_DATA = {"cve": "eternalblue"}
+    VALID_TEST_DATA = {"cve": "CVE-2017-0144"}
+    TEST_SCHEMA = {"fields": [{"name": "cve", "type": "cve"}]}
+
+    test = Schema(TEST_SCHEMA)
+    assert (not test.validate(INVALID_TEST_DATA))
+    assert (test.validate(VALID_TEST_DATA)), test.last_error
 
 
 if __name__ == "__main__":
@@ -301,5 +311,6 @@ if __name__ == "__main__":
     test_unknown_type()
     test_raise_exception()
     test_call_alias()
+    test_validator_cve_format()
 
     print('okay')

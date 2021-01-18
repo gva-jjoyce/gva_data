@@ -47,8 +47,3 @@ class MinIOWriter(BaseWriter):
     def get_partition_list(self):
         existing_items = {obj.object_name for obj in self.client.list_objects(bucket_name=self.bucket, prefix=self.filename)}
         return existing_items
-
-
-
-
-

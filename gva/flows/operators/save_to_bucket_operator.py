@@ -35,8 +35,8 @@ The Writer will automatically close a partition, even if not full, if
 no new records have been added to the partition in 60 seconds.
 """
 from .base_operator import BaseOperator
-from gva.data import Writer  # type:ignore
-from gva.data.validator import Schema  # type:ignore
+from ..writers import Writer, GoogleCloudStorageWriter  # type:ignore
+from ..validator import Schema  # type:ignore
 import datetime
 
 
@@ -53,11 +53,12 @@ class SaveToBucketOperator(BaseOperator):
             **kwargs):
         super().__init__()
         self.writer = Writer(
+                inner_writer=GoogleCloudStorageWriter,
                 project=project,
                 to_path=to_path,
                 schema=schema,
                 compress=compress,
-                date=date,
+                date_exchange=date,
                 **kwargs)
 
     def execute(self, data: dict = {}, context: dict = {}):

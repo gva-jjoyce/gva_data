@@ -23,7 +23,7 @@ to need to iterate more than once, you can use list() or similar to cache the
 values, however this may cause problems if the list is large.
 """
 from typing import Iterator, Any, List, Callable
-from ...utils.json import serialize
+from ...utils.json import serialize, parse
 from .group_by import Groups
 
 
@@ -318,7 +318,7 @@ def sort(
     data, and/or a large cache, the performance is better.
 
     Note that running this multiple times is not memory efficient as each
-    run is concurrent. You are better off doubling the cache size rather 
+    run is concurrent. You are better off doubling the cache size rather
     than running this function twice.
 
     Also note that if this method is placed in a pipeline, it will need
@@ -380,3 +380,9 @@ def group_by(
         dictset: Iterator[dict],
         column: str) -> Groups:
     return Groups(dictset, column)
+
+
+def jsonify(
+        list_of_json_strings: Iterator[dict]):
+    for row in list_of_json_strings:
+        yield parse(row)

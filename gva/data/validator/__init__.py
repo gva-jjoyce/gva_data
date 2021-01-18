@@ -33,10 +33,10 @@ Notes:
 - type(var).__name__ in (set) is faster than isinstance
 """
 import datetime
-from typing import List, Any, Union, Callable
+from typing import List, Any, Union
 import os
 import re
-from ...utils.json import serialize, parse
+from ...utils.json import parse
 
 
 VALID_BOOLEAN_VALUES = ("true", "false", "on", "off", "yes", "no", "0", "1")
@@ -46,33 +46,49 @@ DEFAULT_MAX = 9223372036854775807
 
 class is_string():
     __slots__ = ('pattern', 'regex')
+
     def __init__(self, **kwargs):
         self.regex = None
         self.pattern = kwargs.get('format')
         if self.pattern:
             self.regex = re.compile(self.pattern)
+
     def __call__(self, value: Any) -> bool:
         if self.pattern is None:
             return type(value).__name__ == "str"
         else:
             return self.regex.match(str(value))
+
     def __str__(self):
         if self.pattern:
             return f'string ({self.pattern})'
         else:
             return 'string'
 
+
+class is_cve(is_string):
+
+    def __init__(self, **kwargs):
+        super().__init__(format=r"(?i)CVE-\d{4}-\d{4,7}")
+
+    def __str__(self):
+        return 'CVE'
+
+
 class is_valid_enum():
     __slots__ = ('symbols')
+
     def __init__(self, **kwargs):
         """
         -> "type": "enum", "symbols": ["up", "down"]
-        
+
         symbols: list of allowed values (case sensitive)
         """
         self.symbols = kwargs.get('symbols', ())
+
     def __call__(self, value: Any) -> bool:
         return value and value in self.symbols
+
     def __str__(self):
         return f'enum {self.symbols}'
 
@@ -87,27 +103,31 @@ class is_boolean(is_valid_enum):
         super().__init__()
         if len(self.symbols) == 0:
             self.symbols = VALID_BOOLEAN_VALUES
+
     def __call__(self, value: Any) -> bool:
         return super().__call__(str(value).lower())
 
 
 class is_numeric():
     __slots__ = ('min', 'max')
+
     def __init__(self, **kwargs):
         """
         -> "type": "numeric", "min": 0, "max": 100
-        
+
         min: low end of valid range
         max: high end of valid range
         """
         self.min = kwargs.get('min', DEFAULT_MIN)
         self.max = kwargs.get('max', DEFAULT_MAX)
+
     def __call__(self, value: Any) -> bool:
         try:
             n = float(value)
         except (ValueError, TypeError):
             return False
         return self.min <= n <= self.max
+
     def __str__(self):
         if self.min == DEFAULT_MIN and self.max == DEFAULT_MAX:
             return 'numeric'
@@ -156,7 +176,8 @@ COMPLEX_VALIDATORS = {
     "enum": is_valid_enum,
     "numeric": is_numeric,
     "string": is_string,
-    "boolean": is_boolean
+    "boolean": is_boolean,
+    "cve": is_cve
 }
 
 
