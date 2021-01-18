@@ -1,6 +1,6 @@
 from .base_operator import BaseOperator
-from ...writers import FileWriter, Writer  # type:ignore
-from ...validator import Schema  # type:ignore
+from ...data.writers import FileWriter, Writer  # type:ignore
+from ...data.validator import Schema  # type:ignore
 import datetime
 
 

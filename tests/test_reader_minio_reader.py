@@ -7,9 +7,9 @@ import os
 import json
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from gva.data.readers import MinioReader, Reader
+from gva.data.readers import MinIoReader, Reader
 from gva.data.formats import dictset
-from gva.flows.operators import SaveToMinioOperator
+from gva.flows.operators import SaveToMinIoOperator
 try:
     from rich import traceback
     traceback.install()
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         #where=lambda r: r['username'] in ['realDonaldTrump', 'BillGates', 'Twitter', 'Amazon', 'NBCNews', 'BBCNews', 'CNNNews'],
         #where=lambda r: ('coronavirus' in r['tweet'].lower()) or ('corona virus' in r['tweet'].lower()) or ('corona-virus' in r['tweet'].lower()),
         #where=lambda r: ('joyce' in r['text'].lower()),
-        reader=MinioReader,
+        reader=MinIoReader,
         end_point=os.getenv('MINIO_END_POINT'),
         access_key=os.getenv('MINIO_ACCESS_KEY'),
         secret_key=os.getenv('MINIO_SECRET_KEY'),

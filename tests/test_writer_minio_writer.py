@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from gva.data.writers import MinIOWriter, Writer
+from gva.data.writers import MinIoWriter, Writer
 try:
     from rich import traceback
     traceback.install()
@@ -12,7 +12,7 @@ except ImportError:
 if __name__ == "__main__":
     
     w = Writer(
-            inner_writer=MinIOWriter,
+            inner_writer=MinIoWriter,
             end_point=os.getenv('MINIO_END_POINT'),
             access_key=os.getenv('MINIO_ACCESS_KEY'),
             secret_key=os.getenv('MINIO_SECRET_KEY'),

@@ -35,8 +35,8 @@ The Writer will automatically close a partition, even if not full, if
 no new records have been added to the partition in 60 seconds.
 """
 from .base_operator import BaseOperator
-from ..writers import Writer, GoogleCloudStorageWriter  # type:ignore
-from ..validator import Schema  # type:ignore
+from ...data.writers import Writer, GoogleCloudStorageWriter  # type:ignore
+from ...data.validator import Schema  # type:ignore
 import datetime
 
 

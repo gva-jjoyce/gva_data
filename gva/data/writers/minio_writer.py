@@ -6,7 +6,7 @@ except ImportError:
     pass
 
 
-class MinIOWriter(BaseWriter):
+class MinIoWriter(BaseWriter):
 
     def __init__(
             self,

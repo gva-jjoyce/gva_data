@@ -3,7 +3,7 @@ import time
 import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
-from gva.data.readers import Reader, FileReader, MinioReader
+from gva.data.readers import Reader, FileReader, MinIoReader
 from gva.data.formats import dictset
 try:
     from rich import traceback

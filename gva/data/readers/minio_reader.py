@@ -2,7 +2,7 @@
 MinIo Reader - may work with AWS
 
 There is a problem with with Minio library which prevents it from being used
-with the Multi-Processor library to distribute the reading across multiple 
+with the Multi-Processor library to distribute the reading across multiple
 processes. The MinioReader code is near identical the other readers so the
 conclusion is the issue is with the Minio library.
 """
@@ -16,7 +16,7 @@ except ImportError:
     pass
 
 
-class MinioReader(BaseReader):
+class MinIoReader(BaseReader):
 
     def __init__(
             self,

@@ -1,10 +1,10 @@
 from .base_operator import BaseOperator
-from ...writers import MinioWriter, Writer  # type:ignore
-from ...validator import Schema  # type:ignore
+from ...data.writers import MinIoWriter, Writer  # type:ignore
+from ...data.validator import Schema  # type:ignore
 import datetime
 
 
-class SaveToMinioOperator(BaseOperator):
+class SaveToMinIoOperator(BaseOperator):
 
     def __init__(
             self,
@@ -20,7 +20,7 @@ class SaveToMinioOperator(BaseOperator):
             **kwargs):
         super().__init__()
         self.writer = Writer(
-                inner_writer=MinioWriter,
+                inner_writer=MinIoWriter,
                 to_path=to_path,
                 schema=schema,
                 compress=compress,
