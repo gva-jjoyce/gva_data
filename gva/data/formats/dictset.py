@@ -210,7 +210,7 @@ def set_value(
     if callable(setter):
         copy[field_name] = setter(copy)
     else:
-        copy[cfield_name] = setter
+        copy[field_name] = setter
     return copy
 
 
