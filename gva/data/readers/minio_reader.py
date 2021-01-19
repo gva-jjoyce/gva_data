@@ -1,10 +1,5 @@
 """
 MinIo Reader - may work with AWS
-
-There is a problem with with Minio library which prevents it from being used
-with the Multi-Processor library to distribute the reading across multiple
-processes. The MinioReader code is near identical the other readers so the
-conclusion is the issue is with the Minio library.
 """
 from ...utils import paths, common
 import lzma

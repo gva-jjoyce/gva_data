@@ -62,3 +62,20 @@ jobs:
 
       - name: run test
         run: mypy .
+
+  maintainability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check out
+        uses: actions/checkout@v2
+  
+      - name: set up
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8' 
+          
+      - name: install 
+        run:  pip install radon
+
+      - name: run test
+        run: python $GITHUB_WORKSPACE/tests/maintainability.py

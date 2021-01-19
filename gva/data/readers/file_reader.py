@@ -1,5 +1,5 @@
 """
-File System Reader, created for local development and testing. 
+File System Reader
 """
 from typing import Iterator, Tuple, Optional, List
 import datetime

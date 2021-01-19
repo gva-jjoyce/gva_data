@@ -1,7 +1,5 @@
 """
 Google Cloud Storage Reader
-
-Implement a BaseReader to read from a GCS bucket.
 """
 try:
     from google.cloud import storage  # type:ignore
