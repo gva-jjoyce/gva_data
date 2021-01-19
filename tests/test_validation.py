@@ -6,6 +6,7 @@ import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.data.validator import Schema
+from gva.utils.json import serialize
 try:
     from rich import traceback
     traceback.install()
@@ -144,10 +145,9 @@ def test_validator_loaders():
     """
     Ensure dictionary, json and json files load
     """
-    import json
 
     TEST_SCHEMA_DICT = {"fields": [{"name": "string_field", "type": "string"}]}
-    TEST_SCHEMA_STRING = json.dumps(TEST_SCHEMA_DICT)
+    TEST_SCHEMA_STRING = serialize(TEST_SCHEMA_DICT)
     TEST_SCHEMA_FILE = 'temp'
 
     with open(TEST_SCHEMA_FILE, 'w') as file:

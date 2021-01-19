@@ -6,7 +6,7 @@ without orjson, parsing is about as fast as ujson, however
 serialization is slower, although still faster than the 
 native json library. 
 """
-from typing import Any
+from typing import Any, Union
 import datetime
 from ..logging import get_logger
 try:
@@ -15,7 +15,7 @@ try:
 
     parse = orjson.loads
 
-    def serialize(obj: Any, indent: bool = False, as_bytes: bool = False) -> str:
+    def serialize(obj: Any, indent: bool = False, as_bytes: bool = False) -> Union[str, bytes]:
 
         if as_bytes:
             if indent and isinstance(obj, dict):
@@ -39,7 +39,7 @@ except ImportError:  # pragma: no cover
     logger = get_logger()
     logger.warning('orjson not installed using ujson')
 
-    def serialize(obj: Any, indent: bool = False, as_bytes: bool = False) -> str:   # type:ignore
+    def serialize(obj: Any, indent: bool = False, as_bytes: bool = False) -> Union[str, bytes]:   # type:ignore
 
         def fix_fields(dt: Any) -> str:
             """

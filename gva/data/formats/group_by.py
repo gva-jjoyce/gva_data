@@ -25,7 +25,6 @@ class Groups():
             key = my_item.get(column)
             if groups.get(key) is None:
                 groups[my_item.get(column)] = []
-            my_item[column] = None
             del my_item[column]
             groups[key].append(my_item)
         self.groups = groups
@@ -59,11 +58,8 @@ class Groups():
         """
         response = {}
         for key, items in self.groups.items():
-            values = []
             for item in items:
-                value = item.get(column)
-                if value is not None:
-                    values.append(value)
+                values = [item.get(column) for item in items if item.get(column) is not None]
             response[key] = method(values)
         return response
 
@@ -71,10 +67,7 @@ class Groups():
         """
         Apply a function to all groups
         """
-        result = {}
-        for key, items in self.groups.items():
-            result[key] = method(items)
-        return result
+        return {key:method(items) for key, items in self.groups.items()}
             
     def __len__(self):
         """

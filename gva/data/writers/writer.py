@@ -37,11 +37,11 @@ class Writer():
         # we define a get_date method
         self.get_date = lambda record: datetime.datetime.now()
         if isinstance(date_exchange, datetime.date):
-            self.get_date = lambda record: date_exchange
+            self.get_date = lambda record: date_exchange  # type:ignore
         if isinstance(date_exchange, str):
             self.get_date = lambda record: record.get(date_exchange)
         if hasattr(date_exchange, '__call__'):
-            self.get_date = date_exchange
+            self.get_date = date_exchange  # type:ignore
 
         # we have a pool of writers of size maximum_writers
         self.writer_pool = WriterPool(

@@ -15,6 +15,9 @@ for item in file_list:
     with open(item, 'r') as code_file:
         code = code_file.read()
 
+    if code.startswith('#no-maintain-checks'):
+        continue
+
     maintainability_index = radon.metrics.mi_visit(code, False)
     if maintainability_index <= LIMIT:
         all_okay = False

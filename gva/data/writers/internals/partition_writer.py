@@ -16,7 +16,7 @@ class PartitionWriter():
     def __init__(
             self,
             *,    # force params to be named
-            inner_writer: BaseWriter = NullWriter,
+            inner_writer: BaseWriter = NullWriter,  # type:ignore
             partition_size: int = 64*1024*1024,
             compress: bool = True,
             **kwargs):
@@ -24,12 +24,12 @@ class PartitionWriter():
         self.compress = compress
         self.maximum_partition_size = partition_size
         kwargs['compress'] = compress
-        self.inner_writer = inner_writer(**kwargs)
+        self.inner_writer = inner_writer(**kwargs)  # type:ignore
         self.open_partition()
 
     def append(self, record: dict = {}):
         # serialize the record
-        serialized = serialize(record, as_bytes=True) + b'\n'
+        serialized = serialize(record, as_bytes=True) + b'\n'  # type:ignore
 
         # the newline isn't counted so add 1 to get the actual length
         # if this write would exceed the partition, close it so another

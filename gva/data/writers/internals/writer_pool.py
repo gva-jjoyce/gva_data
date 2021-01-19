@@ -22,7 +22,7 @@ class WriterPool():
             pool_size: int = 5,
             **kwargs):
 
-        self.writers = []
+        self.writers: list = []
         self.pool_size = pool_size
         self.kwargs = kwargs
 

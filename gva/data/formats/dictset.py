@@ -32,14 +32,6 @@ class JOINS(object):
     LEFT_JOIN = 'LEFT'
 
 
-def select_all(dummy: Any) -> bool:
-    """
-    Returns True.
-    - dummy: anything, it's ignored
-    """
-    return True
-
-
 def select_record_fields(
         record: dict,
         fields: List[str]) -> dict:
@@ -119,8 +111,7 @@ def union(*args) -> Iterator[dict]:
     SELECT * FROM dictset_2
     """
     for dictset in args:
-        for record in dictset:
-            yield record
+        yield from dictset
 
 
 def create_index(
@@ -385,4 +376,4 @@ def group_by(
 def jsonify(
         list_of_json_strings: Iterator[dict]):
     for row in list_of_json_strings:
-        yield parse(row)
+        yield parse(row)  # type:ignore

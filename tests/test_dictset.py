@@ -217,10 +217,6 @@ def test_sort():
         assert 1+i == r.get('key'), F"{i}  {r.get('key')}"
 
 
-def test_select_all():
-    assert dictset.select_all(1)
-
-
 def test_to_pandas():
     ds = [
         {'key': 1, 'value': 'one', 'plus1': 2},
@@ -260,7 +256,6 @@ if __name__ == "__main__":
     test_limit()
     test_match()
     test_paging()
-    test_select_all()
     test_sort()
     test_to_pandas()
     test_extract_column()

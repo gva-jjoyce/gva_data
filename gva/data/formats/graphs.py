@@ -1,3 +1,4 @@
+#no-maintain-checks
 import networkx as nx # type:ignore
 import matplotlib.pyplot as plt # type:ignore
 import random
