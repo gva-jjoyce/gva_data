@@ -1,5 +1,6 @@
 from typing import Any
 
+# 64 bit signed - not a limit, just a default
 DEFAULT_MIN = -9223372036854775808
 DEFAULT_MAX = 9223372036854775807
 

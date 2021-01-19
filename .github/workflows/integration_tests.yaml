@@ -78,4 +78,4 @@ jobs:
         run:  pip install radon
 
       - name: run test
-        run: python $GITHUB_WORKSPACE/tests/maintainability.py
+        run: python $GITHUB_WORKSPACE/tools/mi/maintainability.py

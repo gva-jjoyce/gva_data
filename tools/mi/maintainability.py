@@ -1,3 +1,15 @@
+"""
+Maintainability Index Tester
+
+Uses radon to calculate Maintainability Index
+(see: https://radon.readthedocs.io/en/latest/intro.html)
+
+Tools & Tests are excluded, as well as as there being an option to add a flag
+to the file to exclude spefific files.
+
+Radon itself will A grade for maintainability for scores 100 to 20, this
+script sets the bar at 50.
+"""
 import radon.metrics
 import glob
 import sys
@@ -15,10 +27,12 @@ for item in file_list:
     with open(item, 'r') as code_file:
         code = code_file.read()
 
+    maintainability_index = radon.metrics.mi_visit(code, False)
+
     if code.startswith('#no-maintain-checks'):
+        print(F"!! #no-maintain-checks flag set in {item} - result of {maintainability_index:.2f} not enforced")
         continue
 
-    maintainability_index = radon.metrics.mi_visit(code, False)
     if maintainability_index <= LIMIT:
         all_okay = False
         print(F"Maintainability Index of {item} below {LIMIT} ({maintainability_index:.2f})")

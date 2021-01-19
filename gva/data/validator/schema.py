@@ -72,8 +72,8 @@ class Schema():
                 item.get('name'): self.get_validators(
                         item['type'], 
                         symbols=item.get('symbols'), 
-                        min=item.get('min'), # 64bit signed (not a limit, just a default)
-                        max=item.get('max'),  # 64bit signed (not a limit, just a default)
+                        min=item.get('min'),
+                        max=item.get('max'),
                         format=item.get('format'))
                 for item in definition.get('fields', [])  #type:ignore
             }

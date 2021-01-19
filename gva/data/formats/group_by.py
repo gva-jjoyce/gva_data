@@ -33,7 +33,7 @@ class Groups():
         """
         Count the number of items in groups
         
-        Paramters:
+        Parameters:
         - value: (optional) if provided, return the count of just this group
         """
         if value is None:

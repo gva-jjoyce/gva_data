@@ -8,15 +8,6 @@ You would use these methods instead of something like Pandas if you are dealing
 with potentially huge datasets and only require to be able to do simple
 processes on the dataset, row at a time.
 
-Methods provide a limited approximation of SQL functionality:
-
-SELECT   - select_from
-UNION    - union
-WHERE    - select_from
-JOIN     - join
-DISTINCT - disctinct
-LIMIT    - limit
-
 Most methods return generators, which mean they can only be iterated once, to
 iterate again they need to be regenerated. If you know you're going
 to need to iterate more than once, you can use list() or similar to cache the
@@ -40,18 +31,28 @@ def select_record_fields(
     in the dictionary it defaults to None.
 
     Parameters:
-    - dictset: an iterable of dictionaries
-    - fields: a list of the fields to select
+        record: dictionary
+            The dictionary to select from
+        fields: list of strings
+            The list of the field names to select
+
+    Returns:
+        dictionary
     """
     return {k: record.get(k, None) for k in fields}
 
 
-def order(record: dict) -> dict:
+def order(
+        record: dict) -> dict:
     """
     Sort a dictionary by its keys.
 
     Parameters:
-    - record: a record 
+        record: dictionary
+            The dictionary to sort
+
+    Returns:
+        dictionary
     """
     return dict(sorted(record.items()))
 
@@ -62,8 +63,7 @@ def join(
         column: str,
         join_type=JOINS.INNER_JOIN) -> Iterator[dict]:
     """
-    Iterates over the left dictset, matching records fron the right dictset.
-
+    Iterates over the left dictset, matching records fron the right dictset. 
     Dictsets provided to this method are expected to be bounded.
 
     INNER_JOIN, the default, will discard records unless they appear in both
@@ -73,19 +73,18 @@ def join(
     It is recommended that the left table be the larger of the two tables as
     the right table is loaded into memory to perform the matching and look ups.
 
-    NOTES:
-    - where columns are in both tables - I don't know what happens.
-    - resultant records may have inconsistent columns (same as 
-    source lists)
-
     Parameters:
-    - left: the 'left' dictset
-    - right: the 'right' dictset
-    - column: the column shared by both dictsets to join on
-    - join_type: the type of join, INNER or LEFT
+        left: iterable of dictionaries 
+            The 'left' dictset
+        right: iterable of dictionaries
+            The 'right' dictset
+        column: string
+            The name of column shared by both dictsets to join on
+        join_type: dictset.JOINS (optional, default INNER_JOIN)
+            The type of join, INNER or LEFT
 
-    Approximate SQL:
-    SELECT * FROM left JOIN right ON left.column = right.column
+    Yields:
+        dictionary
     """
     index = create_index(right, column)
     for record in left:
@@ -102,13 +101,11 @@ def union(*args) -> Iterator[dict]:
     align.
 
     Parameters:
-    - Any number of dictsets
+        args: list of iterables of dictionaries
+            The lists of dictionaries to concatenate
 
-    Approximate SQL:
-
-    SELECT * FROM dictset_1
-    UNION
-    SELECT * FROM dictset_2
+    Yields:
+        dictionary
     """
     for dictset in args:
         yield from dictset
@@ -118,12 +115,17 @@ def create_index(
         dictset: Iterator[dict],
         index_column: str) -> dict:
     """
-    Create an index of a file to speed up look-ups.
+    Create an index of a file to speed up look-ups, it is expected that the
+    value in the index_column is unique but this is not enforced.
 
     Parameters:
-    - dictset: an iterable of dictionaries
-    - index_column: the column in the dictset to index on, it is expected to be
-    unique but this is not enforced.
+        dictset: iterable of dictionaries
+            The dictset to process
+        index_column: string
+            the column in the dictset to index on
+
+    Returns:
+        dictionary
     """
     index = {}
     for record in dictset:
@@ -140,12 +142,16 @@ def select_from(
     Scan a dictset, filtering rows and selecting columns.
 
     Parameters:
-    - dictset: an iterable of dictionaries
-    - columns: a list of column names to return
-    - where: a function to apply to filter records (keep rows that evaluate to True)
+        dictset: iterable of dictionaries
+            The dictset to process
+        columns: list of strings 
+            The list of column names to return
+        where: callable (optional) 
+            The function to apply to filter records, we return the rows that 
+            evaluate to True, default returns all records
 
-    Approximate SQL:
-    SELECT columns FROM dictset WHERE where
+    Yields:
+        dictionary
     """
     def _select_columns(dictset, columns):
         for record in dictset:
@@ -167,9 +173,15 @@ def set_column(
     Performs set_value on each row in a set.
 
     Parameters:
-    - dictset: an iterable of dictionaries
-    - column_name: the column to create or update
-    - setter: a method or constant to update the column
+        dictset: iterable of dictionaries
+            The dictset to process
+        column_name: string 
+            The column to create or update
+        setter: callable or any
+            A function or constant to update the column with
+
+    Yields:
+        dictionary
     """
     for record in dictset:
         yield set_value(record, column_name, setter)
@@ -177,25 +189,28 @@ def set_column(
 
 def set_value(
         record: dict,
-        column_name: str,
+        field_name: str,
         setter: Callable) -> dict:
     """
     Sets the value of a column to either a fixed value or as the result of a
     function which recieves the row as a parameter.
 
-    This method is of limited use by itself, it is used internally by
-    `set_column`.
-
     Paramters:
-    - record: a record
-    - column_name: the name of the field
-    - setter: a method or constant to update the field
+        record: dictionary
+            The dictionary to update
+        field_name: string 
+            The field to create or update
+        setter: callable or any
+            A function or constant to update the field with
+
+    Returns:
+        dictionary
     """
     copy = record.copy()
     if callable(setter):
-        copy[column_name] = setter(copy)
+        copy[field_name] = setter(copy)
     else:
-        copy[column_name] = setter
+        copy[cfield_name] = setter
     return copy
 
 
@@ -211,8 +226,13 @@ def distinct(
     however, this is at the expense of memory.
 
     Parameters:
-    - dictset: an iterable of dictionaries
-    - cache_size: the number of records to remember (optional, default 10,000)
+        dictset: iterable of dictionaries
+            The dictset to process
+        cache_size: integer (optional, default 10,000)
+            the number of records to cache
+
+    Yields:
+        dictionary
     """
     from ...utils import LRU_Index
     lru = LRU_Index(size=cache_size)
@@ -230,9 +250,14 @@ def limit(
     """
     Returns up to 'limit' number of records.
 
-    Paramters:
-    - dictset: an iterable of dictionaries
-    - limit: the maximum number of records to return
+    Parameters:
+        dictset: iterable of dictionaries
+            The dictset to process
+        limit: integer 
+            the maximum number of records to return
+
+    Yields:
+        dictionary
     """
     counter = limit
     for record in dictset:
@@ -246,13 +271,19 @@ def dictsets_match(
         dictset_1: Iterator[dict],
         dictset_2: Iterator[dict]):
     """
-    Tests if two dictsets match.
+    Tests if two dictsets match regardless of the order of the order of the
+    records in the dictset. Return is True if the sets match.
     
     Note that this will exhaust a generator.
 
     Parameter:
-    - dictset_1: the first dictset
-    - dictset_2: the second dictset
+        dictset_1: iterable of dictionaries
+            The first dictset to match
+        dictset_2: iterable of dictionaries
+            The second dictset to match
+
+    Returns:
+        boolean
     """
     def _hash_set(dictset: Iterator[dict]):
         xor = 0
@@ -273,8 +304,13 @@ def page_dictset(
     Enables paging through a dictset by returning a page of records at a time.
 
     Parameters:
-    - dictset: an iterable of dictionaries
-    - page_size: the number of records per page
+        dictset: iterable of dictionaries
+            The dictset to process
+        page_size: integer
+            The number of records per page
+
+    Yields:
+        dictionary
     """
     chunk: list = []
     for item in dictset:
@@ -299,30 +335,30 @@ def sort(
     may not correctly order a set completely. The larger the cache_size the
     more likely the set will be ordered correctly, at the cost of memory.
 
-    Parameters:
-    - dictset: an iterable of dictionaries
-    - column: the field to order by
-    - cache_size: the number of records to cache to order
-
     This method works best with partially sorted data, for randomized data
     and a small cache, the effect of sorting is poor; for partially sorted
     data, and/or a large cache, the performance is better.
 
-    Note that running this multiple times is not memory efficient as each
-    run is concurrent. You are better off doubling the cache size rather
-    than running this function twice.
+    Note that if this method is placed in a pipeline, it will need to process
+    cache_size number of records before it will emit any records.
 
-    Also note that if this method is placed in a pipeline, it will need
-    to collect cache_size number of records before it will emit any records.
+    Parameters:
+        dictset: iterable of dictionaries
+            The dictset to process
+        column: string
+            The field to order by
+        cache_size: integer
+            The number of records to cache
+        descending: boolean (optional, True)
+            Reverse the order of the dictset
+
+    Yields:
+        dictionary
     """
 
     def _sort_key(key):
         """
-        replace the lambda function which was:
-            lambda row: row[key]
-
-        will be called:
-            _sort_key(key)(row)
+        called like this: _sort_key(key)(row)
         """
         k = key
 
@@ -338,9 +374,7 @@ def sort(
     # which is the slowest part of this method.
     # A cache_size of 1000 has a neglible impact on performance, a 
     # cache_size of 50000 introduces a performance hit of about 15%.
-    quarter_cache = (cache_size // 4)
-    if quarter_cache < 1:
-        quarter_cache = 1
+    quarter_cache = max(cache_size // 4, 1)
     cache = []
     for item in dictset:
         cache.append(item)
@@ -357,6 +391,16 @@ def sort(
 
 def to_pandas(
         dictset: Iterator[dict]):
+    """
+    Load an iterable of dictionaries into a pandas dataframe.
+
+    Parameters:
+        dictset: iterable of dictionaries
+            The dictset to load
+
+    Returns:
+        pandas dataframe
+    """
     import pandas  # type:ignore
     return pandas.DataFrame(dictset)
 
@@ -364,16 +408,50 @@ def to_pandas(
 def extract_column(
         dictset: Iterator[dict],
         column: str) -> list:
+    """
+    Extract the values from column into a list 
+
+    Parameters:
+        dictset: iterable of dictionaries
+            The dictset to extract values from
+        column: string
+            The name of the column to extract the values of
+
+    Returns:
+        list
+    """  
     return [record.get(column) for record in dictset]
 
 
 def group_by(
         dictset: Iterator[dict],
         column: str) -> Groups:
+    """
+    Create a Groups object 
+
+    Parameters:
+        dictset: iterable of dictionaries
+            The dictset to group
+        column: string
+            The name of the column to group by
+
+    Returns:
+        gva.formats.Groups
+    """  
     return Groups(dictset, column)
 
 
 def jsonify(
         list_of_json_strings: Iterator[dict]):
+    """
+    Convert a list of strings to a list of dictionaries
+
+    Parameters:
+        list_of_json_strings: iterable of strings
+            The JSON formatted strings to parse to dictionaries
+
+    Yields:
+        dictionary
+    """  
     for row in list_of_json_strings:
         yield parse(row)  # type:ignore
