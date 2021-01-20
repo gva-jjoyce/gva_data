@@ -1,8 +1,9 @@
 from typing import Union, List
 import uuid
 import random
-from gva.utils import TraceBlocks
-from gva.logging import get_logger
+from ..utils import TraceBlocks
+from ..logging import get_logger
+from .bins import FileBin, MinioBin, GoogleCloudStorageBin
 
 
 class Flow():
@@ -38,7 +39,7 @@ class Flow():
             self,
             data: dict = {},
             context: dict = {},
-            trace_sample_rate: float = 1/1000) -> Union[List[dict], None]:
+            trace_sample_rate: float = 1/1000):
         """
         Create a `run` of a flow and execute with a specific data object.
 
@@ -69,9 +70,9 @@ class Flow():
             self._inner_runner(operator_name=operator_name, data=data, context=context)
 
         # if being traced, send the trace to the trace writer
-        if context.get('trace', False):
-            if hasattr(self, 'trace_writer'):
-                self.trace_writer(context['execution_trace'], id_=context.get('uuid'))
+        if context.get('trace', False) and hasattr(self, 'trace_writer'):
+            self.trace_writer(context['execution_trace'], id_=str(context.get('uuid')))  #type:ignore
+
 
     def _inner_runner(
             self,
@@ -88,9 +89,9 @@ class Flow():
         operator = self.get_operator(operator_name)
         if operator is None:
             raise Exception(F"Invalid Flow - operation {operator_name} is invalid")
-        #if not hasattr(func, "error_writer") and hasattr(flow, "error_writer"):
-        #    func.error_writer = flow.error_writer
-        out_going_links = self.get_outgoing_links(operator)
+        if not hasattr(operator, "error_writer") and hasattr(self, "error_writer"):
+            operator.error_writer = self.error_writer
+        out_going_links = self.get_outgoing_links(operator_name)
 
         outcome = operator(data, context)
 
@@ -101,6 +102,7 @@ class Flow():
             for outcome_data, outcome_context in outcome:
                 for operator_name in out_going_links:
                     self._inner_runner(operator_name=operator_name, data=outcome_data, context=outcome_context.copy())
+
 
     def finalize(self):
         """
@@ -115,49 +117,50 @@ class Flow():
         return True
 
 
-def attach_writer(flow, writer):
-    """
-    Attach the writer to each node in the flow
-    """
-    logger = gva.logging.get_logger()
-    try:
-        for node_id in flow.nodes():
-            node = flow.nodes()[node_id]
-            function = node.get('function')
-            setattr(function, str(writer.name), writer)
-            logger.debug(F"added {writer.name} to {type(function).__name__}")
-        setattr(flow, str(writer.name), writer)
-        return True
-    except Exception as err:
-        logger.error(F"Failed to add writer to flow - {type(err).__name__} - {err}")
-        return False
+    def attach_writers(self, writers: List[dict]):
+
+        for writer in writers:
+            name = writer.get('name')
+            class_name = writer.get('class')
+
+            if class_name == 'gcs':
+                writer = GoogleCloudStorageBin(                 # type: ignore
+                        bin_name=name,                          # type: ignore
+                        project=writer.get('project'),          # type: ignore
+                        bucket=writer.get('bucket'),            # type: ignore
+                        path=writer.get('path'))                # type: ignore
+                self._attach_writer(writer)
+            if class_name == 'file':
+                writer = FileBin(                               # type: ignore
+                        bin_name=name,                          # type: ignore
+                        path=writer.get('path'))                # type: ignore
+                self._attach_writer(writer)
+            if class_name == 'minio':
+                writer = MinioBin(                              # type: ignore
+                        bin_name=name,                          # type: ignore
+                        end_point=writer.get('end_point'),      # type: ignore
+                        bucket=writer.get('bucket'),            # type: ignore
+                        path=writer.get('path'),                # type: ignore
+                        access_key=writer.get('access_key'),    # type: ignore
+                        secret_key=writer.get('secret_key'),    # type: ignore
+                        secure=writer.get('secure', True))      # type: ignore
+                self._attach_writer(writer)
+
+    def _attach_writer(self, writer):
+        """
+        Attach the writer to each node in the flow
+        """
+        logger = get_logger()
+        try:
+            for operator_name in self.nodes:
+                operator = self.get_operator(operator_name)
+                setattr(operator, str(writer.name), writer)
+                logger.debug(F"added {writer.name} to {type(operator).__name__}")
+            setattr(self, str(writer.name), writer)
+            return True
+        except Exception as err:
+            logger.error(F"Failed to add writer to flow - {type(err).__name__} - {err}")
+            return False
 
 
-def attach_writers(flow, writers: List[dict]):
 
-    for writer in writers:
-        name = writer.get('name')
-        class_name = writer.get('class')
-
-        if class_name == 'gcs':
-            writer = GoogleCloudStorageBin(                 # type: ignore
-                    bin_name=name,                          # type: ignore
-                    project=writer.get('project'),          # type: ignore
-                    bucket=writer.get('bucket'),            # type: ignore
-                    path=writer.get('path'))                # type: ignore
-            attach_writer(flow, writer)
-        if class_name == 'file':
-            writer = FileBin(                               # type: ignore
-                    bin_name=name,                          # type: ignore
-                    path=writer.get('path'))                # type: ignore
-            attach_writer(flow, writer)
-        if class_name == 'minio':
-            writer = MinioBin(                              # type: ignore
-                    bin_name=name,                          # type: ignore
-                    end_point=writer.get('end_point'),      # type: ignore
-                    bucket=writer.get('bucket'),            # type: ignore
-                    path=writer.get('path'),                # type: ignore
-                    access_key=writer.get('access_key'),    # type: ignore
-                    secret_key=writer.get('secret_key'),    # type: ignore
-                    secure=writer.get('secure', True))      # type: ignore
-            attach_writer(flow, writer)

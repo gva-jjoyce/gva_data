@@ -16,7 +16,7 @@ def mean(series: list) -> float:
 
     Parameters:
         series: list 
-            list of numbers
+            list of numbers, None and nan will be ignored
 
     Returns:
         float
@@ -33,7 +33,7 @@ def standard_deviation(series: list) -> float:
 
     Parameters:
         series: list
-            list of numbers
+            list of numbers, None and nan will be ignored
 
     Returns:
         float
@@ -50,7 +50,7 @@ def variance(series: list) -> float:
 
     Parameters:
         series: list
-            list of numbers
+            list of numbers, None and nan will be ignored
 
     Returns:
         float

@@ -25,17 +25,13 @@ from ..formats.display import html_table, ascii_table
 from ...logging import get_logger
 from .google_cloud_storage_reader import GoogleCloudStorageReader
 from .internals import BaseReader, threaded_reader, processed_reader
-from ...utils.json import parse
-
-
-def do_nothing(x):
-    return x
+from ...utils import json
 
 
 # available line parsers
 PARSERS = {
-    "json": parse,
-    "text": do_nothing
+    "json": json.parse,
+    "text": lambda x: x
 }
 
 

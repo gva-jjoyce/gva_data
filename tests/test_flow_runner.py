@@ -20,7 +20,8 @@ def test_flow_runner():
     """
     e = EndOperator()
     n = NoOpOperator()
-    flow = n > e
+    o = NoOpOperator()
+    flow = n > o > e
 
     errored = False
     try:
