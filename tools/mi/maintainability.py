@@ -27,7 +27,7 @@ for item in file_list:
     with open(item, 'r') as code_file:
         code = code_file.read()
 
-    maintainability_index = radon.metrics.mi_visit(code, False)
+    maintainability_index = radon.metrics.mi_visit(code, True)
 
     if code.startswith('#no-maintain-checks'):
         print(F"!! #no-maintain-checks flag set in {item} - result of {maintainability_index:.2f} not enforced")

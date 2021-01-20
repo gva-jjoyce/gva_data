@@ -1,6 +1,8 @@
-#no-maintain-checks
-import networkx as nx # type:ignore
-import matplotlib.pyplot as plt # type:ignore
+try:
+    import networkx as nx # type:ignore
+    import matplotlib.pyplot as plt # type:ignore
+except ImportError:
+    pass  # these only matter if you're using this library
 import random
 
 
