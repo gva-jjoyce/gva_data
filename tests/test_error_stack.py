@@ -1,6 +1,5 @@
 import os
 import sys
-import networkx
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.errors.render_error_stack import _build_error_stack, RenderErrorStack
 try:

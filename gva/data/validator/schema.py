@@ -27,10 +27,11 @@ from .other_validator import other_validator
 
 from typing import Any, Union, List
 from ...utils.json import parse
+from ...errors import ValidationError
 import os
 
 """
-Create a dictionary of the validator functions
+Create dictionaries to look up the type validators
 """
 SIMPLE_VALIDATORS = {
     "date": is_date,
@@ -53,11 +54,12 @@ class Schema():
 
     def __init__(self, definition: Union[dict, str]):
         """
-        Compile a validator for a given schema.
+        Create and compile a validator for a given schema.
 
-        paramaters:
-        - definition: a dictionary, text representation of a dictionary (JSON)
-          or a JSON file containing a schema definition
+        Paramaters:
+            definition: dictionary or string
+                A dictionary, a JSON string of a dictionary or the name of a 
+                JSON file containing a schema definition
         """
         # if we have a schema as a string, load it into a dictionary
         if type(definition).__name__ == 'str':
@@ -69,7 +71,7 @@ class Schema():
         try:
             # read the schema and look up the validators
             self._validators = {
-                item.get('name'): self.get_validators(
+                item.get('name'): self._get_validators(
                         item['type'], 
                         symbols=item.get('symbols'), 
                         min=item.get('min'),
@@ -83,7 +85,7 @@ class Schema():
             raise ValueError("Invalid schema specification")
 
 
-    def get_validators(
+    def _get_validators(
             self,
             type_descriptor: Union[List[str], str],
             **kwargs):
@@ -102,7 +104,7 @@ class Schema():
         return validators
 
 
-    def field_validator(
+    def _field_validator(
             self,
             value,
             validators: set) -> bool:
@@ -114,19 +116,37 @@ class Schema():
 
 
     def validate(self, subject: dict = {}, raise_exception=False) -> bool:
+        """
+        Test a dictionary against the Schema
 
+        Parameters:
+            subject: dictionary
+                The dictionary to test for conformity
+            raise_exception: boolean (optional, default False)
+                If True, when the subject doesn't conform to the schema a
+                ValidationError is raised
+
+        Returns:
+            boolean
+
+        Raises:
+            ValidationError
+        """
         result = True
         self.last_error = ''
  
         for key, value in self._validators.items():
-            if not self.field_validator(subject.get(key), self._validators.get(key, [other_validator])):
+            if not self._field_validator(subject.get(key), self._validators.get(key, [other_validator])):
                 result = False
                 for v in value:
                     self.last_error += f"'{key}' ({subject.get(key)}) did not pass validator {str(v)}.\n"
         if raise_exception and not result:
-            raise ValueError(F"Record does not conform to schema - {self.last_error}. ")
+            raise ValidationError(F"Record does not conform to schema - {self.last_error}. ")
         return result
 
+
     def __call__(self, subject: dict = {}, raise_exception=False) -> bool:
-        # wrap the validate function
+        """
+        Alias for validate
+        """
         return self.validate(subject=subject, raise_exception=raise_exception)

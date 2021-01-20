@@ -4,7 +4,6 @@ and push a payload through it.
 """
 import os
 import sys
-import networkx
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.logging import get_logger
 from gva.flows.operators import EndOperator, NoOpOperator, UndefinedOperator

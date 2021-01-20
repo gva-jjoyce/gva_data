@@ -7,6 +7,7 @@ import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.data.validator import Schema
 from gva.utils.json import serialize
+from gva.errors import ValidationError
 try:
     from rich import traceback
     traceback.install()
@@ -233,7 +234,7 @@ def test_raise_exception():
     failed = False
     try:
         test.validate(TEST_DATA, raise_exception=True)
-    except ValueError:
+    except ValidationError:
         failed = True
 
     assert failed

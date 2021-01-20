@@ -4,6 +4,9 @@ Enumerator Test
 from typing import Any
 
 class is_valid_enum():
+    """
+    Test if a variable is on a list of valid values
+    """
     __slots__ = ('symbols')
 
     def __init__(self, **kwargs):

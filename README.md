@@ -28,7 +28,6 @@ git+https://github.com/gva-jjoyce/gva_data
 # Dependencies
 
 - [UltraJSON](https://github.com/ultrajson/ultrajson) aka `ujson` is used where `orjson` is not available - `orjson` is not available on all platforms and environments so `ujson` is a dependency to ensure a good JSON library with broad support is available
-- [NetworkX](https://networkx.org/) is a graph analysis library, in `gva` is is used to define data pipelines.
 
 There are a number of optional dependencies which are required for specific fetures and functionality. These are listed in the [requirements-optional.txt](requirements-optional.txt) file.
 

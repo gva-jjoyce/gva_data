@@ -2,6 +2,9 @@ from typing import Any
 import re
 
 class is_string():
+    """
+    Test if a variable is a string and optionally matches a regex
+    """
     __slots__ = ('pattern', 'regex')
 
     def __init__(self, **kwargs):

@@ -6,9 +6,13 @@ DEFAULT_MAX = 9223372036854775807
 
 
 class is_numeric():
+    """
+    Test if a variable is a valid number, optionally between a min and max.
+    """
     __slots__ = ('min', 'max')
 
     def __init__(self, **kwargs):
+        
         """
         -> "type": "numeric", "min": 0, "max": 100
 

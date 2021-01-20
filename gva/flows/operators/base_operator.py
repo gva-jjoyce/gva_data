@@ -17,13 +17,12 @@ import time
 import datetime
 import types
 import sys
-import networkx as nx   # type:ignore
 from ...logging import get_logger  # type:ignore
-from ..runner import go, finalize, attach_writer, attach_writers
 from typing import Union, List
 from ...errors import RenderErrorStack
 from ...data.formats import dictset
 from ...utils.json import parse, serialize
+from ..flow import Flow
 
 # This is the hash of the code in the version function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
@@ -60,6 +59,7 @@ class BaseOperator(abc.ABC):
           limited between 1 (single failure aborts) and 100
         """
         self.graph = None               # part of drawing dags
+        self.flow = None
         self.records_processed = 0      # number of times this operator has been run
         self.execution_time_ns = 0      # nano seconds of cpu execution time
         self.errors = 0                 # number of errors
@@ -205,48 +205,41 @@ class BaseOperator(abc.ABC):
         return full_hash.hexdigest()[-12:]
 
     def __del__(self):
-        # do nothing - prevents errors if someone calls super().__del__
+        # do nothing - prevents errors if someone thinks they're being a good
+        # citizen and calls super().__del__
         pass
 
     def error_writer(self, record):
         # this is a stub to be overridden
         raise ValueError('no error_writer attached')
 
-    def __gt__(self, next_operators: Union[List[nx.DiGraph], nx.DiGraph]):
-        """
-        Smart flow/DAG builder. This allows simple flows to be defined using
-        the following syntax:
-
-        Op1 > Op2 > Op3
-
-        The builder adds support functions to the resulting 'flow' object.
-        """
-        # make sure the next_operator is iterable
+    def __gt__(self, next_operators):
         if not isinstance(next_operators, list):
             next_operators = [next_operators]
-        if self.graph:
+        if self.flow:
             # if I have a graph already, build on it
-            graph = self.graph
+            flow = self.flow
         else:
             # if I don't have a graph, create one
-            graph = nx.DiGraph()
-            graph.add_node(F"{self.__class__.__name__}-{id(self)}", function=self)
+            flow = Flow()
+            flow.add_operator(F"{self.__class__.__name__}-{id(self)}", self)
+
         for operator in next_operators:
-            if isinstance(operator, nx.DiGraph):
+            if isinstance(operator, Flow):
                 # if we're pointing to a graph, merge with the current graph,
                 # we need to find the node with no incoming nodes we identify
                 # the entry-point
-                graph = nx.compose(operator, graph)
-                graph.add_edge(
+                flow.merge(operator)
+                flow.add_edge(
                     F"{self.__class__.__name__}-{id(self)}",
-                    [node for node in operator.nodes() if len(graph.in_edges(node)) == 0][0],
+                    operator.get_entry_points().pop(),
                 )
             elif issubclass(type(operator), BaseOperator):
                 # otherwise add the node and edge and set the graph further
                 # down the line
-                graph.add_node(F"{operator.__class__.__name__}-{id(operator)}", function=operator)
-                graph.add_edge(F"{self.__class__.__name__}-{id(self)}", F"{operator.__class__.__name__}-{id(operator)}")
-                operator.graph = graph
+                flow.add_operator(F"{operator.__class__.__name__}-{id(operator)}", operator)
+                flow.link_operators(F"{self.__class__.__name__}-{id(self)}", F"{operator.__class__.__name__}-{id(operator)}")
+                operator.flow = flow
             else:
                 label = type(operator).__name__
                 if hasattr(operator, '__name__'):
@@ -255,15 +248,8 @@ class BaseOperator(abc.ABC):
                 raise TypeError(F"Operator {label} must inherit BaseOperator, this error also occurs when the Operator has not been correctly instantiated.")
         # this variable only exists to build the graph, we don't need it
         # anymore so destroy it
-        self.graph = None
-
-        # extend the base DiGraph class with flow helper functions
-        graph.run = types.MethodType(go, graph)
-        graph.finalize = types.MethodType(finalize, graph)
-        graph.attach_writer = types.MethodType(attach_writer, graph)
-        graph.attach_writers = types.MethodType(attach_writers, graph)
-
-        return graph
+        self.flow = None
+        return flow
 
     def _clamp(self, value, low_bound, high_bound):
         """

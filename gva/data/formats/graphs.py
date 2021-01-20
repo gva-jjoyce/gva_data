@@ -166,12 +166,9 @@ def hierarchy_pos(G, root=None, width=1.5, vert_gap = 1., vert_loc = 0, xcenter 
     G: the graph (must be a tree)
 
     root: the root node of current branch 
-    - if the tree is directed and this is not given, 
-      the root will be found and used
-    - if the tree is directed and this is given, then 
-      the positions will be just for the descendants of this node.
-    - if the tree is undirected and not given, 
-      then a random choice will be used.
+    - if the tree is directed and this is not given, the root will be found and used
+    - if the tree is directed and this is given, then the positions will be just for the descendants of this node.
+    - if the tree is undirected and not given, then a random choice will be used.
 
     width: horizontal space allocated for this branch - avoids overlap with other branches
 

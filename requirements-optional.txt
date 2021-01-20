@@ -10,3 +10,4 @@ orjson
 matplotlib
 rich
 python-dotenv
+networkx

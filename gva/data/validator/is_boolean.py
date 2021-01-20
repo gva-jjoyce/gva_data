@@ -4,6 +4,10 @@ from typing import Any
 VALID_BOOLEAN_VALUES = ("true", "false", "on", "off", "yes", "no", "0", "1")
 
 class is_boolean(is_valid_enum):
+    """
+    Test if a variable is a valid boolean.
+    Check is case insensitive.
+    """
     def __init__(self, **kwargs):
         """
         is_boolean is a specific case of is_valid_enum

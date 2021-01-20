@@ -55,7 +55,7 @@ class Writer():
 
     def append(self, record: dict = {}):
         # Check the new record conforms to the schema before continuing
-        if self.schema and not self.schema.validate(subject=record):
+        if self.schema and not self.schema.validate(subject=record, raise_exception=False):
             raise ValidationError(F'Validation Failed ({self.schema.last_error})')
 
         # get the appropritate writer from the pool and append the record
