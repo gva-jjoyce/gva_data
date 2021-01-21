@@ -6,14 +6,20 @@ from typing import Callable
 
 class Groups():
     """
-    group_by
+    Group a list of dictionaries by 
     
     Parameters:
-    - dictset: an iterable of dictionaries
-    - column: the field to group by
+        dictset: Iterable of dictionaries
+            The dataset to perform the Group By on
+        column: string
+            The name of the field to group by
     
-    Returns a 'group_by' object. The 'group_by' object holds the dataset in
-    memory so is unsuitable for large datasets.
+    Returns:
+        Groups
+
+    Warning:
+        The 'Groups' object holds the entire dataset in memory so is unsuitable
+        for large datasets.
     """
     __slots__ = ('groups')
 
@@ -29,18 +35,23 @@ class Groups():
             groups[key].append(my_item)
         self.groups = groups
 
-    def count(self, value=None):
+    def count(self, group=None):
         """
         Count the number of items in groups
         
         Parameters:
-        - value: (optional) if provided, return the count of just this group
+            group: string (optional)
+                If provided, return the count of just this group
+
+        Returns:
+            if a group is provided, return an integer
+            if no group is provided, return a dictionary
         """
-        if value is None:
+        if group is None:
             return {x:len(y) for x,y in self.groups.items()}
         else:
             try:
-                return [len(y) for x,y in self.groups.items() if x == value].pop()
+                return [len(y) for x,y in self.groups.items() if x == group].pop()
             except:
                 return 0
 
@@ -49,12 +60,17 @@ class Groups():
         Applies an aggregation function by group.
         
         Parameters:
-        - column: the name of the field to aggregate
-        - method: the function to aggregate with
+            column: string
+                The name of the field to aggregate on
+            method: callable
+                The function to aggregate with
         
+        Returns:
+            dictionary
+
         Examples:
-        - maxes = grouped.aggregate('age', max)
-        - means = grouped.aggregate('age', maths.mean)  
+            maxes = grouped.aggregate('age', max)
+            means = grouped.aggregate('age', maths.mean)
         """
         response = {}
         for key, items in self.groups.items():
@@ -66,6 +82,13 @@ class Groups():
     def apply(self, method: Callable):
         """
         Apply a function to all groups
+
+        Parameters:
+            method: callable
+                The function to apply to the groups
+
+        Returns:
+            dictionary
         """
         return {key:method(items) for key, items in self.groups.items()}
             

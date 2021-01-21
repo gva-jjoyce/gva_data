@@ -28,13 +28,13 @@ from ...formats import dictset
 
 def threaded_reader(items_to_read, reader, max_threads=4):
     """
-    Speed up reading sets of files - such as multiple days worth
-    of log-per-day files.
+    Speed up reading sets of files - such as multiple days worth of log-per-day
+    files.
 
     If you care about the order of the records, don't use this.
 
-    Each file is in it's own thread, so reading a single file 
-    wouldn't benefit from this approach.
+    Each file is in it's own thread, so reading a single file wouldn't benefit
+    from this approach.
     """
     thread_pool = []
 
@@ -62,8 +62,8 @@ def threaded_reader(items_to_read, reader, max_threads=4):
 
     source_queue = items_to_read.copy()
 
-    # scale the number of threads, if we have more than the number
-    # of files we're reading, will have threads that never complete
+    # scale the number of threads, if we have more than the number of files
+    # we're reading, will have threads that never complete
     t = min(len(source_queue), max_threads, 8)
     reply_queue = queue.Queue(t * 8)
 
@@ -75,8 +75,12 @@ def threaded_reader(items_to_read, reader, max_threads=4):
         thread_pool.append(thread)
         time.sleep(0.01)  # offset the start of the threads
 
-    # when the threads are all complete and all the records
-    # have been read from the reply queue, we're done
+    # when the threads are all complete and all the records have been read from
+    # the reply queue, we're done
     while any([t.is_alive() for t in thread_pool]) or not(reply_queue.empty()):
-        records = reply_queue.get(timeout=10)  # don't wait forever
-        yield from records
+        try:
+            # don't wait forever
+            records = reply_queue.get(timeout=10)  
+            yield from records
+        except Empty:
+            pass  #  most likely reason get being here is a race condition

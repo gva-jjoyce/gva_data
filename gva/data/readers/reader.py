@@ -47,22 +47,9 @@ class Reader():
         data_format: str = "json",
         **kwargs):
         """
-        Reader accepts a method which iterates over a data source and provides
-        functionality to filter, select and truncate records which are
-        returned. The default reader is a GCS blob reader, a file system
-        reader is also implemented.
+        
 
-        Reader roughly follows a SQL Select:
 
-        SELECT column FROM data.store WHERE size == 'large'
-
-        Reader(
-            select=['column'],
-            from_path='data/store',
-            where=lambda record: record['size'] == 'large'
-        )
-
-        Data are automatically partitioned by date.
         """
         if not isinstance(select, list):
             raise TypeError("Reader 'select' parameter must be a list")

@@ -25,7 +25,35 @@ class Writer():
 
             # partition_size: 64Mb
             # inner_writer: NullWriter
+        """
+        Create a Data Writer
 
+        Parameters:
+            to_path: string (optional)
+                The path to same data to, this can contain date placeholder
+            schema: gva.validator.Schema (optional)
+                Schema used to test records for conformity, default is no 
+                schema and therefore no validation
+            compress: boolean (optional)
+                Apply lzma compression to records as they are written, default
+                is no compression
+            idle_timeout_seconds: integer (optional)
+                The number of seconds to wait before evicting writers from the
+                pool for inactivity, default is 30 seconds
+            date_exchange: date, string or callable (optional)
+                A date, a string representation of a date or a function which
+                is run against records to determine the date to use for
+                creating the partition
+            maximum_writers: integer (optional)
+            partition_size: integer (optional)
+            inner_writer: BaseWriter (optional)
+
+        Note:
+            inner_writer may have additional parameters.
+
+        Yields:
+            dictionary
+        """
         self.to_path = to_path
         self.schema = schema
         self.idle_timeout_seconds = idle_timeout_seconds
@@ -44,6 +72,7 @@ class Writer():
             self.get_date = date_exchange  # type:ignore
 
         # we have a pool of writers of size maximum_writers
+        self.maximum_writers = maximum_writers
         self.writer_pool = WriterPool(
                 pool_size=maximum_writers,
                 **kwargs)
@@ -54,9 +83,20 @@ class Writer():
         self.thread.start()
 
     def append(self, record: dict = {}):
+        """
+        Append a new record to the Writer
+
+        Parameters:
+            record: dictionary
+                The record to append to the Writer
+
+        Returns:
+            integer
+                The number of records in the current partition
+        """
         # Check the new record conforms to the schema before continuing
         if self.schema and not self.schema.validate(subject=record, raise_exception=False):
-            raise ValidationError(F'Validation Failed ({self.schema.last_error})')
+            raise ValidationError(F'Schema Validation Failed ({self.schema.last_error})')
 
         # get the appropritate writer from the pool and append the record
         # the writer identity is the base of the path where the partitions
@@ -88,10 +128,10 @@ class Writer():
             with threading.Lock():
                 # search for pool occupants who haven't had a write recently
                 for partition_writer_identity in self.writer_pool.get_stale_writers(self.idle_timeout_seconds):
-                    get_logger().debug(F'Evicting {partition_writer_identity} from the writer pool due to inactivity')
+                    get_logger().debug(F'Evicting {partition_writer_identity} from the writer pool due to inactivity - limit is {self.idle_timeout_seconds} seconds')
                     self.writer_pool.remove_writer(partition_writer_identity)
                 # if we're over capacity, evict the LRU writers
                 for partition_writer_identity in self.writer_pool.nominate_writers_to_evict():
-                    get_logger().debug(F'Evicting {partition_writer_identity} from the writer pool due to over capacity')
+                    get_logger().debug(F'Evicting {partition_writer_identity} from the writer pool due the pool being over its {self.maximum_writers} capacity')
                     self.writer_pool.remove_writer(partition_writer_identity)
             time.sleep(2)

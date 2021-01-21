@@ -239,7 +239,7 @@ def distinct(
 
     for record in dictset:
         entry = serialize(record)
-        if lru(entry):
+        if lru.test(entry):
             continue
         yield record
 
