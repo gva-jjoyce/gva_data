@@ -29,7 +29,7 @@ from ..flow import Flow
 VERSION_HASH = "54ebb39c76dd9159475b723dc2467e2a6a9c4cf794388c9f8c7ec0a777c90f17"
 # This is the hash of the code in the __call__ function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
-CALL_HASH = "3bf4f5fd5986a799cb29db45620cddeffebb1cf09a3af946e68d28370f65d194"
+CALL_HASH = "bf4d482ddd26f2db1e0df72876b7a420915cbe0c5d9988850ffb8ed68c52cec0"
 
 
 # inheriting ABC is part of ensuring that this class only ever
@@ -147,7 +147,7 @@ class BaseOperator(abc.ABC):
                         self.logger.error(F"Problem writing to the error bin, a record has been lost. {type(err).__name__} - {err} - {context.get('uuid')}")
                     finally:
                         # finally blocks are called following a try/except block regardless of the outcome
-                        self.logger.error(F"{self.__class__.__name__} - {type(error_reference).__name__} - {error_reference} - tried {self.retry_count} times before aborting ({context.get('uuid')}) {error_log_reference}")
+                        self.logger.critical(F"{self.__class__.__name__} - {type(error_reference).__name__} - {error_reference} - tried {self.retry_count} times before aborting ({context.get('uuid')}) {error_log_reference}")
                     outcome = None
                     # add a failure to the last_few_results list
                     self.last_few_results.append(0)
@@ -165,7 +165,7 @@ class BaseOperator(abc.ABC):
 
         # if there is a high failure rate, abort
         if sum(self.last_few_results) < (len(self.last_few_results) / 2):
-            self.logger.critical(F"Failure Rate for {self.__class__.__name__} over last {len(self.last_few_results)} executions is over 50%, aborting.")
+            self.logger.alert(F"Failure Rate for {self.__class__.__name__} over last {len(self.last_few_results)} executions is over 50%, aborting.")
             sys.exit(1)
 
         return outcome

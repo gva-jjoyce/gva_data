@@ -82,5 +82,5 @@ def threaded_reader(items_to_read, reader, max_threads=4):
             # don't wait forever
             records = reply_queue.get(timeout=10)  
             yield from records
-        except threading.Empty:
+        except queue.Empty:
             pass  #  most likely reason get being here is a race condition
