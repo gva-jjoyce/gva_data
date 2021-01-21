@@ -90,7 +90,7 @@ class Flow():
         if operator is None:
             raise Exception(F"Invalid Flow - operation {operator_name} is invalid")
         if not hasattr(operator, "error_writer") and hasattr(self, "error_writer"):
-            operator.error_writer = self.error_writer
+            operator.error_writer = self.error_writer  # type:ignore
         out_going_links = self.get_outgoing_links(operator_name)
 
         outcome = operator(data, context)

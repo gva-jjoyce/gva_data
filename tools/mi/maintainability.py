@@ -39,3 +39,5 @@ for item in file_list:
 
 if not all_okay:
     sys.exit(1)
+
+print('pass')
