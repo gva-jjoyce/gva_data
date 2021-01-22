@@ -61,7 +61,7 @@ jobs:
         run:  pip install mypy
 
       - name: run test
-        run: mypy .
+        run: mypy gva
 
   maintainability:
     runs-on: ubuntu-latest
