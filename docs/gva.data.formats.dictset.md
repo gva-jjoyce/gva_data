@@ -32,13 +32,13 @@ dictset can filter and select data before loading into a Pandas dataframe.
 `select_from(dictset, columns, where)` - Select records and columns from a dictset    
 `set_column(dictset, column_name, setter)` - Update all the fields of a column    
 `distinct(dictset, cache_size)` - Deduplicates a dictset **CORRECTNESS IS NOT GUARANTEED**   
-`limit(dictset, limit)` - Returns upto a maximum of _limit_ records from a dictset   
+`limit(dictset, limit)` - Returns up-to a maximum of _limit_ records from a dictset   
 `page_dictset(dictset, page_size)` - Split a dictset into pages of _page_size_  
 `sort(dictset, column, cache_size)` - Order a dictset **CORRECTNESS IS NOT GUARANTEED**   
 `to_pandas(dictset)` - Load the dictset into a Pandas Dataframe  
 `join(left, right, column, join_type)` - Merge two dictsets on a key  
 `union(*args)` - Append dictsets together   
-`dictsets_match(dictset_1, dictset_2)` - Compare two bounded dictsets for equivilence  
+`dictsets_match(dictset_1, dictset_2)` - Compare two bounded dictsets for equivalence  
 `create_index(dictset, index_column)` - Create a dictionary where the key is the value in a column from a dictset     
 `order(record)` - Sort a record by it's keys    
 `select_record_fields(record, fields)` - Selects a subset of fields from a record   

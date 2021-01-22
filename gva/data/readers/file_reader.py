@@ -16,7 +16,7 @@ class FileReader(BaseReader):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.extention = kwargs.get('extention', '.jsonl')
+        self.extension = kwargs.get('extension', '.jsonl')
         self.chunk_size = kwargs.get('chunk_size', 16*1024*1024)
         self.delimiter = kwargs.get('delimiter', '\n')
         self.encoding = kwargs.get('encoding', 'utf8')
@@ -59,8 +59,7 @@ class FileReader(BaseReader):
                 files = glob.iglob(cycle_path + '**', recursive=True)
                 yield from [f.replace('\\', '/') 
                         for f in files 
-                        if isfile(f) 
-                                and self.extention in f]
+                        if isfile(f) and self.extension in f]
 
 
     def read_from_source(self, file_name: str):

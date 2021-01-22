@@ -16,7 +16,7 @@ class BaseWriter(abc.ABC):
             to_path: str,
             **kwargs):
 
-        self.bucket, path, filename, self.extention = paths.get_parts(to_path)
+        self.bucket, path, filename, self.extension = paths.get_parts(to_path)
 
         if self.bucket == '/':
             self.bucket = ''
@@ -25,13 +25,13 @@ class BaseWriter(abc.ABC):
 
         self.filename = self.bucket + '/' + path + filename
         self.filename_without_bucket = path + filename
-        if len(self.extention) == 0 or self.extention is None:
-            self.extention = '.jsonl'
+        if len(self.extension) == 0 or self.extension is None:
+            self.extension = '.jsonl'
         if kwargs.get('compress', False):
-            self.extention = self.extention + '.lzma'
+            self.extension = self.extension + '.lzma'
 
     def _build_path(self, index):
-        return f"{self.filename}-{index:04d}{self.extention}"
+        return f"{self.filename}-{index:04d}{self.extension}"
 
     @abc.abstractclassmethod
     def commit(

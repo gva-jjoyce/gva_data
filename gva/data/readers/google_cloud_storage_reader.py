@@ -19,21 +19,21 @@ class GoogleCloudStorageReader(BaseReader):
 
     def list_of_sources(self):
 
-        bucket, object_path, _, extention = paths.get_parts(self.from_path)
+        bucket, object_path, _, extension = paths.get_parts(self.from_path)
 
         for cycle_date in common.date_range(self.start_date, self.end_date):
             cycle_path = paths.build_path(path=object_path, date=cycle_date)
-            blobs = find_blobs_at_path(project=self.project, bucket=bucket, path=cycle_path, extention=extention)
+            blobs = find_blobs_at_path(project=self.project, bucket=bucket, path=cycle_path, extension=extension)
             for obj in blobs:
                 yield bucket + '/' + obj.name
 
     def read_from_source(self, object_name):
-        bucket, object_path, name, extention = paths.get_parts(object_name)
+        bucket, object_path, name, extension = paths.get_parts(object_name)
 
-        blob = get_blob(project=self.project, bucket=bucket, blob_name=object_path + name + extention)
+        blob = get_blob(project=self.project, bucket=bucket, blob_name=object_path + name + extension)
         stream = blob.download_as_string()
 
-        if extention == '.lzma':
+        if extension == '.lzma':
             io_stream = io.BytesIO(stream)
             with lzma.open(io_stream, 'rb') as file:
                 yield from file
@@ -46,13 +46,13 @@ def find_blobs_at_path(
         project: str,
         bucket: str,
         path: str,
-        extention: str):
+        extension: str):
 
     client = storage.Client(project=project)
     gcs_bucket = client.get_bucket(bucket)
     blobs = client.list_blobs(bucket_or_name=gcs_bucket, prefix=path)
-    if extention:
-        blobs = [blob for blob in blobs if extention in blob.name]
+    if extension:
+        blobs = [blob for blob in blobs if extension in blob.name]
     yield from blobs
 
 

@@ -25,7 +25,7 @@ def test_writer_timeout():
 
     # none of these should do anything
     w = Writer(
-            to_path='bucket/path/file.extention',
+            to_path='bucket/path/file.extension',
             inner_writer=NullWriter,
             idle_timeout_seconds=2)
 

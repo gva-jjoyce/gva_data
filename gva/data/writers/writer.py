@@ -22,9 +22,6 @@ class Writer():
             date_exchange: Any = None,
             maximum_writers: int = 5,
             **kwargs):
-
-            # partition_size: 64Mb
-            # inner_writer: NullWriter
         """
         Create a Data Writer
 
@@ -47,6 +44,7 @@ class Writer():
             maximum_writers: integer (optional)
             partition_size: integer (optional)
             inner_writer: BaseWriter (optional)
+            wipe_existing_records: boolean (optional, experimental)
 
         Note:
             inner_writer may have additional parameters.
@@ -81,6 +79,11 @@ class Writer():
         self.thread = threading.Thread(target=self.worker_thread)
         self.thread.daemon = True
         self.thread.start()
+
+        """ FEATURES IN DEVELOPMENT """
+
+        self.wipe_existing_partitions = bool(kwargs.get('wipe_existing_records', False))
+
 
     def append(self, record: dict = {}):
         """

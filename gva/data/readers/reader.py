@@ -51,6 +51,9 @@ class Reader():
 
 
         """
+        if kwargs.get('extension') is not None:
+            get_logger().warning('Reader parameter e_xtention should be extension')
+
         if not isinstance(select, list):
             raise TypeError("Reader 'select' parameter must be a list")
         if where is not None and not hasattr(where, '__call__'):
@@ -84,7 +87,6 @@ class Reader():
 
         get_logger().debug(f"Reader({formatted_arguments})")
 
-
         """ FEATURES IN DEVELOPMENT """
 
         # number of days to walk backwards to find records
@@ -93,7 +95,7 @@ class Reader():
             get_logger().warning("STEP BACK DAYS IS IN DEVELOPMENT")
 
         # multiprocessed reader
-        self.fork_processes = int(kwargs.get('fork_processes', False))
+        self.fork_processes = bool(kwargs.get('fork_processes', False))
         if self.thread_count > 0 and self.fork_processes:
             raise Exception('Forking and Threading can not be used at the same time')
         if self.fork_processes:

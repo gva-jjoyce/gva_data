@@ -12,7 +12,7 @@ except ImportError:
 def test_null_writer():
 
     # none of these should do anything
-    nw = NullWriter(to_path='bucket/path/file.extention')
+    nw = NullWriter(to_path='bucket/path/file.extension')
     assert nw.get_partition_list() == []
     assert nw.commit('') == 'NullWriter'
 

@@ -38,10 +38,10 @@ class MinIoReader(BaseReader):
 
 
     def read_from_source(self, object_name):
-        bucket, object_path, name, extention = paths.get_parts(object_name)
-        stream = self.minio.get_object(bucket, object_path + name + extention).read()
+        bucket, object_path, name, extension = paths.get_parts(object_name)
+        stream = self.minio.get_object(bucket, object_path + name + extension).read()
 
-        if extention == '.lzma':
+        if extension == '.lzma':
             # converting to an IO stream is about 10% faster
             io_stream = io.BytesIO(stream)
             with lzma.open(io_stream, 'rb') as file:

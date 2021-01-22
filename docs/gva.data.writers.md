@@ -4,7 +4,7 @@
 
 The new model:
 - The writer gets the inner_writer injected, kwargs pass any optional configuration
-- The writer creates a pool of partion_writers, these are identified with the partition name
+- The writer creates a pool of partition_writers, these are identified with the partition name
 - The partition writers use the inner_writer to commit the partition to the partition name
 
 
@@ -41,7 +41,7 @@ writer.append({"server": "files", "error_level": "debug", "message", "power on"}
 
 **partition_size**: int, optional
 >The maximum size of chunks the data being written is created (the default is
->64Mb), actual filesizes will be different as this is a maximum and will be
+>64Mb), actual file-sizes will be different as this is a maximum and will be
 >a fraction of this size if the data is compressed.
 
 **schema**: gva.data.validator.Schema, optional
@@ -87,18 +87,18 @@ The 'to_path' can contain date formatting placeholders, these are replaced
 with the appropriate strings for the date currently in context.
 
 There are two additional date formatting placeholders, representing common
-exhanges:
+exchanges:
 - %date = %Y_%m_%d
 - %datefolders = year_%Y/month_%m/day_%d
 
 # Partitions
 
-The default behaviour of the writer is to create partitions. Partitions are
-chunks of data upto 64Mb in size, partitions are also closed no new records
+The default behavior of the writer is to create partitions. Partitions are
+chunks of data up-to 64Mb in size, partitions are also closed no new records
 have been appended to the writer for 30 seconds. 
 
 Partitions have four digit suffixes added to filenames. Compressed files have 
-_.lzma_ added as an extention. Writer will replace date placeholders with
+_.lzma_ added as an extension. Writer will replace date placeholders with
 date fields:
 
 - `%Y` to year
@@ -133,14 +133,14 @@ creating folders for each unit of time and writing files to those folders. This 
 etc, depending on the frequency and volume of the data. The Writer can create up to 9999 partitions before the partition
 numbers start to collide - this is:
 
-- over a rate of one parition (64Mb) every 10 seconds
+- over a rate of one partition (64Mb) every 10 seconds
 - over 625Gb of data/day
 
 If these limits are being approached, the partition numbering logic should be rewritten or the resolution of the data
 changed.
 
 **Compression**  
-Compression reduces filesizes to approximately 25% of their original size, but is very expensive (between 
+Compression reduces file-sizes to approximately 25% of their original size, but is very expensive (between 
 4 and 20 times longer to write). On smaller data sets this is unlikely to be a problem but can increase a
 job which tool a few minutes to over an hour for larger datasets. It's recommended in this scenario that
 compression be deferred. A _tool_ to support this is planned.

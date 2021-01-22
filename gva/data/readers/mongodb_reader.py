@@ -51,4 +51,3 @@ class MongoDbReader(BaseReader):
                 yield collection.find(query)[chunks[i-1]:chunks[i]]
             else:
                 yield collection.find(query)[chunks[i-1]:chunks.stop]
-

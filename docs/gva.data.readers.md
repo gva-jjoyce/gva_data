@@ -9,11 +9,11 @@ The reader can read across multiple files in a GCS bucket with filter, select an
 ## How Do I Use It?
 
 Instantiate a _Reader_, the default functionality is to read Google Cloud Storage buckets, reading the local filesystem
-requires the _reader_ parameter to be set to _file_reader_. The default behaviour is for the reader to find all of the 
-files/blobs that start with the _from_path_ and have the extention provided (default _.jsonl_), to read each file
+requires the _reader_ parameter to be set to _file_reader_. The default behavior is for the reader to find all of the 
+files/blobs that start with the _from_path_ and have the extension provided (default _.jsonl_), to read each file
 line-by-line, convert the line to a python dict by parsing as a JSON string and yielding the result.
 
-The _Reader_ can be configured to just return the text and to look for a different file extention and to limit searches
+The _Reader_ can be configured to just return the text and to look for a different file extension and to limit searches
 based on a date range (requires folders to have date parts in their names). The default will only look for today.
 
 The _Reader_ can filter records and limit the columns returned - the storage format is unindexed and row-based so this
@@ -51,7 +51,7 @@ critical_errors.to_pandas()
 >The name of the GCP project where the data is stored - only used by the `GoogleCloudStorageReader`
 
 **select**: list of field names, optional  
-> A list of the nanes of the columns to return from the dataset (default is all columns)  
+> A list of the names of the columns to return from the dataset (default is all columns)  
 
 **where**: Callable, optional  
 >A method (a function or a lambda expression) to filter the returned records, where the function returns `True` the record is returned, `False` the record is skipped (default is all records)
@@ -60,7 +60,7 @@ critical_errors.to_pandas()
 > The reader class to perform the data access tasks (default `GoogleCloudStorageReader`)  
 
 **data_format**: str, either '_json_' or '_text_', optional
->Controls how the data is interpretted. '_json_' will parse to a `dict` before 'select' or 'where', '_text_' will just return the line that has been read (default is 'json') 
+>Controls how the data is interpreted. '_json_' will parse to a `dict` before 'select' or 'where', '_text_' will just return the line that has been read (default is 'json') 
 
 **date_range**: A tuple of dates, optional
 >The dates to search for data between, the first value is the start date, the second is the end date (default is today)
@@ -74,8 +74,8 @@ critical_errors.to_pandas()
 **project**: str, required for `GoogleCloudStorageReader`
 >The name of the GCP project where the data is stored - only used by the `GoogleCloudStorageReader`
 
-**extention**: str, optional
->The file extention to filter files by - only used by the `FileReader` (default is '.jsonl')
+**extension**: str, optional
+>The file extension to filter files by - only used by the `FileReader` (default is '.jsonl')
 
 **chunk_size**: int, optional
 >Limit the number of bytes read from a file at at time - only used by the `FileReader` (default is 16Mb, the default partition size) 
@@ -107,7 +107,7 @@ For the `GoogleCloudStorageReader`, the bucket name is at the start of the 'from
 
 The 'from_path' can contain date formatting placeholders and for each date between the 'start_date' and the 'end_date' the placeholders are replaced with the appropriate strings.
 
-There are two additional date formatting placeholders, representing common exhanges:
+There are two additional date formatting placeholders, representing common exchanges:
 - %date = %Y_%m_%d
 - %datefolders = year_%Y/month_%m/day_%d
 

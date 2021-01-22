@@ -52,7 +52,7 @@ def build_path(path: str, date: datetime.date = None):
 
     if not path.endswith('/'):
         # process the path
-        bucket, path_string, filename, extention = get_parts(path)
+        bucket, path_string, filename, extension = get_parts(path)
         if path_string != '/':
             path_string = bucket + '/' + path_string
     else:

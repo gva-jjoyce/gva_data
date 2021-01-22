@@ -24,7 +24,7 @@ for item in file_list:
     if any([True for exclusion in EXCLUSIONS if item.startswith(exclusion)]):
         continue
 
-    with open(item, 'r') as code_file:
+    with open(item, 'r', encoding='UTF8') as code_file:
         code = code_file.read()
 
     maintainability_index = radon.metrics.mi_visit(code, True)

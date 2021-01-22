@@ -17,12 +17,12 @@ except ImportError:   # pragma: no cover
 
 def test_blob_paths_split_filename():
 
-    name, ext = paths.split_filename("one_extention.ext")
-    assert name == 'one_extention', f"{name} {ext}"
+    name, ext = paths.split_filename("one_extension.ext")
+    assert name == 'one_extension', f"{name} {ext}"
     assert ext == '.ext', f"{name} {ext}"
 
-    name, ext = paths.split_filename("two_extention.ext.zip")
-    assert name == 'two_extention.ext', f"{name} {ext}"
+    name, ext = paths.split_filename("two_extension.ext.zip")
+    assert name == 'two_extension.ext', f"{name} {ext}"
     assert ext == '.zip', f"{name} {ext}"
 
     name, ext = paths.split_filename("double_dot..zip")

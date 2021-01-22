@@ -29,7 +29,7 @@ def test_writer_partition_from_data():
 
     # none of these should do anything
     w = Writer(
-            to_path='bucket/%datefolders/file.extention',
+            to_path='bucket/%datefolders/file.extension',
             inner_writer=NullWriter,
             date_exchange=lambda row: row['date_field'])
 
