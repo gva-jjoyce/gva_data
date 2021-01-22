@@ -20,10 +20,10 @@ class Writer():
             compress: bool = False,
             idle_timeout_seconds: int = 30,
             date_exchange: Any = None,
-            maximum_writers: int = 5,
+            writer_pool_capacity: int = 5,
             **kwargs):
         """
-        Create a Data Writer
+        Create a Data Writer to write data records into partitions.
 
         Parameters:
             to_path: string (optional)
@@ -40,23 +40,27 @@ class Writer():
             date_exchange: date, string or callable (optional)
                 A date, a string representation of a date or a function which
                 is run against records to determine the date to use for
-                creating the partition
-            maximum_writers: integer (optional)
+                creating the partition. The default is today's date
+            writer_pool_capacity: integer (optional)
+                The number of writers to leave in the writers pool before 
+                writers are evicted for over capacity, default is 5
             partition_size: integer (optional)
+                The maximum size of partitions, the default is 64Mb
             inner_writer: BaseWriter (optional)
-            wipe_existing_records: boolean (optional, experimental)
+                The component used to commit data, the default writer is the
+                NullWriter
+            wipe_existing_records: boolean (experimental)
+                DO NOT USE: placeholder for future functionality
 
         Note:
-            inner_writer may have additional parameters.
-
-        Yields:
-            dictionary
+            Different inner_writers may take or require additional parameters.
         """
         self.to_path = to_path
         self.schema = schema
         self.idle_timeout_seconds = idle_timeout_seconds
         self.compress = compress
 
+        # add the values to kwargs
         kwargs['compress'] = compress
 
         # to work out which member of the pool is going to accept the data
@@ -70,9 +74,9 @@ class Writer():
             self.get_date = date_exchange  # type:ignore
 
         # we have a pool of writers of size maximum_writers
-        self.maximum_writers = maximum_writers
+        self.writer_pool_capacity = writer_pool_capacity
         self.writer_pool = WriterPool(
-                pool_size=maximum_writers,
+                pool_size=writer_pool_capacity,
                 **kwargs)
 
         # establish the background thread which manages the pool
@@ -135,6 +139,6 @@ class Writer():
                     self.writer_pool.remove_writer(partition_writer_identity)
                 # if we're over capacity, evict the LRU writers
                 for partition_writer_identity in self.writer_pool.nominate_writers_to_evict():
-                    get_logger().debug(F'Evicting {partition_writer_identity} from the writer pool due the pool being over its {self.maximum_writers} capacity')
+                    get_logger().debug(F'Evicting {partition_writer_identity} from the writer pool due the pool being over its {self.writer_pool_capacity} capacity')
                     self.writer_pool.remove_writer(partition_writer_identity)
             time.sleep(2)

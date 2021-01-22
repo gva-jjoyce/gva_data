@@ -20,7 +20,7 @@ Code should have:
 
 
 A note about comments:
-- Computers will interpret anything, humans need help interpetting code
+- Computers will interpret anything, humans need help interpreting code
 - Easy to read code usually runs fast enough
 - Prefer readable code over verbose comments
 - Comments should be more than just the code in other words
@@ -30,4 +30,5 @@ Pull requests should pass:
 - bandit (secure coding practices)
 - mypy (type hints)
 - pytest (regression tests)
-- test coverage should not be reduced (current bar is 70%)
+- test coverage should not be reduced (current bar is 80%)
+- maintainability index for each module above 50

@@ -47,7 +47,7 @@ def test_reader_writer():
     do_writer()
 
     r = Reader(
-        reader=FileReader,
+        inner_reader=FileReader,
         from_path='_tests/year_%Y/'
     )
     l = len(list(r))
@@ -63,7 +63,7 @@ def test_reader_writer_compressed():
     assert len(g) > 0, g
 
     r = Reader(
-        reader=FileReader,
+        inner_reader=FileReader,
         from_path='_tests/year_%Y/'
     )
     l = len(list(r))
@@ -73,7 +73,7 @@ def test_reader_writer_compressed():
 
 def get_data():
     r = Reader(
-        reader=FileReader,
+        inner_reader=FileReader,
         from_path='tests/data/tweets')
     return r
 

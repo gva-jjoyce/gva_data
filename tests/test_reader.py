@@ -16,7 +16,7 @@ get_logger().setLevel(5)
 
 def test_reader_can_read():
     r = Reader(
-        reader=FileReader,
+        inner_reader=FileReader,
         from_path='tests/data/tweets'
     )
     assert len(list(r)) == 50
@@ -27,7 +27,7 @@ def test_unknown_format():
 
     try:
         r = Reader(
-            reader=FileReader,
+            inner_reader=FileReader,
             from_path='tests/data/tweets',
             data_format='csv'
         )
@@ -39,7 +39,7 @@ def test_unknown_format():
 
 def test_reader_context():
     counter = 0
-    with Reader(reader=FileReader, from_path='tests/data/tweets') as r:
+    with Reader(inner_reader=FileReader, from_path='tests/data/tweets') as r:
         n = r.read_line()
         while n:
             counter += 1
@@ -49,7 +49,7 @@ def test_reader_context():
 
 
 def test_reader_to_pandas():
-    r = Reader(reader=FileReader, from_path='tests/data/tweets')
+    r = Reader(inner_reader=FileReader, from_path='tests/data/tweets')
     df = r.to_pandas()
 
     assert len(df) == 50
@@ -58,7 +58,7 @@ def test_reader_to_pandas():
 def test_threaded_reader():
     r = Reader(
             thread_count=2,
-            reader=FileReader,
+            inner_reader=FileReader,
             from_path='tests/data/tweets')
     df = r.to_pandas()
     assert len(df) == 50
@@ -67,7 +67,7 @@ def test_threaded_reader():
 def test_multiprocess_reader():
     r = Reader(
             fork_processes=True,
-            reader=FileReader,
+            inner_reader=FileReader,
             from_path='tests/data/tweets')
     df = r.to_pandas()
     assert len(df) == 50
