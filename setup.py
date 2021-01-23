@@ -13,6 +13,7 @@ setup(
    packages=find_packages(include=['gva', 'gva.*']),
    url="https://github.com/gva-jjoyce/gva_data",
    install_requires=[
-        'ujson'
+        'ujson',
+        'python-dateutil'
    ]
 )
