@@ -29,7 +29,7 @@ from ..flow import Flow
 VERSION_HASH = "54ebb39c76dd9159475b723dc2467e2a6a9c4cf794388c9f8c7ec0a777c90f17"
 # This is the hash of the code in the __call__ function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
-CALL_HASH = "bf4d482ddd26f2db1e0df72876b7a420915cbe0c5d9988850ffb8ed68c52cec0"
+CALL_HASH = "510d1ea80ff6c513c2666daaaa3eab4dc3c521ea7072d01e328a3b12a6e4ef9f"
 
 
 # inheriting ABC is part of ensuring that this class only ever
