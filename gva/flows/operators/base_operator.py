@@ -19,7 +19,7 @@ import types
 import sys
 from ...logging import get_logger  # type:ignore
 from typing import Union, List
-from ...errors import RenderErrorStack
+from ...errors import RenderErrorStack, IntegrityError
 from ...data.formats import dictset
 from ...utils.json import parse, serialize
 from ..flow import Flow
@@ -76,10 +76,10 @@ class BaseOperator(abc.ABC):
         # Detect version and __call__ being overridden
         call_hash = self.hash(inspect.getsource(self.__call__))
         if call_hash != CALL_HASH:
-            raise Exception(F"Operator's __call__ method must not be overridden - discovered hash was {call_hash}")      
+            raise IntegrityError(F"Operator's __call__ method must not be overridden - discovered hash was {call_hash}")      
         version_hash = self.hash(inspect.getsource(self.version))
         if version_hash != VERSION_HASH:
-            raise Exception(F"Operator's version method must not be overridden - discovered hash was {version_hash}") 
+            raise IntegrityError(F"Operator's version method must not be overridden - discovered hash was {version_hash}") 
 
 
     @abc.abstractmethod
