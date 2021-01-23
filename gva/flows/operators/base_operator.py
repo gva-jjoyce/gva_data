@@ -15,6 +15,8 @@ import functools
 import hashlib
 import time
 import datetime
+import re
+import string
 import types
 import sys
 from ...logging import get_logger  # type:ignore
@@ -26,10 +28,10 @@ from ..flow import Flow
 
 # This is the hash of the code in the version function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
-VERSION_HASH = "54ebb39c76dd9159475b723dc2467e2a6a9c4cf794388c9f8c7ec0a777c90f17"
+VERSION_HASH = "bb5c851c42ae86ff42f803416b61329d4ef1d4fa0b8e7f81309e86786b4408ae"
 # This is the hash of the code in the __call__ function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
-CALL_HASH = "510d1ea80ff6c513c2666daaaa3eab4dc3c521ea7072d01e328a3b12a6e4ef9f"
+CALL_HASH = "e9931080ec8882a0a7116a572a0e7ade0346f643f7c6aa9c36c1673dcb1d694f"
 
 
 # inheriting ABC is part of ensuring that this class only ever
@@ -74,15 +76,12 @@ class BaseOperator(abc.ABC):
         self.last_few_results = [1] * rolling_failure_window  # track the last n results
 
         # Detect version and __call__ being overridden
-        
-        # it appears these hashes return different values on different environments.
-        
-        #call_hash = self.hash(inspect.getsource(self.__call__))
-        #if call_hash != CALL_HASH:
-        #    raise IntegrityError(F"Operator's __call__ method must not be overridden - discovered hash was {call_hash}")      
-        #version_hash = self.hash(inspect.getsource(self.version))
-        #if version_hash != VERSION_HASH:
-        #    raise IntegrityError(F"Operator's version method must not be overridden - discovered hash was {version_hash}") 
+        call_hash = self.hash(self._only_alpha_nums(inspect.getsource(self.__call__)))
+        if call_hash != CALL_HASH:
+            raise IntegrityError(F"Operator's __call__ method must not be overridden - discovered hash was {call_hash}")      
+        version_hash = self.hash(self._only_alpha_nums(inspect.getsource(self.version)))
+        if version_hash != VERSION_HASH:
+            raise IntegrityError(F"Operator's version method must not be overridden - discovered hash was {version_hash}") 
 
 
     @abc.abstractmethod
@@ -204,6 +203,7 @@ class BaseOperator(abc.ABC):
         rather than protect information.
         """
         source = inspect.getsource(self.execute)
+        source = self._only_alpha_nums(source)
         full_hash = hashlib.sha224(source.encode())
         return full_hash.hexdigest()[-12:]
 
@@ -263,6 +263,11 @@ class BaseOperator(abc.ABC):
         if value >= high_bound:
             return high_bound
         return value
+
+    def _only_alpha_nums(self, text):
+        pattern = re.compile('[\W_]+')
+        return pattern.sub('', text)
+
 
     def hash(self, block):
         try:
