@@ -12,8 +12,7 @@ from traceback import walk_tb
 import os.path
 import sys
 
-T = TypeVar("T")
-
+BAR = ' ' * 100
 
 @dataclass
 class Frame:
@@ -25,22 +24,16 @@ class Frame:
 
 
 @dataclass
-class _SyntaxError:
-    offset: int
-    filename: str
-    line: str
-    lineno: int
-    msg: str
-
-
-@dataclass
 class Stack:
     exc_type: str
     exc_value: str
-    syntax_error: Optional[_SyntaxError] = None
     is_cause: bool = False
     frames: List[Frame] = field(default_factory=list)
 
+
+def bar_label(label):
+    center = label.center(100)
+    return center.replace(' ', '-')
 
 def _build_error_stack():
     exc_type, exc_value, traceback = sys.exc_info()
@@ -54,19 +47,9 @@ def _build_error_stack():
 
     while True:
         stack = Stack(
-            exc_type=str(exc_type.__name__),
-            exc_value=str(exc_value),
-            is_cause=is_cause,
-        )
-
-        if isinstance(exc_value, SyntaxError):
-            stack.syntax_error = _SyntaxError(
-                offset=exc_value.offset or 0,
-                filename=exc_value.filename or "?",
-                lineno=exc_value.lineno or 0,
-                line=exc_value.text or "",
-                msg=exc_value.msg,
-            )
+                exc_type=str(exc_type.__name__),
+                exc_value=str(exc_value),
+                is_cause=is_cause)
 
         stacks.append(stack)
         append = stack.frames.append
@@ -75,11 +58,10 @@ def _build_error_stack():
             filename = frame_summary.f_code.co_filename
             filename = os.path.abspath(filename) if filename else "?"
             frame = Frame(
-                filename=filename,
-                lineno=line_no,
-                name=frame_summary.f_code.co_name,
-                locals={ key: value for key, value in frame_summary.f_locals.items() }
-            )
+                    filename=filename,
+                    lineno=line_no,
+                    name=frame_summary.f_code.co_name,
+                    locals={key: value for key, value in frame_summary.f_locals.items()})
             append(frame)
 
         cause = getattr(exc_value, "__cause__", None)
@@ -92,11 +74,7 @@ def _build_error_stack():
                 continue
 
         cause = exc_value.__context__
-        if (
-            cause
-            and cause.__traceback__
-            and not getattr(exc_value, "__suppress_context__", False)
-        ):
+        if cause and cause.__traceback__ and not getattr(exc_value, "__suppress_context__", False):
             exc_type = cause.__class__
             exc_value = cause
             traceback = cause.__traceback__
@@ -110,15 +88,10 @@ def _build_error_stack():
 
 def _render_locals(locals):
     if locals:
-        yield ('-' * 45) + '  locals  ' + ('-' * 45)
-
-    max_label_len = 0
-    for key, value in locals.items():
-        if len(key) > max_label_len:
-            max_label_len = len(key)
-
-    for key, value in locals.items():
-        yield F" {key:<{max_label_len}} : {value}"
+        yield bar_label('locals')
+        max_label_len = max([len(key) for key, value in locals.items()])
+        for key, value in locals.items():
+            yield F" {key:<{max_label_len}} : {value}"
 
 
 def _read_from_code(
@@ -128,10 +101,11 @@ def _read_from_code(
     try:
         with open(filename, "rt", encoding="utf-8") as code_file:
             code = code_file.read()
+            
         lines = code.splitlines()
         start_line = max(line - extend_by, 0)
         end_line = min(line + extend_by, len(lines)+1)
-        yield ('-' * 46) + '  code  ' + ('-' * 46)
+        yield bar_label('code')
         for line_number in range(start_line, end_line):
             prefix = '>' if line_number == line else ' '
             yield F"{prefix}{line_number:4d} {lines[line_number-1]}"
@@ -153,44 +127,10 @@ def _render_error_stack():
                     line=frame.lineno,
                     extend_by=3)
         
-            yield '-' * 100
+            yield bar_label('')
             yield ''
 
 
 def RenderErrorStack():
     s = list(_render_error_stack())
     return '\n'.join(s)
-
-
-if __name__ == "__main__":  # pragma: no cover
-
-    import sys
-
-    def bar(a):
-        one = 1
-        print(one / a)
-
-    def foo(a):
-
-        zed = {
-            "characters": {
-                "Paul Atriedies",
-                "Vladimir Harkonnen",
-                "Thufir Haway",
-                "Duncan Idaho",
-            },
-            "atomic_types": (None, False, True),
-        }
-        bar(a)
-
-    def error():
-
-#        foo(0)
-
-        try:
-            foo(0)
-        except:
-            print(RenderErrorStack())
-
-
-    error()

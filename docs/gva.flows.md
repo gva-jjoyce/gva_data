@@ -42,7 +42,7 @@ The `BaseOperator` exists to allow creation of new operators. A minimum implemen
 
 If initialization is required (for example opening a file or acquiring reference data), this should be done in the `__init __` method, to ensure the BaseOperator also performs initialization, `super().__init__()` must also be called. `__init__` can take any number of parameters and has no return.
 
-The `execute` method is the only method that must be overridded, it is called for every record which reaches the operator. This method takes three parameters:
+The `execute` method is the only method that must be overridden, it is called for every record which reaches the operator. This method takes three parameters:
 
 - _self_ - as per all class methods
 - _data_ - a dictionary holding the data to be operated on

@@ -6,7 +6,7 @@ without orjson, parsing is about as fast as ujson, however
 serialization is slower, although still faster than the 
 native json library. 
 """
-from typing import Any
+from typing import Any, Union
 import datetime
 from ..logging import get_logger
 try:
@@ -15,7 +15,14 @@ try:
 
     parse = orjson.loads
 
-    def serialize(obj: Any, indent: bool = False) -> str:
+    def serialize(obj: Any, indent: bool = False, as_bytes: bool = False) -> Union[str, bytes]:
+
+        if as_bytes:
+            if indent and isinstance(obj, dict):
+                return orjson.dumps(obj, option=orjson.OPT_INDENT_2 + orjson.OPT_SORT_KEYS)
+            else:
+                return orjson.dumps(obj, option=orjson.OPT_SORT_KEYS)
+
         # return a string
         if indent and isinstance(obj, dict):
             return orjson.dumps(obj, option=orjson.OPT_INDENT_2 + orjson.OPT_SORT_KEYS).decode()
@@ -32,7 +39,7 @@ except ImportError:  # pragma: no cover
     logger = get_logger()
     logger.warning('orjson not installed using ujson')
 
-    def serialize(obj: Any, indent: bool = False) -> str:   # type:ignore
+    def serialize(obj: Any, indent: bool = False, as_bytes: bool = False) -> Union[str, bytes]:   # type:ignore
 
         def fix_fields(dt: Any) -> str:
             """
@@ -45,6 +52,14 @@ except ImportError:  # pragma: no cover
 
         if isinstance(obj, dict):
             obj_copy = {k:fix_fields(v) for k,v in obj.items()}
+        else:
+            obj_copy = obj
+
+        if as_bytes:
+            if indent:
+                return ujson.dumps(obj_copy, sort_keys=True, indent=2).encode()
+            else:
+                return ujson.dumps(obj_copy, sort_keys=True).encode()
 
         if indent:
             return ujson.dumps(obj_copy, sort_keys=True, indent=2)

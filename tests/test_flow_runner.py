@@ -4,7 +4,6 @@ and push a payload through it.
 """
 import os
 import sys
-import networkx
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.logging import get_logger
 from gva.flows.operators import EndOperator, NoOpOperator, UndefinedOperator
@@ -21,11 +20,15 @@ def test_flow_runner():
     """
     e = EndOperator()
     n = NoOpOperator()
-    flow = n > e
+    o = NoOpOperator()
+    flow = n > o > e
 
     errored = False
     try:
-        flow.run(data="payload")
+        flow.run(data="What is my purpose?")
+        flow.run(data="You pass butter.")
+        flow.run(data="Oh my God.")
+        flow.run(data="Yeah, welcome to the club, pal.")
         flow.finalize()
     except Exception:
         errored = True

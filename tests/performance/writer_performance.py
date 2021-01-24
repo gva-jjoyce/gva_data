@@ -7,21 +7,20 @@ Results (seconds to process 57,581 rows of 8 field records):
 ┌─────────────┬────────────┬────────┬───────┬─────────────┐
 │ compression │ validation │  time  │ ratio │ rows/second │
 ├─────────────┼────────────┼────────┼───────┼─────────────┤
-│    False    │   False    │ 0.374  │  1.0  │    153634   │
-│     True    │   False    │ 16.255 │ 0.023 │     3542    │
-│    False    │    True    │ 0.791  │ 0.473 │    72719    │
-│     True    │    True    │ 16.75  │ 0.022 │     3437    │
+│    False    │   False    │ 0.435  │  1.0  │    132343   │
+│     True    │   False    │ 16.198 │ 0.026 │     3554    │
+│    False    │    True    │ 0.994  │ 0.437 │    57881    │
+│     True    │    True    │ 16.608 │ 0.026 │     3467    │
 └─────────────┴────────────┴────────┴───────┴─────────────┘
 """
-import shutil
 import sys
 import os
 import time
-sys.path.insert(1, os.path.join(sys.path[0], '..\..'))
-from gva.data.writers import Writer, file_writer
+sys.path.insert(1, os.path.join(sys.path[0], '../..'))
+from gva.data.writers import Writer, NullWriter
 from gva.logging import verbose_logger, get_logger
 from gva.data.validator import Schema
-from gva.data.formats import dictset
+from gva.data.formats import display, dictset
 try:
     import orjson as json
 except ImportError:
@@ -45,7 +44,7 @@ schema_definition = {
 }
 
 
-def read_jsonl(filename, limit=-1, chunk_size=16*1024*1024, delimiter="\n"):
+def read_jsonl(filename, limit=-1, chunk_size=32*1024*1024, delimiter="\n"):
     """"""
     file_reader = read_file(filename, chunk_size=chunk_size, delimiter=delimiter)
     line = next(file_reader, None)
@@ -60,7 +59,7 @@ def read_jsonl(filename, limit=-1, chunk_size=16*1024*1024, delimiter="\n"):
             return
 
 
-def read_file(filename, chunk_size=16*1024*1024, delimiter="\n"):
+def read_file(filename, chunk_size=32*1024*1024, delimiter="\n"):
     """
     Reads an arbitrarily long file, line by line
     """
@@ -78,8 +77,8 @@ def read_file(filename, chunk_size=16*1024*1024, delimiter="\n"):
 
 def execute_test(compress, schema, reader):
     writer = Writer(
-            writer=file_writer,
-            to_path='%datefolders',
+            inner_writer=NullWriter,
+            to_path='%datefolders/temp.json',
             compress=compress,
             schema=schema
     )
@@ -95,7 +94,6 @@ schema = Schema(schema_definition)
 lines = list(read_jsonl('tweets.jsonl'))
 
 print(len(lines))
-print(lines[1])
 
 results = []
 result = {
@@ -104,7 +102,6 @@ result = {
     'time': execute_test(False, None, lines)
 }
 results.append(result)
-shutil.rmtree("year_2021")
 
 result = {
     'compression': True,
@@ -112,7 +109,6 @@ result = {
     'time': execute_test(True, None, lines)
 }
 results.append(result)
-shutil.rmtree("year_2021")
 
 result = {
     'compression': False,
@@ -120,7 +116,6 @@ result = {
     'time': execute_test(False, schema, lines)
 }
 results.append(result)
-shutil.rmtree("year_2021")
 
 result = {
     'compression': True,
@@ -128,7 +123,6 @@ result = {
     'time': execute_test(True, schema, lines)
 }
 results.append(result)
-shutil.rmtree("year_2021")
 
 fastest = 100000000000
 for result in results:
@@ -138,4 +132,4 @@ results = dictset.set_column(results, 'ratio', lambda r: int((1000 * fastest) / 
 results = dictset.set_column(results, 'rows/second', lambda r: int(len(lines)/r['time']))
 results = dictset.set_column(results, 'time', lambda r: int(1000 * r['time'])/1000)
 
-print(dictset.to_ascii_table(results))
+print(display.ascii_table(results))

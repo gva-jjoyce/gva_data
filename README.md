@@ -11,8 +11,7 @@ The `gva` libraries are a set of modules to help with creating data processing s
 [gva.data.writers](docs/gva.data.writers.md) - write data to various locations   
 [gva.data.formats](docs/gva.data.formats.md) - helper for handling data   
 [gva.data.validator](docs/gva.data.validator.md) - schema conformity testing   
-[gva.logging](docs/gva.logging.md) - logging routines    
-[gva.maths](docs/gva.maths.md) - math routines   
+[gva.logging](docs/gva.logging.md) - logging routines      
 
 More documentation is available in [the docs folder](docs/)  
 
@@ -28,9 +27,8 @@ git+https://github.com/gva-jjoyce/gva_data
 # Dependencies
 
 - [UltraJSON](https://github.com/ultrajson/ultrajson) aka `ujson` is used where `orjson` is not available - `orjson` is not available on all platforms and environments so `ujson` is a dependency to ensure a good JSON library with broad support is available
-- [NetworkX](https://networkx.org/) is a graph analysis library, in `gva` is is used to define data pipelines.
 
-There are a number of optional dependencies which are required for specific fetures and functionality. These are listed in the [requirements-optional.txt](requirements-optional.txt) file.
+There are a number of optional dependencies which are required for specific features and functionality. These are listed in the [requirements-optional.txt](requirements-optional.txt) file.
 
 # Repository Structure
 
@@ -52,9 +50,6 @@ Modules to define and execute data pipelines.
 ### gva/logging
 Common logging module.
 
-### gva/maths
-Maths routines for analysing data.
-
 ### gva/utils
 Helper functions, either generic implementations or used across multiple other libraries.
 
@@ -64,10 +59,10 @@ Jupyter Notebooks with lessons to help build familiarity with the `gva` library.
 ### sites/
 Example Web Sites using the `gva` library to provide data access functionality. 
 
-Note that _sites_ have different requirements and main contain code with different licencing to the `gva` library.
+Note that _sites_ have different requirements and main contain code with different licensing to the `gva` library.
 
 ### tests/
-Unit, Regression and Performance tests, and artefacts to support these tests.
+Unit, Regression and Performance tests, and artifacts to support these tests.
 
 ### tools/
 Stand-alone tools for use with the `gva` library but not part of the library itself.

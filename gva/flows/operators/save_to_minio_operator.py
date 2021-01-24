@@ -1,10 +1,10 @@
-from . import BaseOperator
-from gva.data.writers import minio_writer, Writer # type:ignore
-from gva.data.validator import Schema  # type:ignore
+from .internals.base_operator import BaseOperator
+from ...data.writers import MinIoWriter, Writer  # type:ignore
+from ...data.validator import Schema  # type:ignore
 import datetime
 
 
-class SaveToMinioOperator(BaseOperator):
+class SaveToMinIoOperator(BaseOperator):
 
     def __init__(
             self,
@@ -20,11 +20,11 @@ class SaveToMinioOperator(BaseOperator):
             **kwargs):
         super().__init__()
         self.writer = Writer(
-                writer=minio_writer,
+                inner_writer=MinIoWriter,
                 to_path=to_path,
                 schema=schema,
                 compress=compress,
-                date=date,
+                date_exchange=date,
                 end_point=end_point,
                 access_key=access_key,
                 secret_key=secret_key,

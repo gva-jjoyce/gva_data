@@ -19,23 +19,20 @@ it is a log reader and returns log entries. The reader can convert a set
 into Pandas dataframe, or the dictset helper library can perform some 
 activities on the set in a more memory efficient manner.
 """
-from typing import Callable, Tuple, Optional
-from ..formats.dictset import select_all, select_record_fields, limit, to_html_table, to_ascii_table, select_from
-import datetime
+from typing import Callable, Optional
+from ..formats.dictset import select_record_fields, select_from
+from ..formats.display import html_table, ascii_table
 from ...logging import get_logger
-from .base_reader import BaseReader
-from .gcs_reader import GoogleCloudStorageReader
-from .threaded_reader import threaded_reader
-from .experimental_processed_reader import processed_reader
-from ...utils.json import parse, serialize
-    
-def do_nothing(x):
-    return x
+from .google_cloud_storage_reader import GoogleCloudStorageReader
+from .internals import BaseReader, threaded_reader, processed_reader
+from ...utils import json
+from ...errors import InvalidCombinationError
+
 
 # available line parsers
 PARSERS = {
-    "json": parse,
-    "text": do_nothing
+    "json": json.parse,
+    "text": lambda x: x
 }
 
 
@@ -43,31 +40,76 @@ class Reader():
 
     def __init__(
         self,
-        *,  # force all paramters to be keyworded 
+        *,  # force all paramters to be keyworded
         select: list = ['*'],
         from_path: str = None,
         where: Callable = None,
-        reader: BaseReader = GoogleCloudStorageReader,   # type:ignore
+        inner_reader: BaseReader = GoogleCloudStorageReader,   # type:ignore
         data_format: str = "json",
         **kwargs):
         """
-        Reader accepts a method which iterates over a data source and provides
-        functionality to filter, select and truncate records which are
-        returned. The default reader is a GCS blob reader, a file system
-        reader is also implemented.
+        Create a data reader
 
-        Reader roughly follows a SQL Select:
+        Parameters:
+            select: list of strings (optional)
+                A list of the names of the columns to return from the dataset,
+                the default is all columns
+            from_path: string
+                The path to the data
+            where: callable (optional)
+                A method (function or lambda expression) to filter the returned
+                records, where the function returns True the record is
+                returned, False the record is skipped. The default is all
+                records
+            inner_reader: BaseReader (optional)
+                The reader class to perform the data access tasks, the default
+                is GoogleCloudStorageReader
+            data_format: string (optional)
+                Controls how the data is interpretted. 'json' will parse to a
+                dictionary before 'select' or 'where', 'text' will just return
+                the line that has been read, the default is 'json'
+            date_range: tuple of datetimes (optional)
+                The dates to search for data between, the first value is the
+                start date, the second is the end date, default for both is
+                today
+            start_date: datetime (optional)
+                The starting date of the range to read over - if used with
+                'date_range', this value will be preferred, default is today
+            end_date: datetime (optional)
+                The end date of the range to read over - if used with
+                'date_range', this value will be preferred, default is today
+            extension: string (optional)
+                The extention of the partitions being read, defaults to .jsonl
+                Note, .lzma is automatically handled
+            thread_count: integer (optional)
+                Use multiple threads to read data files, the default is to not
+                use additional threads, the maximum number of threads is 8
+            fork_processes: boolean (experimental)
+                Create parallel processes to read data files
+            step_back_days: integer (experimental)
+                DO NOT USE: placeholder for future functionality
 
-        SELECT column FROM data.store WHERE size == 'large'
+        Note:
+            Different inner_readers may take or require additional parameters.
 
-        Reader(
-            select=['column'],
-            from_path='data/store',
-            where=lambda record: record['size'] == 'large'
-        )
+        Yields:
+            dictionary (string if data format is 'text')
 
-        Data are automatically partitioned by date.
+        Raises:
+            TypeError
+                Reader 'select' parameter must be a list
+            TypeError
+                Reader 'where' parameter must be Callable or None
+            TypeError
+                Data format unsupported
+            InvalidCombinationError
+                Forking and Threading can not be used at the same time
         """
+        # rather than deprecation warning, we'll give the user a reminder to
+        # fix their spelling
+        if kwargs.get('extension') is not None:
+            get_logger().warning('Reader parameter "extention" should be "extension"')
+
         if not isinstance(select, list):
             raise TypeError("Reader 'select' parameter must be a list")
         if where is not None and not hasattr(where, '__call__'):
@@ -76,10 +118,10 @@ class Reader():
         # load the line converter
         self.parser = PARSERS.get(data_format.lower())
         if self.parser is None:
-            raise TypeError(F"data format unsupported: {data_format}.")
+            raise TypeError(F"Data format unsupported: {data_format}.")
 
         # instantiate the injected reader class
-        self.reader_class = reader(from_path=from_path, **kwargs)  # type:ignore
+        self.reader_class = inner_reader(from_path=from_path, **kwargs)  # type:ignore
 
         self.select = select.copy()
         self.where: Optional[Callable] = where
@@ -91,7 +133,7 @@ class Reader():
                 F"select={select}",
                 F"from_path='{from_path}'",
                 F"where={where.__name__ if not where is None else 'Select All'}",
-                F"reader={reader.__name__}",     # type:ignore
+                F"inner_reader={inner_reader.__name__}",     # type:ignore
                 F"data_format='{data_format}'"]
         kwargs_passed_in_function = [f"{k}={v!r}" for k, v in kwargs.items()]
         formatted_arguments = ", ".join(args_passed_in_function + kwargs_passed_in_function)
@@ -101,7 +143,6 @@ class Reader():
 
         get_logger().debug(f"Reader({formatted_arguments})")
 
-
         """ FEATURES IN DEVELOPMENT """
 
         # number of days to walk backwards to find records
@@ -110,9 +151,9 @@ class Reader():
             get_logger().warning("STEP BACK DAYS IS IN DEVELOPMENT")
 
         # multiprocessed reader
-        self.fork_processes = int(kwargs.get('fork_processes', False))
+        self.fork_processes = bool(kwargs.get('fork_processes', False))
         if self.thread_count > 0 and self.fork_processes:
-            raise Exception('Forking and Threading can not be used at the same time')
+            raise InvalidCombinationError('Forking and Threading can not be used at the same time')
         if self.fork_processes:
             get_logger().warning("MULTI-PROCESS READER IS EXPERIMENTAL, IT IS LIKELY TO NOT RETURN ALL DATA")
 
@@ -168,7 +209,7 @@ class Reader():
             while line:
                 print(line)
     """
-    
+
     def __enter__(self):
         return self
 
@@ -194,7 +235,6 @@ class Reader():
             raise ImportError("Pandas must be installed to use 'to_pandas'")
         return pd.DataFrame(self)
 
-
     def __repr__(self):
 
         def is_running_from_ipython():
@@ -204,13 +244,13 @@ class Reader():
             try:
                 from IPython import get_ipython  # type:ignore
                 return get_ipython() is not None
-            except:
+            except Exception:
                 return False
 
         if is_running_from_ipython():
             from IPython.display import HTML, display  # type:ignore
-            html = to_html_table(self, 5)
+            html = html_table(self, 5)
             display(HTML(html))
             return ''  # __repr__ must return something
         else:
-            return to_ascii_table(self, 5)
+            return ascii_table(self, 5)

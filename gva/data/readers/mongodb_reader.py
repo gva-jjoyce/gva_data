@@ -3,12 +3,10 @@ A MongoDB Reader
 
 This is a light-weight MongoDB reader to fulfil a specific purpose,
 it needs some work to make it fully reusable.
-
-collection can have date formatted
 """
 from typing import Iterator, Tuple, Optional, List
 import datetime
-from .base_reader import BaseReader
+from .internals import BaseReader
 try:
     import pymongo     # type:ignore
 except ImportError:    # pragma: no cover
@@ -53,4 +51,3 @@ class MongoDbReader(BaseReader):
                 yield collection.find(query)[chunks[i-1]:chunks[i]]
             else:
                 yield collection.find(query)[chunks[i-1]:chunks.stop]
-

@@ -15,7 +15,7 @@ In addition to notifications about errors being reported using the logging
 module, functionality exists to write full stack trace and state information
 to a separate sink.
 
-Each seperate error event is saved to a separate file; a message is logged
+Each separate error event is saved to a separate file; a message is logged
 to the standard logger with the error type and the name of the file created
 by the Bin Writer.
 
@@ -32,11 +32,11 @@ Tracing provides functionality to log the journey messages take through and
 between flows. Traces rely on the `context` information passed alongside
 data into and through flows. 
 
-The default behaviour is 1/1000 runs are traced, this rate can be changed
+The default behavior is 1/1000 runs are traced, this rate can be changed
 when the _flow_ is run using the `trace_sample_rate` parameter. Setting to `1`
 will trace every run, setting to `0` will not trace any runs. When the value
 is between 0 and 1, runs are randomly sampled at the rate provided. Selection
-is random, like dice rolls, selection is independant between samples.
+is random, like dice rolls, selection is independent between samples.
 
 `context` is a dictionary, this can contain many pieces of arbitrary data,
 fields relating to tracing are:
@@ -58,7 +58,7 @@ and attached to the flow in order for the _execution_trace_s to be written.
 ### Block Trace
 
 The block trace creates a record of the state of data at each _operation_ in
-the flow. When one record seperates into multiple messages, they inherit the
+the flow. When one record separates into multiple messages, they inherit the
 _trace_ status and the _uuid_ from the source message, to enable tracking of 
 all states of the data.
 

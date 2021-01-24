@@ -2,7 +2,7 @@ import logging
 from .add_level import add_logging_level
 from functools import lru_cache
 
-LOGNAME:str = "GVA"
+LOGNAME: str = "GVA"
 
 class LEVELS():
     """
@@ -15,6 +15,8 @@ class LEVELS():
     ERROR = int(logging.ERROR)          # 40
     CRITICAL = int(logging.CRITICAL)    # 50
     TRACE = 100                         # trace is higher priority
+    AUDIT = 110
+    ALERT = 120
 
 @lru_cache(1)
 def get_logger() -> logging.Logger:
@@ -25,9 +27,10 @@ def get_logger() -> logging.Logger:
     """
     logger = logging.getLogger(LOGNAME)
 
-    # add the TRACE level to the logger
-    #if not hasattr(logging, "trace"):
+    # add the TRACE, AUDIT and ALERT levels to the logger
     add_logging_level("TRACE", LEVELS.TRACE)
+    add_logging_level("AUDIT", LEVELS.AUDIT)
+    add_logging_level("ALERT", LEVELS.ALERT)
 
     # configure the logger
     fh = logging.StreamHandler()    

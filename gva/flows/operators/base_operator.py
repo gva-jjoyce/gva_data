@@ -15,22 +15,23 @@ import functools
 import hashlib
 import time
 import datetime
+import re
+import string
 import types
 import sys
-import networkx as nx   # type:ignore
 from ...logging import get_logger  # type:ignore
-from ..runner import go, finalize, attach_writer, attach_writers
 from typing import Union, List
-from ...errors import RenderErrorStack
+from ...errors import RenderErrorStack, IntegrityError
 from ...data.formats import dictset
 from ...utils.json import parse, serialize
+from ..flow import Flow
 
 # This is the hash of the code in the version function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
-VERSION_HASH = "54ebb39c76dd9159475b723dc2467e2a6a9c4cf794388c9f8c7ec0a777c90f17"
+VERSION_HASH = "bb5c851c42ae86ff42f803416b61329d4ef1d4fa0b8e7f81309e86786b4408ae"
 # This is the hash of the code in the __call__ function we don't ever want this
 # method overidden, so we're going to make sure the hash still matches
-CALL_HASH = "3bf4f5fd5986a799cb29db45620cddeffebb1cf09a3af946e68d28370f65d194"
+CALL_HASH = "e9931080ec8882a0a7116a572a0e7ade0346f643f7c6aa9c36c1673dcb1d694f"
 
 
 # inheriting ABC is part of ensuring that this class only ever
@@ -60,6 +61,7 @@ class BaseOperator(abc.ABC):
           limited between 1 (single failure aborts) and 100
         """
         self.graph = None               # part of drawing dags
+        self.flow = None
         self.records_processed = 0      # number of times this operator has been run
         self.execution_time_ns = 0      # nano seconds of cpu execution time
         self.errors = 0                 # number of errors
@@ -74,12 +76,12 @@ class BaseOperator(abc.ABC):
         self.last_few_results = [1] * rolling_failure_window  # track the last n results
 
         # Detect version and __call__ being overridden
-        call_hash = self.hash(inspect.getsource(self.__call__))
+        call_hash = self.hash(self._only_alpha_nums(inspect.getsource(self.__call__)))
         if call_hash != CALL_HASH:
-            raise Exception(F"Operator's __call__ method must not be overridden - discovered hash was {call_hash}")      
-        version_hash = self.hash(inspect.getsource(self.version))
+            raise IntegrityError(F"Operator's __call__ method must not be overridden - discovered hash was {call_hash}")      
+        version_hash = self.hash(self._only_alpha_nums(inspect.getsource(self.version)))
         if version_hash != VERSION_HASH:
-            raise Exception(F"Operator's version method must not be overridden - discovered hash was {version_hash}") 
+            raise IntegrityError(F"Operator's version method must not be overridden - discovered hash was {version_hash}") 
 
 
     @abc.abstractmethod
@@ -147,7 +149,7 @@ class BaseOperator(abc.ABC):
                         self.logger.error(F"Problem writing to the error bin, a record has been lost. {type(err).__name__} - {err} - {context.get('uuid')}")
                     finally:
                         # finally blocks are called following a try/except block regardless of the outcome
-                        self.logger.error(F"{self.__class__.__name__} - {type(error_reference).__name__} - {error_reference} - tried {self.retry_count} times before aborting ({context.get('uuid')}) {error_log_reference}")
+                        self.logger.critical(F"{self.__class__.__name__} - {type(error_reference).__name__} - {error_reference} - tried {self.retry_count} times before aborting ({context.get('uuid')}) {error_log_reference}")
                     outcome = None
                     # add a failure to the last_few_results list
                     self.last_few_results.append(0)
@@ -165,7 +167,7 @@ class BaseOperator(abc.ABC):
 
         # if there is a high failure rate, abort
         if sum(self.last_few_results) < (len(self.last_few_results) / 2):
-            self.logger.critical(F"Failure Rate for {self.__class__.__name__} over last {len(self.last_few_results)} executions is over 50%, aborting.")
+            self.logger.alert(F"Failure Rate for {self.__class__.__name__} over last {len(self.last_few_results)} executions is over 50%, aborting.")
             sys.exit(1)
 
         return outcome
@@ -201,52 +203,46 @@ class BaseOperator(abc.ABC):
         rather than protect information.
         """
         source = inspect.getsource(self.execute)
+        source = self._only_alpha_nums(source)
         full_hash = hashlib.sha224(source.encode())
         return full_hash.hexdigest()[-12:]
 
     def __del__(self):
-        # do nothing - prevents errors if someone calls super().__del__
+        # do nothing - prevents errors if someone thinks they're being a good
+        # citizen and calls super().__del__
         pass
 
     def error_writer(self, record):
         # this is a stub to be overridden
         raise ValueError('no error_writer attached')
 
-    def __gt__(self, next_operators: Union[List[nx.DiGraph], nx.DiGraph]):
-        """
-        Smart flow/DAG builder. This allows simple flows to be defined using
-        the following syntax:
-
-        Op1 > Op2 > Op3
-
-        The builder adds support functions to the resulting 'flow' object.
-        """
-        # make sure the next_operator is iterable
+    def __gt__(self, next_operators):
         if not isinstance(next_operators, list):
             next_operators = [next_operators]
-        if self.graph:
+        if self.flow:
             # if I have a graph already, build on it
-            graph = self.graph
+            flow = self.flow
         else:
             # if I don't have a graph, create one
-            graph = nx.DiGraph()
-            graph.add_node(F"{self.__class__.__name__}-{id(self)}", function=self)
+            flow = Flow()
+            flow.add_operator(F"{self.__class__.__name__}-{id(self)}", self)
+
         for operator in next_operators:
-            if isinstance(operator, nx.DiGraph):
+            if isinstance(operator, Flow):
                 # if we're pointing to a graph, merge with the current graph,
                 # we need to find the node with no incoming nodes we identify
                 # the entry-point
-                graph = nx.compose(operator, graph)
-                graph.add_edge(
+                flow.merge(operator)
+                flow.add_edge(
                     F"{self.__class__.__name__}-{id(self)}",
-                    [node for node in operator.nodes() if len(graph.in_edges(node)) == 0][0],
+                    operator.get_entry_points().pop(),
                 )
             elif issubclass(type(operator), BaseOperator):
                 # otherwise add the node and edge and set the graph further
                 # down the line
-                graph.add_node(F"{operator.__class__.__name__}-{id(operator)}", function=operator)
-                graph.add_edge(F"{self.__class__.__name__}-{id(self)}", F"{operator.__class__.__name__}-{id(operator)}")
-                operator.graph = graph
+                flow.add_operator(F"{operator.__class__.__name__}-{id(operator)}", operator)
+                flow.link_operators(F"{self.__class__.__name__}-{id(self)}", F"{operator.__class__.__name__}-{id(operator)}")
+                operator.flow = flow
             else:
                 label = type(operator).__name__
                 if hasattr(operator, '__name__'):
@@ -255,15 +251,8 @@ class BaseOperator(abc.ABC):
                 raise TypeError(F"Operator {label} must inherit BaseOperator, this error also occurs when the Operator has not been correctly instantiated.")
         # this variable only exists to build the graph, we don't need it
         # anymore so destroy it
-        self.graph = None
-
-        # extend the base DiGraph class with flow helper functions
-        graph.run = types.MethodType(go, graph)
-        graph.finalize = types.MethodType(finalize, graph)
-        graph.attach_writer = types.MethodType(attach_writer, graph)
-        graph.attach_writers = types.MethodType(attach_writers, graph)
-
-        return graph
+        self.flow = None
+        return flow
 
     def _clamp(self, value, low_bound, high_bound):
         """
@@ -274,6 +263,11 @@ class BaseOperator(abc.ABC):
         if value >= high_bound:
             return high_bound
         return value
+
+    def _only_alpha_nums(self, text):
+        pattern = re.compile('[\W_]+')
+        return pattern.sub('', text)
+
 
     def hash(self, block):
         try:

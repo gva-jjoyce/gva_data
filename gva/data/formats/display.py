@@ -1,31 +1,31 @@
 from typing import Iterator
 
-def to_html_table(
+
+def html_table(
         dictset: Iterator[dict],
         limit: int = 5):
     """
     Render the dictset as a HTML table.
 
     This exhausts generators so is only recommended to be used on lists.
-    """    
+    """
     def _to_html_table(data, limit):
-        
+
         first_row = True
         highlight = False
-        
+
         yield '<table class="table table-sm">'
         for counter, record in enumerate(data):
-            
             if first_row:
                 yield '<thead class="thead-light"><tr>'
                 for key, value in record.items():
                     yield '<th>' + key + '<th>\n'
                 yield '</tr></thead><tbody>'
             first_row = False
-            
+
             if counter >= limit:
                 break
-            
+
             if highlight:
                 yield '<tr style="background-color:#F4F4F4">'
             else:
@@ -34,9 +34,9 @@ def to_html_table(
             for key, value in record.items():
                 yield '<td>' + str(value) + '<td>\n'
             yield '</tr>'
-                
+
         yield '</tbody></table>'
-        
+
         import types
         if isinstance(data, types.GeneratorType):
             yield f'<p>unknown rows x {len(record.items())} columns</p>'
@@ -47,16 +47,16 @@ def to_html_table(
     return ''.join(_to_html_table(dictset, limit))
 
 
-def to_ascii_table(
+def ascii_table(
         dictset: Iterator[dict],
         limit: int = 5):
     """
     Render the dictset as a ASCII table.
 
     This exhausts generators so is only recommended to be used on lists.
-    """    
+    """
     result = []
-    columns:dict = {}
+    columns: dict = {}
     cache = []
 
     # inspect values
@@ -65,7 +65,7 @@ def to_ascii_table(
             break
 
         cache.append(row)
-        for k,v in row.items():
+        for k, v in row.items():
             length = max(len(str(v)), len(k))
             if length > columns.get(k, 0):
                 columns[k] = length

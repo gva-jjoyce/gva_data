@@ -11,8 +11,8 @@ import queue
 import multiprocessing
 import sys
 import time
-from ..formats import dictset
-from ...logging import get_logger
+from ...formats import dictset
+from ....logging import get_logger
 
 
 def _inner_parse(parser, chunk):

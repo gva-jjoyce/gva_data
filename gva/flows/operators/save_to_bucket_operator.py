@@ -13,9 +13,9 @@ intended to be read or accessed directly.
 The Writer will automatically LZMA encrypt the data, this can be disabled
 by setting the compress parameter to False. If the data is encrypted, the
 Reader will automatically decrypt. The need to decrypt is signalled by the
-.lzma file extention. LZMA files can be opened by compression tools such
+.lzma file extension. LZMA files can be opened by compression tools such
 as 7-zip and lzma.exe so is not dependant on the Reader library to be read.
-The .lzma extention is added automatically, it will be added twice if
+The .lzma extension is added automatically, it will be added twice if
 specified as part of the to_path.
 
 The Writer will avoid clashes in filenames by appending a a four digit
@@ -34,9 +34,9 @@ gva.validator library.
 The Writer will automatically close a partition, even if not full, if
 no new records have been added to the partition in 60 seconds.
 """
-from .base_operator import BaseOperator
-from gva.data import Writer  # type:ignore
-from gva.data.validator import Schema  # type:ignore
+from .internals.base_operator import BaseOperator
+from ...data.writers import Writer, GoogleCloudStorageWriter  # type:ignore
+from ...data.validator import Schema  # type:ignore
 import datetime
 
 
@@ -53,11 +53,12 @@ class SaveToBucketOperator(BaseOperator):
             **kwargs):
         super().__init__()
         self.writer = Writer(
+                inner_writer=GoogleCloudStorageWriter,
                 project=project,
                 to_path=to_path,
                 schema=schema,
                 compress=compress,
-                date=date,
+                date_exchange=date,
                 **kwargs)
 
     def execute(self, data: dict = {}, context: dict = {}):

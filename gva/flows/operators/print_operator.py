@@ -3,7 +3,7 @@ Print Operator
 
 Prints the data object to the console.
 """
-from .base_operator import BaseOperator
+from .internals.base_operator import BaseOperator
 
 
 class PrintOperator(BaseOperator):

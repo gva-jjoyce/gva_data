@@ -57,7 +57,7 @@ for source in store.list_of_sources():
         access_key=os.getenv('MINIO_ACCESS_KEY'),
         secret_key=os.getenv('MINIO_SECRET_KEY'),
         secure=False,
-        add_extention='.lzma')
+        add_extension='.lzma')
 
     print('done', writer)
 

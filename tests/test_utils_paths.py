@@ -17,12 +17,12 @@ except ImportError:   # pragma: no cover
 
 def test_blob_paths_split_filename():
 
-    name, ext = paths.split_filename("one_extention.ext")
-    assert name == 'one_extention', f"{name} {ext}"
+    name, ext = paths.split_filename("one_extension.ext")
+    assert name == 'one_extension', f"{name} {ext}"
     assert ext == '.ext', f"{name} {ext}"
 
-    name, ext = paths.split_filename("two_extention.ext.zip")
-    assert name == 'two_extention.ext', f"{name} {ext}"
+    name, ext = paths.split_filename("two_extension.ext.zip")
+    assert name == 'two_extension.ext', f"{name} {ext}"
     assert ext == '.zip', f"{name} {ext}"
 
     name, ext = paths.split_filename("double_dot..zip")
@@ -67,14 +67,14 @@ def test_blob_paths_get_paths():
 def test_blob_paths_builder():
 
     # without trailing /, the / should be added
-    template = '%datefolders/%Y/%date_%time-%f'
+    template = '%datefolders/%Y/%date/'
     path = paths.build_path(template, datetime.datetime(2000, 9, 19, 1, 36, 42, 365))
-    assert path == "year_2000/month_09/day_19/2000/2000-09-19_013642-000365/", path
+    assert path == "year_2000/month_09/day_19/2000/2000-09-19/", path
 
     # with trailing /, the / should be retained
-    template = '%datefolders/%Y/%date_%time-%f/'
+    template = '%datefolders/%Y/%date/'
     path = paths.build_path(template, datetime.datetime(2000, 9, 19, 1, 36, 42, 365))
-    assert path == "year_2000/month_09/day_19/2000/2000-09-19_013642-000365/", path
+    assert path == "year_2000/month_09/day_19/2000/2000-09-19/", path
 
 
 if __name__ == "__main__":

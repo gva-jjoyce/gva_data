@@ -1,22 +1,17 @@
 """
 MinIo Reader - may work with AWS
-
-There is a problem with with Minio library which prevents it from being used
-with the Multi-Processor library to distribute the reading across multiple 
-processes. The MinioReader code is near identical the other readers so the
-conclusion is the issue is with the Minio library.
 """
 from ...utils import paths, common
 import lzma
 import io
-from .base_reader import BaseReader
+from .internals import BaseReader
 try:
     from minio import Minio  # type:ignore
 except ImportError:
     pass
 
 
-class MinioReader(BaseReader):
+class MinIoReader(BaseReader):
 
     def __init__(
             self,
@@ -43,10 +38,10 @@ class MinioReader(BaseReader):
 
 
     def read_from_source(self, object_name):
-        bucket, object_path, name, extention = paths.get_parts(object_name)
-        stream = self.minio.get_object(bucket, object_path + name + extention).read()
+        bucket, object_path, name, extension = paths.get_parts(object_name)
+        stream = self.minio.get_object(bucket, object_path + name + extension).read()
 
-        if extention == '.lzma':
+        if extension == '.lzma':
             # converting to an IO stream is about 10% faster
             io_stream = io.BytesIO(stream)
             with lzma.open(io_stream, 'rb') as file:

@@ -1,47 +1,39 @@
-import datetime
-import os
-from ...utils import paths
+from .internals.base_writer import BaseWriter
 try:
     from google.cloud import storage  # type:ignore
 except ImportError:
     pass
-from typing import Optional
 
 
-def google_cloud_storage_writer(
-        source_file_name: str,
-        target_path: str,
-        date: Optional[datetime.date] = None,
-        add_extention: str = '',
-        **kwargs):
+class GoogleCloudStorageWriter(BaseWriter):
+    def __init__(
+            self,
+            project: str,
+            **kwargs):
+        super().__init__(**kwargs)
 
-    # default the date to today
-    if date is None:
-        date = datetime.datetime.today()
+        client = storage.Client(project=project)
+        self.gcs_bucket = client.get_bucket(self.bucket)
+        self.filename = self.filename_without_bucket
 
-    # get the project name
-    project = kwargs.get('project')
-    if project is None:
-        raise Exception('blob_writer must have project defined')
+    def get_partition_list(self):
+        blob_list = self.gcs_bucket.list_blobs(prefix=self.filename)
+        return [blob.name for blob in blob_list]
 
-    # factorize the path
-    bucket, gcs_path, filename, extention = paths.get_parts(target_path)
+    def commit(
+            self,
+            source_file_name):
 
-    # get a reference to the gcs bucket
-    client = storage.Client(project=project)
-    gcs_bucket = client.get_bucket(bucket)
-    
-    # avoid collisions
-    collision_tests = 0
-    maybe_colliding_filename = paths.date_format(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
-    blob = gcs_bucket.blob(maybe_colliding_filename)
+        existing_items = self.get_partition_list()
+        # avoid collisions
+        collision_tests = 0
+        maybe_colliding_filename = self._build_path(collision_tests)
 
-    while blob.exists():
-        collision_tests += 1
-        maybe_colliding_filename = paths.date_format(f"{gcs_path}{filename}-{collision_tests:04d}{extention}{add_extention}", date)
-        blob = gcs_bucket.blob(maybe_colliding_filename)
+        while maybe_colliding_filename in existing_items:
+            collision_tests += 1
+            maybe_colliding_filename = self._build_path(collision_tests)
 
-    # save the blob
-    blob.upload_from_filename(source_file_name)
+        blob = self.gcs_bucket.blob(maybe_colliding_filename)
+        blob.upload_from_filename(source_file_name)
 
-    return maybe_colliding_filename
+        return maybe_colliding_filename

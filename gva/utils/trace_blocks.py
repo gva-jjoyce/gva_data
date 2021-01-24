@@ -20,10 +20,10 @@ the user must update the trace log and this trace block.
 import datetime
 import hashlib
 import os
-from .json import parse, serialize
-from ..data.formats import dictset
+from .json import serialize
 
 EMPTY_HASH = "0" * 64
+
 
 def random_int() -> int:
     """
@@ -33,6 +33,7 @@ def random_int() -> int:
     for b in os.urandom(2):
         ran = ran * 256 + int(b)
     return ran
+
 
 class TraceBlocks():
 

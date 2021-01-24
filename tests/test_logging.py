@@ -30,6 +30,8 @@ def test_smoke_test():
   logger.warning("warn")
   logger.error("error")
   logger.critical("critical")
+  logger.alert("alert")
+  logger.audit("audit")
 
   @error_trap(propagate=False)
   def i_fail():
@@ -47,11 +49,11 @@ def test_logger_errors():
 
   from gva.logging import add_level
 
-  add_level.add_logging_level('alert', 25)
+  add_level.add_logging_level('test', 25)
 
   failed = False
   try:
-    add_level.add_logging_level('alert', 25)
+    add_level.add_logging_level('test', 25)
   except:
     failed = True
   assert failed

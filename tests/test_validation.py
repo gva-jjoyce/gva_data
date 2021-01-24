@@ -6,6 +6,8 @@ import os
 import sys
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 from gva.data.validator import Schema
+from gva.utils.json import serialize
+from gva.errors import ValidationError
 try:
     from rich import traceback
     traceback.install()
@@ -144,10 +146,9 @@ def test_validator_loaders():
     """
     Ensure dictionary, json and json files load
     """
-    import json
 
     TEST_SCHEMA_DICT = {"fields": [{"name": "string_field", "type": "string"}]}
-    TEST_SCHEMA_STRING = json.dumps(TEST_SCHEMA_DICT)
+    TEST_SCHEMA_STRING = serialize(TEST_SCHEMA_DICT)
     TEST_SCHEMA_FILE = 'temp'
 
     with open(TEST_SCHEMA_FILE, 'w') as file:
@@ -233,7 +234,7 @@ def test_raise_exception():
     failed = False
     try:
         test.validate(TEST_DATA, raise_exception=True)
-    except ValueError:
+    except ValidationError:
         failed = True
 
     assert failed
@@ -273,14 +274,24 @@ def test_validator_number_ranges():
 
 def test_validator_string_format():
 
-    
     INVALID_TEST_DATA = {"cve": "eternalblue"}
     VALID_TEST_DATA = {"cve": "CVE-2017-0144"}
     TEST_SCHEMA = {"fields": [{"name": "cve", "type": "string", "format": r"(?i)CVE-\d{4}-\d{4,7}"}]}
 
     test = Schema(TEST_SCHEMA)
     assert (not test.validate(INVALID_TEST_DATA))
-    assert (test.validate(VALID_TEST_DATA))
+    assert (test.validate(VALID_TEST_DATA)), test.last_error
+
+
+def test_validator_cve_format():
+
+    INVALID_TEST_DATA = {"cve": "eternalblue"}
+    VALID_TEST_DATA = {"cve": "CVE-2017-0144"}
+    TEST_SCHEMA = {"fields": [{"name": "cve", "type": "cve"}]}
+
+    test = Schema(TEST_SCHEMA)
+    assert (not test.validate(INVALID_TEST_DATA))
+    assert (test.validate(VALID_TEST_DATA)), test.last_error
 
 
 if __name__ == "__main__":
@@ -301,5 +312,6 @@ if __name__ == "__main__":
     test_unknown_type()
     test_raise_exception()
     test_call_alias()
+    test_validator_cve_format()
 
     print('okay')
