@@ -52,6 +52,8 @@ except ImportError:  # pragma: no cover
 
         if isinstance(obj, dict):
             obj_copy = {k:fix_fields(v) for k,v in obj.items()}
+        else:
+            obj_copy = obj
 
         if as_bytes:
             if indent:

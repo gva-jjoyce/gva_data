@@ -6,7 +6,7 @@ This does nothing - without error, for testing.
 It optionally prints the class name - intended to determine when and that
 the Operation was run - for testing.
 """
-from .base_operator import BaseOperator
+from .internals.base_operator import BaseOperator
 
 
 class NoOpOperator(BaseOperator):

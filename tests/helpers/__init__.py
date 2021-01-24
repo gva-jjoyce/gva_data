@@ -5,7 +5,7 @@ except ImportError:
 
 
 
-def read_jsonl(filename, limit=-1, chunk_size=16 * 1024 * 1024, delimiter="\n"):
+def read_jsonl(filename, limit=-1, chunk_size=32*1024*1024, delimiter="\n"):
     """"""
     file_reader = read_file(filename, chunk_size=chunk_size, delimiter=delimiter)
     line = next(file_reader, None)
@@ -20,7 +20,7 @@ def read_jsonl(filename, limit=-1, chunk_size=16 * 1024 * 1024, delimiter="\n"):
             return
 
 
-def read_file(filename, chunk_size=16*1024*1024, delimiter="\n"):
+def read_file(filename, chunk_size=32*1024*1024, delimiter="\n"):
     """
     Reads an arbitrarily long file, line by line
     """

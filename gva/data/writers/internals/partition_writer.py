@@ -9,6 +9,7 @@ from .base_writer import BaseWriter
 from ..null_writer import NullWriter
 
 BUFFER_SIZE = 128*1024  # 128kb
+PARTITION_SIZE = 32*1024*1024
 
 
 class PartitionWriter():
@@ -17,7 +18,7 @@ class PartitionWriter():
             self,
             *,    # force params to be named
             inner_writer: BaseWriter = NullWriter,  # type:ignore
-            partition_size: int = 64*1024*1024,
+            partition_size: int = PARTITION_SIZE,
             compress: bool = True,
             **kwargs):
 

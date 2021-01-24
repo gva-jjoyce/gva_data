@@ -34,7 +34,7 @@ gva.validator library.
 The Writer will automatically close a partition, even if not full, if
 no new records have been added to the partition in 60 seconds.
 """
-from .base_operator import BaseOperator
+from .internals.base_operator import BaseOperator
 from ...data.writers import Writer, GoogleCloudStorageWriter  # type:ignore
 from ...data.validator import Schema  # type:ignore
 import datetime

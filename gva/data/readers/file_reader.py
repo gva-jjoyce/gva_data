@@ -17,7 +17,7 @@ class FileReader(BaseReader):
         super().__init__(**kwargs)
 
         self.extension = kwargs.get('extension', '.jsonl')
-        self.chunk_size = kwargs.get('chunk_size', 16*1024*1024)
+        self.chunk_size = kwargs.get('chunk_size', 32*1024*1024)
         self.delimiter = kwargs.get('delimiter', '\n')
         self.encoding = kwargs.get('encoding', 'utf8')
 

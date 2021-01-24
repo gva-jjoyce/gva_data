@@ -3,7 +3,7 @@ Split Text Operator
 
 Splits a text payload into multiple messages but a given separator.
 """
-from . import BaseOperator
+from .internals.base_operator import BaseOperator
 
 
 class SplitTextOperator(BaseOperator):

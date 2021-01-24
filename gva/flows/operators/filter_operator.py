@@ -16,7 +16,7 @@ filter_ = FilterOperator(condition=lambda r: r.get('severity') == 'high')
 The condition does not need to be lambda, it can be any Callable including 
 methods.
 """
-from .base_operator import BaseOperator
+from .internals.base_operator import BaseOperator
 
 def match_all(data):
     return True

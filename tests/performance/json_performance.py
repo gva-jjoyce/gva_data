@@ -17,7 +17,7 @@ import time
 
 def _inner_file_reader(
         file_name: str,
-        chunk_size: int = 16*1024*1024,
+        chunk_size: int = 32*1024*1024,
         delimiter: str = "\n"):
     """
     This is the guts of the reader - it opens a file and reads through it

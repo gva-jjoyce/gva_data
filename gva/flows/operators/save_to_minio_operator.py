@@ -1,4 +1,4 @@
-from .base_operator import BaseOperator
+from .internals.base_operator import BaseOperator
 from ...data.writers import MinIoWriter, Writer  # type:ignore
 from ...data.validator import Schema  # type:ignore
 import datetime
