@@ -43,8 +43,6 @@ dictset can filter and select data before loading into a Pandas dataframe.
 `order(record)` - Sort a record by it's keys    
 `select_record_fields(record, fields)` - Selects a subset of fields from a record   
 `set_value(record, column_name, setter)` - Update the value of a field in a record   
-`to_html_table(dictset, limit)` - Create a HTML table of the first _limit_ rows  
-`to_ascii_table(dictset, limit)` - Create a ASCII table of the first _limit_ rows  
 `group_by(dictset, column)` - Create a group_by object, grouping records by the value in _column_  
 `extract_column(dictset, column)` - Extract the values in _column_ to a list   
 `jsonify(list_of_json_strings)` - Convert an iterable of JSON strings to a iterable of dictionaries  
